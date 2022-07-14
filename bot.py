@@ -7,7 +7,7 @@ import random
 import discord
 import wikipediaapi
 import wikipedia
-from wikipedia.exceptions import PageError
+from wikipedia.exceptions import PageError, DisambiguationError
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from googletrans import Translator
@@ -39,14 +39,21 @@ async def on_message(message):
         await message.reference.resolved.reply(translate_message(message.reference.resolved), mention_author=False)
         return
 
+    # Wikipedia Bot
     if message.content.lower().startswith("!wiki"):
-        args = message.content.lower().split(" ")
+        args = message.content.split(" ")
         query = " ".join(args[1:])
         try:
-            page_py = "Summary: %s" % wikipedia.summary(query, sentences=4)
+            summary = wikipedia.summary(f"{query}", auto_suggest=False, sentences=3)
+            payload = "Summary: %s" % summary
         except PageError as e:
-            page_py  = "Could not find page for query: " + query
-        await message.reply(page_py)
+            payload  = "Could not find page for query: " + f"{query}"
+            print(e)
+        except DisambiguationError as e:
+            summary = wikipedia.summary(e.options[0], auto_suggest=False, sentences=3)
+            payload = "Summary: %s" % summary
+
+        await message.reply(payload)
         return
 
     # Bonk users
