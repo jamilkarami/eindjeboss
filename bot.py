@@ -5,6 +5,7 @@ import os
 import random
 
 import discord
+import wikipediaapi
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from googletrans import Translator
@@ -17,6 +18,7 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 translator = Translator()
+wiki = wikipediaapi.Wikipedia('en')
 
 client = discord.Client()
 bot = commands.Bot("/")
@@ -33,6 +35,13 @@ async def on_message(message):
     # Translate by reply
     if message.reference and message.content.lower() in ["!translate","!tr"]:
         await message.reference.resolved.reply(translate_message(message.reference.resolved), mention_author=False)
+        return
+
+    if message.content.lower().startswith("!wiki"):
+        args = message.content.lower().split(" ")
+        query = " ".join(args[1:])
+        page_py = wiki.page(query)
+        await message.reply("Summary: %s" % page_py.summary[0:500])
         return
 
     # Bonk users
