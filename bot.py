@@ -6,6 +6,8 @@ import random
 
 import discord
 import wikipediaapi
+import wikipedia
+from wikipedia.exceptions import PageError
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from googletrans import Translator
@@ -40,8 +42,11 @@ async def on_message(message):
     if message.content.lower().startswith("!wiki"):
         args = message.content.lower().split(" ")
         query = " ".join(args[1:])
-        page_py = wiki.page(query)
-        await message.reply("Summary: %s" % page_py.summary[0:500])
+        try:
+            page_py = "Summary: %s" % wikipedia.summary(query, sentences=4)
+        except PageError as e:
+            page_py  = "Could not find page for query: " + query
+        await message.reply(page_py)
         return
 
     # Bonk users
