@@ -2,7 +2,6 @@
 from asyncio.windows_events import NULL
 from fnmatch import translate
 import os
-import random
 
 import discord
 import wikipediaapi
@@ -13,6 +12,10 @@ from dotenv import load_dotenv
 from googletrans import Translator
 from googletrans.constants import LANGUAGES
 
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy.exceptions import SpotifyException
+
 BOOK_EMOJI = "📖"
 BONK_TRIGGERS = ["Mommy", "Daddy"]
 
@@ -21,6 +24,8 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 
 translator = Translator()
 wiki = wikipediaapi.Wikipedia('en')
+sp_scope = "user-library-read"
+sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials())
 
 client = discord.Client()
 bot = commands.Bot("/")
@@ -31,6 +36,8 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    message_content = message.content.lower()
+
     if message.author == client.user:
         return
     
@@ -40,7 +47,7 @@ async def on_message(message):
         return
 
     # Wikipedia Bot
-    if message.content.lower().startswith("!wiki"):
+    if message_content.startswith("!wiki"):
         args = message.content.split(" ")
         query = " ".join(args[1:])
         try:
@@ -56,8 +63,21 @@ async def on_message(message):
         await message.reply(payload)
         return
 
+    # Spotify Bot
+    if message_content.startswith("!spotify"):
+        args = message.content.split(" ")
+        query = " ".join(args[1:])
+        try:
+            result = sp.search(query, type="track")
+            if(len(result['tracks']['items']) > 0):
+                await message.reply(result['tracks']['items'][0]['external_urls']['spotify'])
+            else:
+                await message.reply('No results found for: ' + query)
+        except SpotifyException as e:
+            print(e)
+
     # Bonk users
-    if any(word.lower() in message.content.lower() for word in BONK_TRIGGERS):
+    if any(word.lower() in message_content for word in BONK_TRIGGERS):
         await message.reply("<a:bonk:995996313650999387>")
         return
     
