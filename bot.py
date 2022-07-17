@@ -1,6 +1,5 @@
 # bot.py
 from asyncio.windows_events import NULL
-from fnmatch import translate
 import os
 
 import discord
@@ -27,12 +26,56 @@ wiki = wikipediaapi.Wikipedia('en')
 sp_scope = "user-library-read"
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials())
 
-client = discord.Client()
-bot = commands.Bot("/")
+intents = discord.Intents().all()
+client = commands.Bot(command_prefix="!")
 
 @client.event
 async def on_ready():
     print(f'{client.user.name} has connected to Discord!')
+
+@client.command()
+async def bonk(ctx):
+    await ctx.message.reference.resolved.reply("<a:bonk:995996313650999387>")
+
+@client.command()
+async def wiki(ctx, *args):
+    query = " ".join(args)
+    embed = discord.Embed()
+    url = wikipedia.page(f"{query}", auto_suggest=False).url
+
+    try:
+        summary = wikipedia.summary(f"{query}", auto_suggest=False, sentences=3)
+        payload = summary + f" [link]({url})"
+    except PageError as e:
+        payload  = "Could not find page for query: " + f"{query}"
+        print(e)
+    except DisambiguationError as e:
+        summary = wikipedia.summary(e.options[0], auto_suggest=False, sentences=3)
+        payload = summary + f" [(link)]({url})"
+
+    embed.description = payload
+    await ctx.message.reply(embed=embed)
+    return
+
+@client.command(aliases=["tr"])
+async def translate(ctx):
+    if ctx.message.reference:
+        await ctx.message.reference.resolved.reply(translate_message(ctx.message.reference.resolved))
+    else:
+        await ctx.message.reply("\"!translate\" can only be used as a reply to another message")
+    return
+
+@client.command(aliases=["sp"])
+async def spotify(ctx, *args):
+    query = " ".join(args)
+    try:
+        result = sp.search(query, type="track")
+        if(len(result['tracks']['items']) > 0):
+            await ctx.message.reply(result['tracks']['items'][0]['external_urls']['spotify'])
+        else:
+            await ctx.message.reply('No results found for: ' + query)
+    except SpotifyException as e:
+        print(e)
 
 @client.event
 async def on_message(message):
@@ -40,46 +83,13 @@ async def on_message(message):
 
     if message.author == client.user:
         return
-    
-    # Translate by reply
-    if message.reference and message.content.lower() in ["!translate","!tr"]:
-        await message.reference.resolved.reply(translate_message(message.reference.resolved), mention_author=False)
-        return
-
-    # Wikipedia Bot
-    if message_content.startswith("!wiki"):
-        args = message.content.split(" ")
-        query = " ".join(args[1:])
-        embed = discord.Embed()
-        try:
-            embed.description = wikipedia.summary(f"{query}", auto_suggest=False, sentences=3)
-            embed.description = embed.description + f" [(link)]({wikipedia.page(query, auto_suggest=False).url})"
-        except PageError as e:
-            embed.description  = "Could not find page for query: " + f"{query}"
-            print(e)
-        except DisambiguationError as e:
-            embed.description = wikipedia.summary(e.options[0], auto_suggest=False, sentences=3)
-            embed.description = embed.description + f" [(link)]({wikipedia.page(e.options[0], auto_suggest=False).url})"
-        await message.reply(embed=embed)
-        return
-
-    # Spotify Bot
-    if message_content.startswith("!spotify") or message_content.startswith("!sp"):
-        args = message.content.split(" ")
-        query = " ".join(args[1:])
-        try:
-            result = sp.search(query, type="track")
-            if(len(result['tracks']['items']) > 0):
-                await message.reply(result['tracks']['items'][0]['external_urls']['spotify'])
-            else:
-                await message.reply('No results found for: ' + query)
-        except SpotifyException as e:
-            print(e)
 
     # Bonk users
     if any(word.lower() in message_content for word in BONK_TRIGGERS):
         await message.reply("<a:bonk:995996313650999387>")
         return
+
+    await client.process_commands(message)
     
 @client.event
 async def on_reaction_add(reaction, user):
@@ -99,17 +109,5 @@ def translate_message(message):
     translated = translator.translate(message.content)
     lang = LANGUAGES[translated.src]
     return "Translated from (" + lang.capitalize() + "): " + translated.text
-
-# Cat pic per day
-@tasks.loop(hours=24)
-async def called_once_a_day():
-    message_channel = bot.get_channel(1)
-    print(f"Got channel {message_channel}")
-    await message_channel.send("Your message")
-
-@called_once_a_day.before_loop
-async def before():
-    await bot.wait_until_ready()
-    print("Finished waiting")
 
 client.run(TOKEN)
