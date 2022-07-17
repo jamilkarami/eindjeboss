@@ -50,21 +50,21 @@ async def on_message(message):
     if message_content.startswith("!wiki"):
         args = message.content.split(" ")
         query = " ".join(args[1:])
+        embed = discord.Embed()
         try:
-            summary = wikipedia.summary(f"{query}", auto_suggest=False, sentences=3)
-            payload = "Summary: %s" % summary
+            embed.description = wikipedia.summary(f"{query}", auto_suggest=False, sentences=3)
+            embed.description = embed.description + f" [(link)]({wikipedia.page(query, auto_suggest=False).url})"
         except PageError as e:
-            payload  = "Could not find page for query: " + f"{query}"
+            embed.description  = "Could not find page for query: " + f"{query}"
             print(e)
         except DisambiguationError as e:
-            summary = wikipedia.summary(e.options[0], auto_suggest=False, sentences=3)
-            payload = "Summary: %s" % summary
-
-        await message.reply(payload)
+            embed.description = wikipedia.summary(e.options[0], auto_suggest=False, sentences=3)
+            embed.description = embed.description + f" [(link)]({wikipedia.page(e.options[0], auto_suggest=False).url})"
+        await message.reply(embed=embed)
         return
 
     # Spotify Bot
-    if message_content.startswith("!spotify"):
+    if message_content.startswith("!spotify") or message_content.startswith("!sp"):
         args = message.content.split(" ")
         query = " ".join(args[1:])
         try:
