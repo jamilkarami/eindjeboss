@@ -17,6 +17,7 @@ from spotipy.exceptions import SpotifyException
 
 BOOK_EMOJI = "📖"
 BONK_TRIGGERS = ["Mommy", "Daddy"]
+CHANNEL_IGNORE_LIST = ["👾・akinator"]
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -69,7 +70,7 @@ async def translate(ctx):
 async def spotify(ctx, *args):
     query = " ".join(args)
     try:
-        result = sp.search(query, type="track")
+        result = sp.search(f"{query}", type="track")
         if(len(result['tracks']['items']) > 0):
             await ctx.message.reply(result['tracks']['items'][0]['external_urls']['spotify'])
         else:
@@ -79,10 +80,12 @@ async def spotify(ctx, *args):
 
 @client.event
 async def on_message(message):
-    message_content = message.content.lower()
-
     if message.author == client.user:
         return
+    if message.channel.name in CHANNEL_IGNORE_LIST:
+        return
+        
+    message_content = message.content.lower()
 
     # Bonk users
     if any(word.lower() in message_content for word in BONK_TRIGGERS):
