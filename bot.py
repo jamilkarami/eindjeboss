@@ -27,8 +27,8 @@ wiki = wikipediaapi.Wikipedia('en')
 sp_scope = "user-library-read"
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials())
 
-intents = discord.Intents().all()
-client = commands.Bot(command_prefix="!")
+intents = discord.Intents.all()
+client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
 
 @client.event
 async def on_ready():
@@ -77,6 +77,23 @@ async def spotify(ctx, *args):
             await ctx.message.reply('No results found for: ' + query)
     except SpotifyException as e:
         print(e)
+
+@client.command(aliases=["spc"])
+async def spotifycurrent(ctx):
+    spotify_act = None
+    user = ctx.author
+    for activity in user.activities:
+        if isinstance(activity, discord.Spotify):
+            spotify_act = activity
+
+    if spotify_act is None:
+        await ctx.message.reply("You are not currently listening to anything on Spotify or you haven't connected Discord to your Spotify account.")
+        
+    try:
+        await ctx.message.reply(activity.track_url)
+    except Exception as e:
+        print(e)
+
 
 @client.event
 async def on_message(message):
