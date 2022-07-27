@@ -114,7 +114,7 @@ async def imdb(ctx, *args):
 
 @client.command(aliases=[])
 async def roll(ctx, *args):
-    max = 20 if not args[0] else int(args[0])
+    max = 20 if not args else int(args[0])
 
     random.seed(time.time())
     num = random.randint(1, max)
