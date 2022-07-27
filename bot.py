@@ -15,6 +15,8 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy.exceptions import SpotifyException
 
+from imdb import Cinemagoer
+
 BOOK_EMOJI = "📖"
 BONK_TRIGGERS = ["Mommy", "Daddy"]
 CHANNEL_IGNORE_LIST = ["👾・akinator"]
@@ -26,6 +28,7 @@ translator = Translator()
 wiki = wikipediaapi.Wikipedia('en')
 sp_scope = "user-library-read"
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials())
+ia = Cinemagoer()
 
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
@@ -94,6 +97,16 @@ async def spotifycurrent(ctx):
     except Exception as e:
         print(e)
 
+@client.command(aliases=["mv", "sr"])
+async def imdb(ctx, *args):
+    query = " ".join(args)
+    movies = ia.search_movie(query)
+    if not movies:
+        await ctx.message.reply("No results found for \"" + query + "\" on IMDB.") 
+        return
+    movie_id = movies[0].movieID
+    await ctx.message.reply("https://www.imdb.com/title/tt{id}/".format(id = movie_id))
+    return
 
 @client.event
 async def on_message(message):
