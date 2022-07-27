@@ -1,6 +1,9 @@
 # bot.py
 from asyncio.windows_events import NULL
 import os
+import time
+import random
+from numbers import Number
 
 import discord
 import wikipediaapi
@@ -16,6 +19,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy.exceptions import SpotifyException
 
 from imdb import Cinemagoer
+
 
 BOOK_EMOJI = "📖"
 BONK_TRIGGERS = ["Mommy", "Daddy"]
@@ -106,6 +110,16 @@ async def imdb(ctx, *args):
         return
     movie_id = movies[0].movieID
     await ctx.message.reply("https://www.imdb.com/title/tt{id}/".format(id = movie_id))
+    return
+
+@client.command(aliases=[])
+async def roll(ctx, *args):
+    max = 20 if not args[0] else int(args[0])
+
+    random.seed(time.time())
+    num = random.randint(1, max)
+
+    await ctx.message.reply("You roll a D{max}. You get: {num}.".format(max = str(max), num = str(num)))
     return
 
 @client.event
