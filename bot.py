@@ -66,9 +66,11 @@ async def wiki(ctx, *args):
     return
 
 @client.command(aliases=["tr"])
-async def translate(ctx):
+async def translate(ctx, *args):
+    src = None if not args else args[0]
+    
     if ctx.message.reference:
-        await ctx.message.reference.resolved.reply(translate_message(ctx.message.reference.resolved))
+        await ctx.message.reference.resolved.reply(translate_message(ctx.message.reference.resolved, src))
     else:
         await ctx.message.reply("\"!translate\" can only be used as a reply to another message")
     return
@@ -152,8 +154,8 @@ async def on_reaction_add(reaction, user):
         await user.send(content=dst_msg)
         return
 
-def translate_message(message):
-    translated = translator.translate(message.content)
+def translate_message(message, src):
+    translated = translator.translate(message.content) if not src else translator.translate(message.content, src=src)
     lang = LANGUAGES[translated.src]
     return "Translated from (" + lang.capitalize() + "): " + translated.text
 
