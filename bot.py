@@ -148,7 +148,7 @@ async def on_reaction_add(reaction, user):
     # Translate by reaction
     if reaction.emoji == BOOK_EMOJI:
         src_msg = "You asked me to translate the following message: " + reaction.message.content
-        dst_msg = translate_message(reaction.message)
+        dst_msg = translate_message(reaction.message, None)
 
         await user.send(content=src_msg)
         await user.send(content=dst_msg)
