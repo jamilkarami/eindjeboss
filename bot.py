@@ -124,6 +124,12 @@ async def roll(ctx, *args):
     await ctx.message.reply("You roll a D{max}. You get: {num}.".format(max = str(max), num = str(num)))
     return
 
+@client.command(aliases=["8ball"])
+async def ball(ctx):
+    options = ["Yes", "No", "Ask again", "Definitely", "I don't think so"]
+    random.seed(time.time())
+    await ctx.message.reply(random.choice(options))
+
 @client.event
 async def on_message(message):
     if message.author == client.user:
