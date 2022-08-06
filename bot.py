@@ -130,6 +130,12 @@ async def ball(ctx):
     random.seed(time.time())
     await ctx.message.reply(random.choice(options))
 
+@client.command(aliases=[])
+async def coin(ctx):
+    options = ["Heads", "Tails"]
+    random.seed(time.time())
+    await ctx.message.reply(random.choice(options))
+
 @client.event
 async def on_message(message):
     if message.author == client.user:
