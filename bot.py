@@ -1,8 +1,13 @@
 # bot.py
-from asyncio.windows_events import NULL
+from genericpath import exists
 import os
 import time
+import datetime
+import uuid
 import random
+import dateparser
+import pickle
+import asyncio
 from numbers import Number
 
 import discord
@@ -40,6 +45,7 @@ client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents
 @client.event
 async def on_ready():
     print(f'{client.user.name} has connected to Discord!')
+    await startup_reminders()
 
 @client.command()
 async def bonk(ctx):
@@ -126,7 +132,7 @@ async def roll(ctx, *args):
 
 @client.command(aliases=["8ball"])
 async def ball(ctx):
-    options = ["Yes", "No", "Ask again", "Definitely", "I don't think so"]
+    options = ["Yes ✅", "No ❌", "Ask again...", "Definitely ✅", "I don't think so ❌"]
     random.seed(time.time())
     await ctx.message.reply(random.choice(options))
 
@@ -135,6 +141,38 @@ async def coin(ctx):
     options = ["Heads", "Tails"]
     random.seed(time.time())
     await ctx.message.reply(random.choice(options))
+
+@client.command(aliases=["rm"])
+async def remindme(ctx, *args):
+
+    def check_reply(author):
+        def inner_check(message):
+            return message.author == author
+        return inner_check
+
+    query = " ".join(args)
+    reminder_time = dateparser.parse(query)
+
+    if reminder_time.timestamp() < time.time():
+        await ctx.message.reply("Stop living in the past, child. Look to the future.")
+        return
+
+    if not reminder_time:
+        await ctx.message.reply("Could not parse the time. Please try again!")
+        return
+
+    reminder_time_readable_day = reminder_time.strftime('%m/%d/%Y')
+    reminder_time_readable_time = reminder_time.strftime('%I:%M %p')
+    reminder_time_timestamp = reminder_time.timestamp()
+    
+    await ctx.message.reply("What would you like to be reminded of?")
+
+    reminder_message = await client.wait_for("message", check=check_reply(ctx.message.author))
+
+    await reminder_message.reply(f"I will remind you of {reminder_message.content} on {reminder_time_readable_day} at {reminder_time_readable_time} :timer:")
+    await add_reminder(ctx.message.author, reminder_time_timestamp, reminder_message.content)
+    return
+
 
 @client.event
 async def on_message(message):
@@ -170,5 +208,47 @@ def translate_message(message, src):
     translated = translator.translate(message.content) if not src else translator.translate(message.content, src=src)
     lang = LANGUAGES[translated.src]
     return "Translated from (" + lang.capitalize() + "): " + translated.text
+
+async def startup_reminders():
+    reminders = load_reminders()
+
+    to_remove = []
+
+    for reminder, vals in reminders.items():
+        if vals['time'] < time.time():
+            to_remove.append(reminder)
+        else:
+            await start_reminder(vals['author'], vals['time'], vals['reason'])
+    
+    for id in to_remove:
+        reminders.pop(id)
+
+    save_reminders(reminders)
+
+async def add_reminder(author, time, reason):
+    reminders = load_reminders()
+    reminders[uuid.uuid1()] = {'author': author.id, 'time': time, 'reason': reason}
+    save_reminders(reminders)
+    await start_reminder(author.id, time, reason)
+
+def parse_reminders():
+    pass
+
+async def start_reminder(author, tm, reason):
+    user = client.get_user(author)
+    print(f"Will remind {user.name} of {reason} in {tm - time.time()}" )
+    await asyncio.sleep(tm - time.time())
+    await user.send(f"You asked to be reminded of {reason}. The time has come! :timer:")
+
+def load_reminders():
+    with open("reminders", "rb") as reminder_file:
+        try:
+            return pickle.load(reminder_file)
+        except EOFError:
+            return dict()
+
+def save_reminders(reminders):
+    with open("reminders", 'wb') as reminder_file:
+        pickle.dump(reminders, reminder_file)
 
 client.run(TOKEN)
