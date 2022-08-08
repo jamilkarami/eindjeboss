@@ -16,7 +16,7 @@ class Music(commands.Cog):
         self.client = client
 
     @commands.Cog.listener()
-    async def on_ready():
+    async def on_ready(self):
         logging.info(f"{__name__} Cog is ready")
 
     @commands.command(aliases=["sp"])

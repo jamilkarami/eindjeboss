@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 import logging
 import pickle
@@ -5,6 +6,9 @@ import uuid
 import time
 import asyncio
 import dateparser
+import datetime
+
+from sqlalchemy import desc
 
 REMINDER_FILE = "reminders"
 
@@ -16,17 +20,19 @@ class Reminder(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         logging.info(f"{__name__} Cog is ready")
+        logging.info("Loading reminders")
+        await self.startup_reminders()
 
     @commands.command(aliases=["rm"])
     async def remindme(self, ctx, *args):
 
-        def check_reply(author):
-            def inner_check(message):
-                return message.author == author
-            return inner_check
-
+        if(not args):
+            await ctx.message.reply("Please follow this format: !remindme (or !rm) [time], [reminder message]")
         query = " ".join(args)
-        reminder_time = dateparser.parse(query)
+        params = query.split(",")
+
+        reminder_time = dateparser.parse(params[0].strip())
+        reminder_message = params[1].strip()
 
         if reminder_time.timestamp() < time.time():
             await ctx.message.reply("Stop living in the past, child. Look to the future.")
@@ -39,13 +45,28 @@ class Reminder(commands.Cog):
         reminder_time_readable_day = reminder_time.strftime('%m/%d/%Y')
         reminder_time_readable_time = reminder_time.strftime('%I:%M %p')
         reminder_time_timestamp = reminder_time.timestamp()
-        
-        await ctx.message.reply("What would you like to be reminded of?")
 
-        reminder_message = await self.client.wait_for("message", check=check_reply(ctx.message.author))
+        await ctx.message.reply(f"I will remind you of {reminder_message} on {reminder_time_readable_day} at {reminder_time_readable_time} :timer:")
+        await self.add_reminder(ctx.message.author, reminder_time_timestamp, reminder_message)
+        return
 
-        await reminder_message.reply(f"I will remind you of {reminder_message.content} on {reminder_time_readable_day} at {reminder_time_readable_time} :timer:")
-        await self.add_reminder(ctx.message.author, reminder_time_timestamp, reminder_message.content)
+    @commands.command(aliases=["mr"])
+    async def myreminders(self, ctx):
+        reminders = self.load_reminders()
+        user_reminders = [reminder for reminder in reminders if reminders[reminder]['author'] == ctx.message.author.id]
+
+        message_title = f"\n**Reminders for {ctx.message.author.name}:**\n"
+
+        message = ""
+        for rem in user_reminders:
+            rem_timestamp = datetime.datetime.fromtimestamp(reminders[rem]['time'])
+            rem_time = rem_timestamp.strftime( "%a %d-%m-%Y - %H:%M")  
+            reason = reminders[rem]['reason']
+
+            message = message + f"{rem_time} | {reason} | {rem}\n"
+
+        embed = discord.Embed(title=message_title, description=message)
+        await ctx.message.author.send(embed=embed)
         return
 
     async def startup_reminders(self):
@@ -57,7 +78,7 @@ class Reminder(commands.Cog):
             if vals['time'] < time.time():
                 to_remove.append(reminder)
             else:
-                await self.start_reminder(vals['author'], vals['time'], vals['reason'])
+                await self.start_reminder(reminder, vals['author'], vals['time'], vals['reason'])
         
         for id in to_remove:
             reminders.pop(id)
@@ -65,19 +86,21 @@ class Reminder(commands.Cog):
         self.save_reminders(reminders)
 
     async def add_reminder(self, author, time, reason):
+        rem_id = str(uuid.uuid1())[:5]
         reminders = self.load_reminders()
-        reminders[uuid.uuid1()] = {'author': author.id, 'time': time, 'reason': reason}
+        reminders[rem_id] = {'author': author.id, 'time': time, 'reason': reason}
         self.save_reminders(reminders)
-        await self.start_reminder(author.id, time, reason)
+        await self.start_reminder(rem_id, author.id, time, reason)
 
     def parse_reminders():
         pass
 
-    async def start_reminder(self, author, tm, reason):
+    async def start_reminder(self, reminder_id, author, tm, reason):
         user = self.client.get_user(author)
-        print(f"Will remind {user.name} of {reason} in {tm - time.time()}" )
+        logging.info(f"Reminder found for {user.name} for {reason} at {tm}" )
         await asyncio.sleep(tm - time.time())
-        await user.send(f"You asked to be reminded of {reason}. The time has come! :timer:")
+        if reminder_id in self.load_reminders():
+            await user.send(f"You asked to be reminded of **{reason}**. The time has come! :timer:")
 
     def load_reminders(self):
         with open(REMINDER_FILE, "rb") as reminder_file:
