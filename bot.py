@@ -12,6 +12,7 @@ async def main():
     logging.basicConfig(filename='eindjeboss.log', format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
 
     intents = discord.Intents.all()
+    intents.members=True
     client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
 
     load_dotenv()
@@ -23,8 +24,8 @@ async def main():
 
     @client.event
     async def on_connect():
+        print("Connected!")
         await client.tree.sync()
-        print("Commands Synced!")
 
     async def load_extensions():
         for filename in os.listdir("./cogs"):

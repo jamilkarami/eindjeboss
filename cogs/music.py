@@ -15,7 +15,6 @@ class Music(commands.Cog):
 
     def __init__(self, client: commands.Bot):
         self.client = client
-        tree = app_commands.CommandTree(client)
 
 
     @commands.Cog.listener()
@@ -38,7 +37,8 @@ class Music(commands.Cog):
         spotify_act = None
 
         user = interaction.user
-        for activity in user.activities:
+        activities = interaction.guild.get_member(user.id).activities
+        for activity in activities:
             if isinstance(activity, discord.Spotify):
                 spotify_act = activity
 
