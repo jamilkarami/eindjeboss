@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
+from discord.ext.commands import Bot
 
 import logging
 import spotipy
@@ -14,6 +15,8 @@ class Music(commands.Cog):
 
     def __init__(self, client: commands.Bot):
         self.client = client
+        tree = app_commands.CommandTree(client)
+
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -29,20 +32,16 @@ class Music(commands.Cog):
                 await interaction.response.send_message('No results found for: ' + query)
         except SpotifyException as e:
             logging.debug(e)
-
-    @commands.command(aliases=["ga"])
-    async def get_activity(self, ctx):
-        spotify_act = None
-        for activity in ctx.author.activities:
-            if isinstance(activity, discord.Spotify):
-                spotify_act = activity
-        return spotify_act
-
+    
     @app_commands.command(name="spc")
     async def spotifycurrent(self, interaction: discord.Interaction):
-        context = await self.client.get_context(interaction)
-        spotify_act = await self.get_activity(context)
+        spotify_act = None
+
         user = interaction.user
+        for activity in user.activities:
+            if isinstance(activity, discord.Spotify):
+                spotify_act = activity
+
 
         if spotify_act is None:
             await interaction.response.send_message("You are not currently listening to anything on Spotify or you haven't connected Discord to your Spotify account.")

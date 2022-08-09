@@ -26,7 +26,7 @@ class Reminder(commands.Cog):
     @app_commands.command(name="rm", description="Set a reminder")
     async def remindme(self, interaction: discord.Interaction, reminder_time: str, message: str):
 
-        parsed_time = dateparser.parse(reminder_time)
+        parsed_time = dateparser.parse(reminder_time, settings={'PREFER_DATES_FROM': 'future'})
         
         if parsed_time.timestamp() < time.time():
             await interaction.response.send_message("Stop living in the past, child. Look to the future.")
@@ -101,7 +101,7 @@ class Reminder(commands.Cog):
         await asyncio.sleep(tm - time.time())
         if reminder_id in self.load_reminders():
             await user.send(f"You asked to be reminded of **{reason}**. The time has come! :timer:")
-            self.delete_reminder(reminder_id)
+            await self.delete_reminder(reminder_id)
             return
 
     def load_reminders(self):
