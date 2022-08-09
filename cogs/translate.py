@@ -1,9 +1,10 @@
 from discord.ext import commands
-
+from discord import app_commands
+import discord
 import logging
 from googletrans import Translator
 from googletrans.constants import LANGUAGES
-from cogs.eind_vars import *
+from vars.eind_vars import *
 
 translator = Translator()
 
