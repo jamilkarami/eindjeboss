@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
+from discord import app_commands
 
 import logging
-from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy.exceptions import SpotifyException
@@ -12,40 +12,47 @@ sp_scope = "user-library-read"
 
 class Music(commands.Cog):
 
-    def __init__(self, client):
+    def __init__(self, client: commands.Bot):
         self.client = client
 
     @commands.Cog.listener()
     async def on_ready(self):
         logging.info(f"{__name__} Cog is ready")
 
-    @commands.command(aliases=["sp"])
-    async def spotify(self, ctx, *args):
-        query = " ".join(args)
+    @app_commands.command(name="sp")
+    async def spotify(self, interaction: discord.Interaction, query: str):
         try:
             result = sp.search(f"{query}", type="track")
             if(len(result['tracks']['items']) > 0):
-                await ctx.message.reply(result['tracks']['items'][0]['external_urls']['spotify'])
+                await interaction.response.send_message(result['tracks']['items'][0]['external_urls']['spotify'])
             else:
-                await ctx.message.reply('No results found for: ' + query)
+                await interaction.response.send_message('No results found for: ' + query)
         except SpotifyException as e:
-            print(e)
+            logging.debug(e)
 
-    @commands.command(aliases=["spc"])
-    async def spotifycurrent(self, ctx):
+    @commands.command(aliases=["ga"])
+    async def get_activity(self, ctx):
         spotify_act = None
-        user = ctx.author
-        for activity in user.activities:
+        for activity in ctx.author.activities:
             if isinstance(activity, discord.Spotify):
                 spotify_act = activity
+        return spotify_act
+
+    @app_commands.command(name="spc")
+    async def spotifycurrent(self, interaction: discord.Interaction):
+        context = await self.client.get_context(interaction)
+        spotify_act = await self.get_activity(context)
+        user = interaction.user
 
         if spotify_act is None:
-            await ctx.message.reply("You are not currently listening to anything on Spotify or you haven't connected Discord to your Spotify account.")
+            await interaction.response.send_message("You are not currently listening to anything on Spotify or you haven't connected Discord to your Spotify account.")
+            return
             
         try:
-            await ctx.message.reply(activity.track_url)
+            await interaction.response.send_message(spotify_act.track_url)
         except Exception as e:
             print(e)
+        
 
 async def setup(bot):
     await bot.add_cog(Music(bot))

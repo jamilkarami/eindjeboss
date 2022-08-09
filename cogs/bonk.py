@@ -1,5 +1,5 @@
 from discord.ext import commands
-from cogs.eind_vars import *
+from vars.eind_vars import *
 import logging
 
 class Bonk(commands.Cog, name="Bonk"):

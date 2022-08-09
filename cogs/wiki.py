@@ -1,4 +1,5 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 import logging
@@ -17,9 +18,8 @@ class Wiki(commands.Cog):
     async def on_ready(self):
         logging.info(f"{__name__} Cog is ready")
 
-    @commands.command()
-    async def wiki(self, ctx, *args):
-        query = " ".join(args)
+    @app_commands.command(name="wiki")
+    async def wiki(self, interaction: discord.Interaction, query: str):
         embed = discord.Embed()
         url = wikipedia.page(f"{query}", auto_suggest=False).url
 
@@ -34,7 +34,7 @@ class Wiki(commands.Cog):
             payload = summary + f" [(link)]({url})"
 
         embed.description = payload
-        await ctx.message.reply(embed=embed)
+        await interaction.response.send_message(embed=embed)
         return
 
 async def setup(bot):
