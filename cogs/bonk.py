@@ -15,19 +15,5 @@ class Bonk(commands.Cog, name="Bonk"):
     async def bonk(self, ctx):
         await ctx.message.reference.resolved.reply("<a:bonk:995996313650999387>")
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author == self.bot.user:
-            return
-        if message.channel.name in CHANNEL_IGNORE_LIST:
-            return
-            
-        message_content = message.content.lower()
-
-        # Bonk users
-        if any(word.lower() in message_content for word in BONK_TRIGGERS):
-            await message.reply("<a:bonk:995996313650999387>")
-            return
-
 async def setup(bot: commands.Bot):
     await bot.add_cog(Bonk(bot))
