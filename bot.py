@@ -12,8 +12,9 @@ async def main():
     logging.basicConfig(filename='eindjeboss.log', format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
 
     intents = discord.Intents.all()
+    activity = discord.Activity(type=discord.ActivityType.watching, detail="", name="over the 040 for people to bonk")
     intents.members=True
-    client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
+    client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents, activity=activity)
 
     load_dotenv()
     TOKEN = os.getenv('DISCORD_TOKEN')
