@@ -1,5 +1,6 @@
 from discord.ext import commands
 from discord import app_commands
+import logging
 import discord
 
 class Messages(commands.Cog, name="Messages"):
@@ -15,11 +16,11 @@ class Messages(commands.Cog, name="Messages"):
     async def free_cuntus(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FreeCuntus")
 
-    @app_commands.command(name="msi", description="F MSI")
+    @app_commands.command(name="msi", description="The Eindhoven Community Discord's collectively humble opinion on MSI")
     async def f_msi(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FuckMSI")
 
-    @app_commands.command(name="lenovo", description="F Lenovo")
+    @app_commands.command(name="lenovo", description="The Eindhoven Community Discord's collectively humble opinion on Lenovo")
     async def f_lenovo(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FuckLenovo")
 
