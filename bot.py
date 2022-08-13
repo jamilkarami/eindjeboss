@@ -1,4 +1,5 @@
 # bot.py
+from cgitb import handler
 import os
 import discord
 from discord import app_commands
@@ -7,17 +8,19 @@ from dotenv import load_dotenv
 from vars.eind_vars import *
 import asyncio
 import logging
+import os
 
 async def main():
-    logging.basicConfig(filename='eindjeboss.log', format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
-
-    intents = discord.Intents.all()
-    activity = discord.Activity(type=discord.ActivityType.watching, detail="", name="over the 040 for people to bonk")
-    intents.members=True
-    client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents, activity=activity)
-
     load_dotenv()
     TOKEN = os.getenv('DISCORD_TOKEN')
+    STATUS = os.getenv('BOT_STATUS')
+    logging.basicConfig(filename='eindjeboss.log', format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+
+
+    intents = discord.Intents.all()
+    activity = discord.Activity(type=discord.ActivityType.watching, detail="", name=STATUS)
+    intents.members=True
+    client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents, activity=activity)
 
     @client.event
     async def on_ready():
@@ -30,11 +33,11 @@ async def main():
 
     async def load_extensions():
         for filename in os.listdir("./cogs"):
-            ignore_list = ["eind_vars.py"]
-            if filename.endswith(".py") and filename not in ignore_list:
-                extension_name = f"cogs.{filename[:-3]}"
-                logging.info(f"Loading extension: {extension_name}")
-                await client.load_extension(extension_name)
+            if not filename.endswith('py'):
+                continue
+            extension_name = f"cogs.{filename[:-3]}"
+            logging.info(f"Loading extension: {extension_name}")
+            await client.load_extension(extension_name)
 
     async with client:
         await load_extensions()
