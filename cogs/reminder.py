@@ -43,7 +43,7 @@ class Reminder(commands.Cog):
         reminder_time_readable_time = parsed_time.strftime('%I:%M %p')
         reminder_time_timestamp = parsed_time.timestamp()
 
-        await interaction.response.send_message(f"I will remind you of {message} on {reminder_time_readable_day} at {reminder_time_readable_time} :timer:")
+        await interaction.response.send_message(f"I will remind you of **{message}** on **{reminder_time_readable_day}** at **{reminder_time_readable_time}** :timer:")
         await self.add_reminder(interaction.user, reminder_time_timestamp, message, interaction.guild_id)
         return
 
@@ -52,7 +52,9 @@ class Reminder(commands.Cog):
         reminders = self.load_reminders()
         user_reminders = self.get_user_reminders(interaction.user)
 
-        message_title = f"\n**Reminders for {interaction.user.name}:**\n"
+        if not user_reminders:
+            await interaction.response.send_message(content="You don't have any reminders set. Set some with /remindme.", ephemeral=True)
+            return
 
         body = []
 
@@ -89,12 +91,13 @@ class Reminder(commands.Cog):
         reminders = self.load_reminders()
 
         to_remove = []
+        loop = asyncio.get_running_loop()
 
         for reminder, vals in reminders.items():
             if vals['time'] < time.time():
                 to_remove.append(reminder)
             else:
-                await self.start_reminder(reminder, vals['author'], vals['time'], vals['reason'], vals['guild'])
+                loop.create_task(self.start_reminder(reminder, vals['author'], vals['time'], vals['reason'], vals['guild']))
         
         for id in to_remove:
             reminders.pop(id)
