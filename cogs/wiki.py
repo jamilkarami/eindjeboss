@@ -20,7 +20,7 @@ class Wiki(commands.Cog):
 
     @app_commands.command(name="wiki")
     async def wiki(self, interaction: discord.Interaction, query: str):
-        embed = discord.Embed()
+        embed = discord.Embed(title=query)
         url = wikipedia.page(f"{query}", auto_suggest=False).url
 
         try:
