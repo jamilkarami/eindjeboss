@@ -3,9 +3,14 @@ from discord.ext import commands
 from discord import app_commands
 from discord.ui import Button, View, Modal, TextInput
 from vars.eind_vars import *
+import logging
 
 
 class Polls(commands.Cog):
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        logging.info(f"{__name__} Cog is ready")
 
     class poll_modal(Modal, title="Create a Poll"):
         poll_title = TextInput(label = "Poll Title", style=discord.TextStyle.short, placeholder="Knitting session with your grandma")
