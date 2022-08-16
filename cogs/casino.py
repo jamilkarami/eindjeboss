@@ -27,7 +27,7 @@ class Casino(commands.Cog):
 
     @app_commands.command(name="8ball")
     async def ball(self, interaction: discord.Interaction):
-        options = ["Yes ✅", "No ❌", "Definitely ✅", "I don't think so ❌"]
+        options = ["Yes ✅", "It is decidedly so ✅", "All signs point to yes ✅", "Definitely ✅", "No ❌", "I don't think so ❌", "Don't count on it ❌", "My sources say nope ❌"]
         random.seed(time.time())
         message = f"Magic 8 ball says: {random.choice(options)}"
         await interaction.response.send_message(message)
