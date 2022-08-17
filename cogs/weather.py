@@ -7,7 +7,7 @@ from table2ascii import table2ascii as t2a, PresetStyle
 from discord import app_commands
 from datetime import datetime
 
-CHANNEL_ID = int(os.getenv("TEST_CHANNEL_ID"))
+CHANNEL_ID = int(os.getenv("WEATHER_CHANNEL_ID"))
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 CITY = "EINDHOVEN, NL"
 BASE_URL = "http://api.openweathermap.org/data/2.5/forecast?"
