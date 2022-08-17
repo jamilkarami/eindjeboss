@@ -36,7 +36,10 @@ class Translate(commands.Cog):
         # Translate by reaction
         if reaction.emoji == BOOK_EMOJI:
             src_msg = "You asked me to translate the following message: " + reaction.message.content
-            dst_msg = TranslateUtil.translate_message(reaction.message, None)
+            translated = TranslateUtil.translate_message(reaction.message.content, None)
+
+            lang = LANGUAGES[translated.src]
+            dst_msg = "Translated from (" + lang.capitalize() + "): " + translated.text
 
             await user.send(content=src_msg)
             await user.send(content=dst_msg)

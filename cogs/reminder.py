@@ -68,7 +68,7 @@ class Reminder(commands.Cog):
         output = t2a(
             header=["ID", "Time", "Reason"],
             body=body,
-            style=PresetStyle.thin_compact
+            style=PresetStyle.thin_thick_rounded
         )
 
         await interaction.response.send_message(content=f"```{output}```", ephemeral=True)
