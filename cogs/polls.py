@@ -36,13 +36,19 @@ class Polls(commands.Cog):
                 await msg_reaction.add_reaction(NUMBER_EMOJIS[i])
 
             return
-            
 
-    @app_commands.command(name="poll", description="In development. Ignore")
+    @app_commands.command(name="poll", description="Create a poll with up to 4 options")
     async def poll(self, interaction: discord.Interaction):
         await interaction.response.send_modal(self.poll_modal())
+        return
 
-
+    @app_commands.command(name="yesno", description="Shortcut to a yes/no poll")
+    async def yesno(self, interaction: discord.Interaction, title : str):
+        await interaction.response.send_message(title)
+        resp = await interaction.original_response()
+        await resp.add_reaction(YES_EMOJI)
+        await resp.add_reaction(NO_EMOJI)
+        return
 
 async def setup(bot):
     await bot.add_cog(Polls(bot))
