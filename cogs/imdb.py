@@ -6,6 +6,7 @@ import logging
 
 ia = Cinemagoer()
 
+
 class IMDB(commands.Cog):
 
     def __init__(self, client):
@@ -19,11 +20,12 @@ class IMDB(commands.Cog):
     async def imdb(self, interaction: discord.Interaction, query: str):
         movies = ia.search_movie(query)
         if not movies:
-            await interaction.response.send_message("No results found for \"" + query + "\" on IMDB.") 
+            await interaction.response.send_message("No results found for \"" + query + "\" on IMDB.")
             return
         movie_id = movies[0].movieID
-        await interaction.response.send_message("https://www.imdb.com/title/tt{id}/".format(id = movie_id))
+        await interaction.response.send_message("https://www.imdb.com/title/tt{id}/".format(id=movie_id))
         return
+
 
 async def setup(bot):
     await bot.add_cog(IMDB(bot))

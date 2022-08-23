@@ -11,11 +11,11 @@ from spotipy.exceptions import SpotifyException
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials())
 sp_scope = "user-library-read"
 
+
 class Music(commands.Cog):
 
     def __init__(self, client: commands.Bot):
         self.client = client
-
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -25,13 +25,13 @@ class Music(commands.Cog):
     async def spotify(self, interaction: discord.Interaction, query: str):
         try:
             result = sp.search(f"{query}", type="track")
-            if(len(result['tracks']['items']) > 0):
+            if (len(result['tracks']['items']) > 0):
                 await interaction.response.send_message(result['tracks']['items'][0]['external_urls']['spotify'])
             else:
                 await interaction.response.send_message('No results found for: ' + query)
         except SpotifyException as e:
             logging.debug(e)
-    
+
     @app_commands.command(name="spc")
     async def spotifycurrent(self, interaction: discord.Interaction):
         spotify_act = None
@@ -42,16 +42,15 @@ class Music(commands.Cog):
             if isinstance(activity, discord.Spotify):
                 spotify_act = activity
 
-
         if spotify_act is None:
             await interaction.response.send_message("You are not currently listening to anything on Spotify or you haven't connected Discord to your Spotify account.")
             return
-            
+
         try:
             await interaction.response.send_message(spotify_act.track_url)
         except Exception as e:
             print(e)
-        
+
 
 async def setup(bot):
     await bot.add_cog(Music(bot))

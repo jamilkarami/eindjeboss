@@ -5,6 +5,7 @@ from discord import app_commands
 import random
 import time
 
+
 class Casino(commands.Cog):
 
     def __init__(self, client):
@@ -22,12 +23,13 @@ class Casino(commands.Cog):
         random.seed(time.time())
         num = random.randint(1, max)
 
-        await interaction.response.send_message("You roll a D{max}. You get: {num}.".format(max = str(max), num = str(num)))
+        await interaction.response.send_message("You roll a D{max}. You get: {num}.".format(max=str(max), num=str(num)))
         return
 
     @app_commands.command(name="8ball")
     async def ball(self, interaction: discord.Interaction):
-        options = ["Yes ✅", "It is decidedly so ✅", "All signs point to yes ✅", "Definitely ✅", "No ❌", "I don't think so ❌", "Don't count on it ❌", "My sources say nope ❌"]
+        options = ["Yes ✅", "It is decidedly so ✅", "All signs point to yes ✅", "Definitely ✅",
+                   "No ❌", "I don't think so ❌", "Don't count on it ❌", "My sources say nope ❌"]
         random.seed(time.time())
         message = f"Magic 8 ball says: {random.choice(options)}"
         await interaction.response.send_message(message)
@@ -40,6 +42,7 @@ class Casino(commands.Cog):
         message = f"You flip a coin. It lands on: {random.choice(options)}"
         await interaction.response.send_message(message)
         return
+
 
 async def setup(bot):
     await bot.add_cog(Casino(bot))

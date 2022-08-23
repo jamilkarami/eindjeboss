@@ -3,8 +3,9 @@ from discord import app_commands
 import logging
 import discord
 
+
 class Messages(commands.Cog, name="Messages"):
-    
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -24,6 +25,6 @@ class Messages(commands.Cog, name="Messages"):
     async def f_lenovo(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FuckLenovo")
 
-    
+
 async def setup(bot):
     await bot.add_cog(Messages(bot))
