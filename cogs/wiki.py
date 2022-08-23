@@ -9,6 +9,7 @@ from wikipedia.exceptions import PageError, DisambiguationError
 
 wiki = wikipediaapi.Wikipedia('en')
 
+
 class Wiki(commands.Cog):
 
     def __init__(self, client):
@@ -24,18 +25,21 @@ class Wiki(commands.Cog):
         url = wikipedia.page(f"{query}", auto_suggest=False).url
 
         try:
-            summary = wikipedia.summary(f"{query}", auto_suggest=False, sentences=3)
+            summary = wikipedia.summary(
+                f"{query}", auto_suggest=False, sentences=3)
             payload = summary + f" [link]({url})"
         except PageError as e:
-            payload  = "Could not find page for query: " + f"{query}"
+            payload = "Could not find page for query: " + f"{query}"
             print(e)
         except DisambiguationError as e:
-            summary = wikipedia.summary(e.options[0], auto_suggest=False, sentences=3)
+            summary = wikipedia.summary(
+                e.options[0], auto_suggest=False, sentences=3)
             payload = summary + f" [(link)]({url})"
 
         embed.description = payload
         await interaction.response.send_message(embed=embed)
         return
+
 
 async def setup(bot):
     await bot.add_cog(Wiki(bot))

@@ -1,13 +1,18 @@
-import logging, os, asyncpraw, re, discord
+import logging
+import os
+import asyncpraw
+import re
+import discord
 from discord.ext import commands
-from vars.eind_vars import *
+from util.vars.eind_vars import *
 from dotenv import load_dotenv
-from vars.periodic_reminders import TOP_REDDIT_CAT_DT
+from util.vars.periodic_reminders import TOP_REDDIT_CAT_DT
 from aiocron import crontab
 
 SUBREDDIT_REGEX = "(?<!reddit.com)\/r\/[a-zA-Z0-9]{3,}"
 CHANNEL_ID = int(os.getenv("ANIMALS_CHANNEL_ID"))
 CATS = "cats"
+
 
 class Reddit(commands.Cog):
 
@@ -26,7 +31,7 @@ class Reddit(commands.Cog):
         crontab(TOP_REDDIT_CAT_DT, func=self.schedule_cat_pic, start=True)
         # await self.schedule_cat_pic()
 
-    def __init__(self, bot : discord.Client):
+    def __init__(self, bot: discord.Client):
         self.bot = bot
 
     @commands.Cog.listener()
@@ -35,13 +40,13 @@ class Reddit(commands.Cog):
             return
         if message.channel.name in CHANNEL_IGNORE_LIST:
             return
-        
+
         message_content = message.content.lower()
         matches = re.findall(SUBREDDIT_REGEX, message_content)
 
         if matches:
             await self.handle_reddit_matches(matches, message)
-        
+
         return
 
     async def schedule_cat_pic(self):
@@ -49,13 +54,13 @@ class Reddit(commands.Cog):
         subreddit = await self.reddit.subreddit(CATS)
         async for submission in subreddit.top("day", limit=1):
             post = submission
-        title=f"**Top post on /r/cats today: {post.title}**"
-        description=post.url
+        title = f"**Top post on /r/cats today: {post.title}**"
+        description = post.url
         payload = f"{title}\n{description}"
 
         await channel.send(payload)
         return
-    
+
     async def handle_reddit_matches(self, matches, message):
         plural = "s" if len(matches) > 1 else ""
         payload = f"Found {len(matches)} subreddit link{plural} in your message:\n"
@@ -66,7 +71,7 @@ class Reddit(commands.Cog):
 
         for match in safe_matches:
             payload = payload + f"https://www.reddit.com{match}\n"
-        
+
         await message.reply(payload)
         return
 
@@ -78,6 +83,7 @@ class Reddit(commands.Cog):
                 safe_matches.append(match)
 
         return safe_matches
+
 
 async def setup(bot):
     await bot.add_cog(Reddit(bot))

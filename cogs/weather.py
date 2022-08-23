@@ -1,10 +1,12 @@
 from discord.ext import commands
-import requests, os, logging, discord
+import requests
+import os
+import logging
+import discord
 from aiocron import crontab
-from vars.periodic_reminders import WEATHER_DT
-from vars.eind_vars import *
+from util.vars.periodic_reminders import WEATHER_DT
+from util.vars.eind_vars import *
 from table2ascii import table2ascii as t2a, PresetStyle
-from discord import app_commands
 from datetime import datetime
 
 CHANNEL_ID = int(os.getenv("WEATHER_CHANNEL_ID"))
@@ -22,6 +24,7 @@ CONDITION_EMOJIS = {
     'Snow': WEATHER_EMOJI_SNOW,
 }
 
+
 class Weather(commands.Cog):
 
     @commands.Cog.listener()
@@ -29,7 +32,7 @@ class Weather(commands.Cog):
         logging.info(f"{__name__} Cog is ready")
         crontab(WEATHER_DT, func=self.schedule_weather, start=True)
 
-    def __init__(self, bot : discord.Client):
+    def __init__(self, bot: discord.Client):
         self.bot = bot
 
     async def schedule_weather(self):
@@ -47,7 +50,6 @@ class Weather(commands.Cog):
             dt = itm['dt_txt'][-8:-3]
             temperature = round(int(itm['main']['temp']))
             condition = itm['weather'][0]['description'].capitalize()
-            icon = CONDITION_EMOJIS[itm['weather'][0]['main']]
 
             body.append([dt, temperature, condition])
 
@@ -60,6 +62,7 @@ class Weather(commands.Cog):
         embed = discord.Embed(title=embed_title, description=f"```{output}```")
         await channel.send(embed=embed)
         return
+
 
 async def setup(bot):
     await bot.add_cog(Weather(bot))

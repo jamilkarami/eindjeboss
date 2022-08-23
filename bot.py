@@ -1,11 +1,8 @@
 # bot.py
-from cgitb import handler
 import os
 import discord
-from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
-from vars.eind_vars import *
 import asyncio
 import logging
 import os

@@ -4,20 +4,21 @@ import discord
 import logging
 from googletrans import Translator
 from googletrans.constants import LANGUAGES
-from vars.eind_vars import *
+from util.vars.eind_vars import *
 from typing import Optional
 
 translator = Translator()
 
 TRANSLATE_LANGUAGES = [
-        app_commands.Choice(name="English", value="english"),
-        app_commands.Choice(name="Dutch", value="dutch"),
-        app_commands.Choice(name="German", value="german"),
-        app_commands.Choice(name="Arabic", value="arabic"),
-        app_commands.Choice(name="French", value="french"),
-        app_commands.Choice(name="Spanish", value="spanish"),
-        app_commands.Choice(name="Esperanto", value="esperanto"),
+    app_commands.Choice(name="English", value="english"),
+    app_commands.Choice(name="Dutch", value="dutch"),
+    app_commands.Choice(name="German", value="german"),
+    app_commands.Choice(name="Arabic", value="arabic"),
+    app_commands.Choice(name="French", value="french"),
+    app_commands.Choice(name="Spanish", value="spanish"),
+    app_commands.Choice(name="Esperanto", value="esperanto"),
 ]
+
 
 class Translate(commands.Cog):
 
@@ -36,10 +37,12 @@ class Translate(commands.Cog):
         # Translate by reaction
         if reaction.emoji == BOOK_EMOJI:
             src_msg = "You asked me to translate the following message: " + reaction.message.content
-            translated = TranslateUtil.translate_message(reaction.message.content, None)
+            translated = TranslateUtil.translate_message(
+                reaction.message.content, None)
 
             lang = LANGUAGES[translated.src]
-            dst_msg = "Translated from (" + lang.capitalize() + "): " + translated.text
+            dst_msg = "Translated from (" + \
+                lang.capitalize() + "): " + translated.text
 
             await user.send(content=src_msg)
             await user.send(content=dst_msg)
@@ -48,9 +51,10 @@ class Translate(commands.Cog):
     @commands.command(aliases=[''])
     async def tr(self, ctx, *args):
         src = None if not args else args[0]
-        
+
         if ctx.message.reference:
-            translated = TranslateUtil.translate_message(ctx.message.reference.resolved.content, src)
+            translated = TranslateUtil.translate_message(
+                ctx.message.reference.resolved.content, src)
             lang = LANGUAGES[translated.src]
             payload = f"Translated from ({lang.capitalize()}): {translated.text}"
             await ctx.message.reference.resolved.reply(payload)
@@ -60,8 +64,9 @@ class Translate(commands.Cog):
 
     @app_commands.command(name="translate")
     @app_commands.choices(src=TRANSLATE_LANGUAGES, dst=TRANSLATE_LANGUAGES)
-    async def translate(self, interaction: discord.Interaction, text : str, src : Optional[app_commands.Choice[str]], dst : Optional[app_commands.Choice[str]]):
-        translated = TranslateUtil.translate_message(text, src.value, dst.value)
+    async def translate(self, interaction: discord.Interaction, text: str, src: Optional[app_commands.Choice[str]], dst: Optional[app_commands.Choice[str]]):
+        translated = TranslateUtil.translate_message(
+            text, src.value, dst.value)
         await interaction.response.send_message(f"Translation of _\"{text}\"_ from _{src.name}_ to _{dst.name}_: {translated.text}")
 
 
@@ -69,7 +74,8 @@ class TranslateUtil():
     def translate_message(message, src, dst=None):
         if not dst:
             dst = 'english'
-        translated = translator.translate(message) if not src else translator.translate(message, src=src, dest=dst)
+        translated = translator.translate(
+            message) if not src else translator.translate(message, src=src, dest=dst)
         return translated
 
 

@@ -1,9 +1,7 @@
-from code import interact
 import discord
 from discord.ext import commands
 from discord import app_commands
 import logging
-import pickle
 import uuid
 import time
 import asyncio
@@ -11,9 +9,11 @@ import dateparser
 import datetime
 import os
 from table2ascii import table2ascii as t2a, PresetStyle
+from util.util import *
 
 REMINDER_FILE = "reminders"
 REMINDER_CHANNEL_ID = int(os.getenv("REMINDER_CHANNEL_ID"))
+
 
 class Reminder(commands.Cog):
 
@@ -29,8 +29,9 @@ class Reminder(commands.Cog):
     @app_commands.command(name="remindme", description="Set a reminder")
     async def remindme(self, interaction: discord.Interaction, reminder_time: str, message: str):
 
-        parsed_time = dateparser.parse(reminder_time, settings={'PREFER_DATES_FROM': 'future'})
-        
+        parsed_time = dateparser.parse(reminder_time, settings={
+                                       'PREFER_DATES_FROM': 'future'})
+
         if parsed_time.timestamp() < time.time():
             await interaction.response.send_message("Stop living in the past, child. Look to the future.")
             return
@@ -49,7 +50,7 @@ class Reminder(commands.Cog):
 
     @app_commands.command(name="myreminders", description="Get a list of your active reminders")
     async def myreminders(self, interaction: discord.Interaction):
-        reminders = self.load_reminders()
+        reminders = load_json_file(REMINDER_FILE)
         user_reminders = self.get_user_reminders(interaction.user)
 
         if not user_reminders:
@@ -59,8 +60,9 @@ class Reminder(commands.Cog):
         body = []
 
         for rem in user_reminders:
-            rem_timestamp = datetime.datetime.fromtimestamp(reminders[rem]['time'])
-            rem_time = rem_timestamp.strftime( "%a %d-%m-%Y - %H:%M")  
+            rem_timestamp = datetime.datetime.fromtimestamp(
+                reminders[rem]['time'])
+            rem_time = rem_timestamp.strftime("%a %d-%m-%Y - %H:%M")
             reason = reminders[rem]['reason']
 
             body.append([rem, rem_time, reason])
@@ -75,20 +77,20 @@ class Reminder(commands.Cog):
         return
 
     @app_commands.command(name="deletereminder", description="Delete one of your set reminders")
-    async def deletereminder(self, interaction: discord.Interaction, reminder_id : str):
+    async def deletereminder(self, interaction: discord.Interaction, reminder_id: str):
         user_reminders = self.get_user_reminders(interaction.user)
-        
+
         for reminder, val in user_reminders.items():
             if reminder == reminder_id:
                 await self.delete_reminder(reminder_id)
                 await interaction.response.send_message(f"Reminder {reminder_id} deleted. ✅", ephemeral=True)
                 return
-        
+
         await interaction.response.send_message("You have no reminders with that ID. Please use /myreminders to check your current reminder IDs.", ephemeral=True)
         return
 
     async def startup_reminders(self):
-        reminders = self.load_reminders()
+        reminders = load_json_file(REMINDER_FILE)
 
         to_remove = []
         loop = asyncio.get_running_loop()
@@ -97,24 +99,26 @@ class Reminder(commands.Cog):
             if vals['time'] < time.time():
                 to_remove.append(reminder)
             else:
-                loop.create_task(self.start_reminder(reminder, vals['author'], vals['time'], vals['reason'], vals['guild']))
-        
+                loop.create_task(self.start_reminder(
+                    reminder, vals['author'], vals['time'], vals['reason'], vals['guild']))
+
         for id in to_remove:
             reminders.pop(id)
 
-        self.save_reminders(reminders)
+        save_json_file(reminders, REMINDER_FILE)
 
     async def add_reminder(self, author, time, reason, guild):
         rem_id = str(uuid.uuid1())[:5]
-        reminders = self.load_reminders()
-        reminders[rem_id] = {'author': author.id, 'time': time, 'reason': reason, 'guild': guild}
-        self.save_reminders(reminders)
+        reminders = load_json_file(REMINDER_FILE)
+        reminders[rem_id] = {'author': author.id,
+                             'time': time, 'reason': reason, 'guild': guild}
+        save_json_file(reminders, REMINDER_FILE)
         await self.start_reminder(rem_id, author.id, time, reason, guild)
 
     async def delete_reminder(self, id):
-        reminders = self.load_reminders()
-        del(reminders[id])
-        self.save_reminders(reminders)
+        reminders = load_json_file(REMINDER_FILE)
+        del (reminders[id])
+        save_json_file(reminders, REMINDER_FILE)
 
     def parse_reminders():
         pass
@@ -122,18 +126,18 @@ class Reminder(commands.Cog):
     async def start_reminder(self, reminder_id, author, tm, reason, guild_id):
         user = self.client.get_user(author)
 
-        logging.info(f"Reminder found for {user.name} for {reason} at {tm}" )
+        logging.info(f"Reminder found for {user.name} for {reason} at {tm}")
         await asyncio.sleep(tm - time.time())
-        if reminder_id in self.load_reminders():
+        if reminder_id in load_json_file(REMINDER_FILE):
             guild = self.client.get_guild(guild_id)
             await self.notify_user(reason, user, guild)
             await self.delete_reminder(reminder_id)
             return
 
-    async def notify_user(self, reason, user : discord.user.User, guild : discord.Guild):
+    async def notify_user(self, reason, user: discord.user.User, guild: discord.Guild):
         channels = await guild.fetch_channels()
         reminder_channel = None
-        
+
         for channel in channels:
             if channel.id == int(REMINDER_CHANNEL_ID):
                 reminder_channel = channel
@@ -142,22 +146,12 @@ class Reminder(commands.Cog):
         await reminder_channel.send(message)
         return
 
-    def load_reminders(self):
-        with open(REMINDER_FILE, "rb") as reminder_file:
-            try:
-                return pickle.load(reminder_file)
-            except EOFError:
-                return dict()
-
-    def save_reminders(self, reminders):
-        with open(REMINDER_FILE, 'wb') as reminder_file:
-            pickle.dump(reminders, reminder_file)
-
     def get_user_reminders(self, user):
-        reminders = self.load_reminders()
-        user_reminders = {k: v for k,v in reminders.items() if v['author'] == user.id}
+        reminders = load_json_file(REMINDER_FILE)
+        user_reminders = {k: v for k,
+                          v in reminders.items() if v['author'] == user.id}
         return user_reminders
-    
+
 
 async def setup(bot):
     await bot.add_cog(Reminder(bot))
