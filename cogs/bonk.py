@@ -5,8 +5,9 @@ from util.vars.eind_vars import *
 import logging
 from util.util import *
 from table2ascii import table2ascii as t2a, PresetStyle
+import os
 
-
+N_CHANNEL_ID = os.getenv('N_CHANNEL_ID')
 class Bonk(commands.Cog, name="Bonk"):
 
     def __init__(self, bot):
@@ -18,8 +19,14 @@ class Bonk(commands.Cog, name="Bonk"):
 
     @commands.command()
     async def bonk(self, ctx):
+        if(ctx.message.reference.resolved.author == self.bot.user):
+            await ctx.message.reply("No u")
+            return
+        if ctx.message.channel.id == int(N_CHANNEL_ID):
+            await ctx.message.reply("This is a bonk-free zone.")
+            return
         self.add_to_leaderboard(ctx)
-        await ctx.message.reference.resolved.reply("<a:bonk:995996313650999387>")
+        await ctx.message.reference.resolved.reply(BONK_EMOJI)
 
     @app_commands.command(name="hallofshame")
     async def bonk_leaderboard(self, interaction: discord.Interaction):

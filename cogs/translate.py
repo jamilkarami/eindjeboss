@@ -48,7 +48,7 @@ class Translate(commands.Cog):
             await user.send(content=dst_msg)
             return
 
-    @commands.command(aliases=[''])
+    @commands.command(aliases=[])
     async def tr(self, ctx, *args):
         src = None if not args else args[0]
 
@@ -59,12 +59,12 @@ class Translate(commands.Cog):
             payload = f"Translated from ({lang.capitalize()}): {translated.text}"
             await ctx.message.reference.resolved.reply(payload)
         else:
-            await ctx.message.reply("\"!translate\" can only be used as a reply to another message")
+            await ctx.message.reply("\"!tr\" can only be used as a reply to another message")
         return
 
     @app_commands.command(name="translate")
     @app_commands.choices(src=TRANSLATE_LANGUAGES, dst=TRANSLATE_LANGUAGES)
-    async def translate(self, interaction: discord.Interaction, text: str, src: Optional[app_commands.Choice[str]], dst: Optional[app_commands.Choice[str]]):
+    async def translate(self, interaction: discord.Interaction, text: str, src: app_commands.Choice[str], dst: app_commands.Choice[str]):
         translated = TranslateUtil.translate_message(
             text, src.value, dst.value)
         await interaction.response.send_message(f"Translation of _\"{text}\"_ from _{src.name}_ to _{dst.name}_: {translated.text}")

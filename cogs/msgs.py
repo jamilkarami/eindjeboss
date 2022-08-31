@@ -2,7 +2,11 @@ from discord.ext import commands
 from discord import app_commands
 import logging
 import discord
+from util.vars.eind_vars import *
+from datetime import datetime
+import os
 
+CANDY_CHANNEL_ID = os.getenv('CANDY_CHANNEL_ID')
 
 class Messages(commands.Cog, name="Messages"):
 
@@ -24,6 +28,32 @@ class Messages(commands.Cog, name="Messages"):
     @app_commands.command(name="lenovo", description="The Eindhoven Community Discord's collectively humble opinion on Lenovo")
     async def f_lenovo(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FuckLenovo")
+
+    @app_commands.command(name="fontys", description="The Eindhoven Community Discord's collectively humble opinion on Fontys")
+    async def f_lenovo(self, interaction: discord.Interaction):
+        await interaction.response.send_message("#FuckFontys")
+
+    @app_commands.command(name="blaze")
+    async def blaze(self, interaction: discord.Interaction):
+        await interaction.response.send_message(HARAM_EMOJI)
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author == self.bot.user:
+            return
+        if message.channel.id in CHANNEL_IGNORE_LIST:
+            return
+
+        message_content = message.content.lower()
+
+        current_time = datetime.now().strftime('%H:%M')
+        times = ["04:20", "4:20", "16:20"]
+        
+        if '420' in message_content and str(message.channel.id) == CANDY_CHANNEL_ID and current_time in times:
+            await message.reply(f'Blaze it! {HARAM_EMOJI}')
+            return
+
+        return
 
 
 async def setup(bot):
