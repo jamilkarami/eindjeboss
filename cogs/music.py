@@ -43,7 +43,7 @@ class Music(commands.Cog):
                 spotify_act = activity
 
         if spotify_act is None:
-            await interaction.response.send_message("You are not currently listening to anything on Spotify or you haven't connected Discord to your Spotify account.")
+            await interaction.response.send_message("You are not currently listening to anything on Spotify or you haven't connected Discord to your Spotify account.", ephemeral=True)
             return
 
         try:
