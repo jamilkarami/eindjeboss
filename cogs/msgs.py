@@ -30,7 +30,7 @@ class Messages(commands.Cog, name="Messages"):
         await interaction.response.send_message("#FuckLenovo")
 
     @app_commands.command(name="fontys", description="The Eindhoven Community Discord's collectively humble opinion on Fontys")
-    async def f_lenovo(self, interaction: discord.Interaction):
+    async def f_fontys(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FuckFontys")
 
     @app_commands.command(name="blaze")
@@ -51,6 +51,10 @@ class Messages(commands.Cog, name="Messages"):
         
         if '420' in message_content and str(message.channel.id) == CANDY_CHANNEL_ID and current_time in times:
             await message.reply(f'Blaze it! {HARAM_EMOJI}')
+            return
+
+        if message_content == "ok":
+            await message.add_reaction(WICKED_EMOJI)
             return
 
         return

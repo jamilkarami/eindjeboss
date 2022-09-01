@@ -13,6 +13,7 @@ from util.util import *
 
 REMINDER_FILE = "reminders"
 REMINDER_CHANNEL_ID = int(os.getenv("REMINDER_CHANNEL_ID"))
+DATE_PARSER_SETTINGS = {'PREFER_DATES_FROM': 'future', 'DATE_ORDER': 'DMY'}
 
 
 class Reminder(commands.Cog):
@@ -29,8 +30,7 @@ class Reminder(commands.Cog):
     @app_commands.command(name="remindme", description="Set a reminder")
     async def remindme(self, interaction: discord.Interaction, reminder_time: str, message: str):
 
-        parsed_time = dateparser.parse(reminder_time, settings={
-                                       'PREFER_DATES_FROM': 'future'})
+        parsed_time = dateparser.parse(reminder_time, settings=DATE_PARSER_SETTINGS)
 
         if parsed_time.timestamp() < time.time():
             await interaction.response.send_message("Stop living in the past, child. Look to the future.")
