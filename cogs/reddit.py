@@ -2,14 +2,19 @@ import logging
 import os
 import asyncpraw
 import re
+import random
+
 import discord
 from discord.ext import commands
+from discord import app_commands
+
 from util.vars.eind_vars import *
 from dotenv import load_dotenv
 from util.vars.periodic_reminders import TOP_REDDIT_CAT_DT
 from aiocron import crontab
 
 SUBREDDIT_REGEX = "(?<!reddit.com)\/r\/[a-zA-Z0-9]{3,}"
+I_REDDIT_REGEX = "i.reddit.com\/[a-zA-Z0-9]*\.(png|jpg)"
 CHANNEL_ID = int(os.getenv("ANIMALS_CHANNEL_ID"))
 CATS = "cats"
 
@@ -47,6 +52,17 @@ class Reddit(commands.Cog):
         if matches:
             await self.handle_reddit_matches(matches, message)
 
+        return
+
+    @app_commands.command(name="randomcat")
+    async def send_random_cat(self, interaction: discord.Interaction):
+        chosen_sub = random.choice(CAT_SUBREDDITS)
+        sub = await self.reddit.subreddit(chosen_sub)
+        posts = [post async for post in sub.hot(limit=20)]
+        chosen_post = posts[random.randint(0,20)]
+        while not re.match(chosen_post.url, I_REDDIT_REGEX) and not chosen_post.is_reddit_media_domain:
+            chosen_post = random.choice(posts)
+        await interaction.response.send_message(chosen_post.url)
         return
 
     async def schedule_cat_pic(self):

@@ -30,23 +30,21 @@ class Translate(commands.Cog):
         logging.info(f"{__name__} Cog is ready")
 
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
-        if reaction.message.author == self.client.user:
-            return
+    async def on_raw_reaction_add(self, payload):
+        message = await self.client.get_channel(payload.channel_id).fetch_message(payload.message_id)
+        translated = TranslateUtil.translate_message(message.content, None)
 
-        # Translate by reaction
-        if reaction.emoji == BOOK_EMOJI:
-            src_msg = "You asked me to translate the following message: " + reaction.message.content
-            translated = TranslateUtil.translate_message(
-                reaction.message.content, None)
+        lang = LANGUAGES[translated.src]
 
-            lang = LANGUAGES[translated.src]
-            dst_msg = "Translated from (" + \
-                lang.capitalize() + "): " + translated.text
+        src_msg = "You asked me to translate the following message: " + message.content
+        dst_msg = "Translated from (" + \
+            lang.capitalize() + "): " + translated.text
 
-            await user.send(content=src_msg)
-            await user.send(content=dst_msg)
-            return
+        
+        await payload.member.send(content=src_msg)
+        await payload.member.send(content=dst_msg)
+        return
+
 
     @commands.command(aliases=[])
     async def tr(self, ctx, *args):
