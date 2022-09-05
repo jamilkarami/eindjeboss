@@ -19,14 +19,27 @@ class Bonk(commands.Cog, name="Bonk"):
 
     @commands.command()
     async def bonk(self, ctx):
-        if(ctx.message.reference.resolved.author == self.bot.user):
-            await ctx.message.reply("No u")
+        if not ctx.message.reference:
+            await ctx.message.reply("I need someone to bonk.")
             return
+
+        bonker = ctx.message.author
+        bonkee = ctx.message.reference.resolved.author
+
         if ctx.message.channel.id == int(N_CHANNEL_ID):
             await ctx.message.reply("This is a bonk-free zone.")
             return
-        self.add_to_leaderboard(ctx)
+        if(bonkee == self.bot.user):
+            await ctx.message.reply(f"No u {BONK_EMOJI}")
+            self.add_to_leaderboard(bonker)
+            return
+        if(bonkee == bonker):
+            await ctx.message.reply("No self-bonking.")
+            return
+
+        self.add_to_leaderboard(bonkee)
         await ctx.message.reference.resolved.reply(BONK_EMOJI)
+        return
 
     @app_commands.command(name="hallofshame")
     async def bonk_leaderboard(self, interaction: discord.Interaction):
@@ -52,9 +65,8 @@ class Bonk(commands.Cog, name="Bonk"):
 
         return output
 
-    def add_to_leaderboard(self, ctx):
+    def add_to_leaderboard(self, author):
         leaderboard = load_json_file(BONK_LEADERBOARD_FILE)
-        author = ctx.message.reference.resolved.author
         author_id = str(author.id)
         if str(author.id) in leaderboard.keys():
             leaderboard[author_id] = {'name': author.name,

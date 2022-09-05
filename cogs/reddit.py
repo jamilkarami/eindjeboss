@@ -54,13 +54,13 @@ class Reddit(commands.Cog):
 
         return
 
-    @app_commands.command(name="randomcat")
+    @app_commands.command(name="randomcat", description="Sends a random cat picture off of reddit")
     async def send_random_cat(self, interaction: discord.Interaction):
         chosen_sub = random.choice(CAT_SUBREDDITS)
         sub = await self.reddit.subreddit(chosen_sub)
         posts = [post async for post in sub.hot(limit=20)]
         chosen_post = posts[random.randint(0,20)]
-        while not re.match(chosen_post.url, I_REDDIT_REGEX) and not chosen_post.is_reddit_media_domain:
+        while not (re.match(chosen_post.url, I_REDDIT_REGEX) or chosen_post.is_reddit_media_domain):
             chosen_post = random.choice(posts)
         await interaction.response.send_message(chosen_post.url)
         return

@@ -5,7 +5,6 @@ import logging
 from googletrans import Translator
 from googletrans.constants import LANGUAGES
 from util.vars.eind_vars import *
-from typing import Optional
 
 translator = Translator()
 
@@ -31,6 +30,8 @@ class Translate(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        if payload.emoji.name != BOOK_EMOJI:
+            return
         message = await self.client.get_channel(payload.channel_id).fetch_message(payload.message_id)
         translated = TranslateUtil.translate_message(message.content, None)
 
