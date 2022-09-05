@@ -1,2 +1,3 @@
 TOP_REDDIT_CAT_DT="0 10 * * *"
 WEATHER_DT="0 8 * * *"
+PLANK_DT="0 18 * * *"

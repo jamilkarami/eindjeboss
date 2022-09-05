@@ -36,5 +36,18 @@ class Roles(commands.Cog):
             await member.remove_roles(role)
             return
 
+    @app_commands.command(name="focus", description="Limits your view to the conversation channels")
+    async def focus(self, interaction: discord.Interaction):
+        role = discord.utils.get(interaction.guild.roles, name="Focus")
+
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role)
+            await interaction.response.send_message("Focus mode off. Use /focus again to turn it on.", ephemeral=True)
+            return
+        
+        await interaction.user.add_roles(role)
+        await interaction.response.send_message("Focus mode on. Use /focus again to turn it off.", ephemeral=True)
+        return
+
 async def setup(bot):
     await bot.add_cog(Roles(bot))

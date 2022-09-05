@@ -21,7 +21,7 @@ class Music(commands.Cog):
     async def on_ready(self):
         logging.info(f"{__name__} Cog is ready")
 
-    @app_commands.command(name="sp")
+    @app_commands.command(name="sp", description="Sends a link to the song that matches your query the most")
     async def spotify(self, interaction: discord.Interaction, query: str):
         try:
             result = sp.search(f"{query}", type="track")
@@ -32,7 +32,7 @@ class Music(commands.Cog):
         except SpotifyException as e:
             logging.debug(e)
 
-    @app_commands.command(name="spc")
+    @app_commands.command(name="spc", description="Sends a link to the song you are currently listening to on Spotify")
     async def spotifycurrent(self, interaction: discord.Interaction):
         spotify_act = None
 
