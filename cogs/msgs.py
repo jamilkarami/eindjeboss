@@ -17,7 +17,7 @@ class Messages(commands.Cog, name="Messages"):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"{__name__} Cog is ready")
+        logging.info(f"[{__name__}] Cog is ready")
 
     @app_commands.command(name="fc", description="Free Cuntus")
     async def free_cuntus(self, interaction: discord.Interaction):

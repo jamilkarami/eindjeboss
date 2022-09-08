@@ -23,29 +23,35 @@ class Reminder(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"{__name__} Cog is ready")
-        logging.info("Loading reminders")
+        logging.info(f"[{__name__}] Cog is ready")
+        logging.info(f"[{__name__}] Loading reminders")
         await self.startup_reminders()
 
     @app_commands.command(name="remindme", description="Set a reminder")
-    async def remindme(self, interaction: discord.Interaction, reminder_time: str, message: str):
+    async def remindme(self, interaction: discord.Interaction, reminder_time: str, message: str, repeat: bool):
 
-        parsed_time = dateparser.parse(reminder_time, settings=DATE_PARSER_SETTINGS)
+        if not repeat:
+            parsed_time = dateparser.parse(reminder_time, settings=DATE_PARSER_SETTINGS)
 
-        if parsed_time.timestamp() < time.time():
-            await interaction.response.send_message("Stop living in the past, child. Look to the future.")
-            return
+            if parsed_time.timestamp() < time.time():
+                await interaction.response.send_message("Stop living in the past, child. Look to the future.")
+                return
 
-        if not parsed_time:
-            await interaction.response.send_message("Could not parse the time. Please try again!")
-            return
+            if not parsed_time:
+                await interaction.response.send_message("Could not parse the time. Please try again!")
+                return
 
-        reminder_time_readable_day = parsed_time.strftime('%d/%m/%Y')
-        reminder_time_readable_time = parsed_time.strftime('%I:%M %p')
-        reminder_time_timestamp = parsed_time.timestamp()
+            reminder_time_readable_day = parsed_time.strftime('%d/%m/%Y')
+            reminder_time_readable_time = parsed_time.strftime('%I:%M %p')
+            reminder_time_timestamp = parsed_time.timestamp()
 
-        await interaction.response.send_message(f"I will remind you of **{message}** on **{reminder_time_readable_day}** at **{reminder_time_readable_time}** :timer:")
-        await self.add_reminder(interaction.user, reminder_time_timestamp, message, interaction.guild_id)
+            await interaction.response.send_message(f"I will remind you of **{message}** on **{reminder_time_readable_day}** at **{reminder_time_readable_time}** :timer:")
+            await self.add_reminder(interaction.user, reminder_time_timestamp, message, interaction.guild_id, repeat)
+
+        else:
+            await interaction.response.send_message(f"I will remind you of **{message}** every day at **{reminder_time}** :timer:")
+            await self.add_reminder(interaction.user, reminder_time, message, interaction.guild_id, repeat)
+
         return
 
     @app_commands.command(name="myreminders", description="Get a list of your active reminders")
@@ -96,25 +102,25 @@ class Reminder(commands.Cog):
         loop = asyncio.get_running_loop()
 
         for reminder, vals in reminders.items():
-            if vals['time'] < time.time():
+            if not vals['repeat'] and vals['time'] < time.time():
                 to_remove.append(reminder)
             else:
                 loop.create_task(self.start_reminder(
-                    reminder, vals['author'], vals['time'], vals['reason'], vals['guild']))
+                    reminder, vals['author'], vals['time'], vals['reason'], vals['guild'], vals['repeat']))
 
         for id in to_remove:
             reminders.pop(id)
 
-        logging.info(f"{len(reminders)} reminders found.")
+        logging.info(f"[{__name__}] {len(reminders)} reminders found.")
         save_json_file(reminders, REMINDER_FILE)
 
-    async def add_reminder(self, author, time, reason, guild):
+    async def add_reminder(self, author, time, reason, guild, repeat):
         rem_id = str(uuid.uuid1())[:5]
         reminders = load_json_file(REMINDER_FILE)
         reminders[rem_id] = {'author': author.id,
-                             'time': time, 'reason': reason, 'guild': guild}
+                             'time': time, 'reason': reason, 'guild': guild, 'repeat': repeat}
         save_json_file(reminders, REMINDER_FILE)
-        await self.start_reminder(rem_id, author.id, time, reason, guild)
+        await self.start_reminder(rem_id, author.id, time, reason, guild, repeat)
 
     async def delete_reminder(self, id):
         reminders = load_json_file(REMINDER_FILE)
@@ -124,7 +130,9 @@ class Reminder(commands.Cog):
     def parse_reminders():
         pass
 
-    async def start_reminder(self, reminder_id, author, tm, reason, guild_id):
+    async def start_reminder(self, reminder_id, author, tm, reason, guild_id, repeat):
+        if repeat:
+            tm = dateparser.parse(tm, settings=DATE_PARSER_SETTINGS).timestamp()
         user = self.client.get_user(author)
 
         await asyncio.sleep(tm - time.time())

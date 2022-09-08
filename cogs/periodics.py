@@ -15,9 +15,9 @@ class Periodics(commands.Cog):
     async def on_ready(self):
         guild_id = os.getenv("GUILD_ID")
         guild = await self.client.fetch_guild(guild_id)
-        logging.info(f"{__name__} Cog is ready")
+        logging.info(f"[{__name__}] Cog is ready")
         periodics = util.util.load_json_file('periodic_messages')
-        logging.info("Scheduling periodic messages")
+        logging.info(f"[{__name__}] Scheduling periodic messages")
         for periodic in periodics.keys():
             vals = periodics[periodic]
 

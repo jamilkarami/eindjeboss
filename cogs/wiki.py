@@ -17,7 +17,7 @@ class Wiki(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"{__name__} Cog is ready")
+        logging.info(f"[{__name__}] Cog is ready")
 
     @app_commands.command(name="wiki")
     async def wiki(self, interaction: discord.Interaction, query: str):

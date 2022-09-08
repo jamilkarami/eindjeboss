@@ -11,7 +11,7 @@ class Roles(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"{__name__} Cog is ready")
+        logging.info(f"[{__name__}] Cog is ready")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):

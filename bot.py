@@ -21,11 +21,11 @@ async def main():
 
     @client.event
     async def on_ready():
-        print(f'{client.user.name} has connected to Discord!')
+        print(f'Eindjeboss is ready to serve.')
 
     @client.event
     async def on_connect():
-        print("Connected!")
+        print(f"{client.user.name} has connected to discord!")
         await client.tree.sync()
 
     async def load_extensions():
