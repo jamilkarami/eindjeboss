@@ -40,4 +40,7 @@ async def main():
         await load_extensions()
         await client.start(TOKEN)
 
-asyncio.run(main())
+try:
+    asyncio.run(main())
+except KeyboardInterrupt:
+    print("Eindjeboss powering down...")
