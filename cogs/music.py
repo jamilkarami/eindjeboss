@@ -19,7 +19,7 @@ class Music(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"{__name__} Cog is ready")
+        logging.info(f"[{__name__}] Cog is ready")
 
     @app_commands.command(name="sp", description="Sends a link to the song that matches your query the most")
     async def spotify(self, interaction: discord.Interaction, query: str):

@@ -32,7 +32,7 @@ class Reddit(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"{__name__} Cog is ready")
+        logging.info(f"[{__name__}] Cog is ready")
         crontab(TOP_REDDIT_CAT_DT, func=self.schedule_cat_pic, start=True)
         # await self.schedule_cat_pic()
 

@@ -13,7 +13,7 @@ class Casino(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"{__name__} Cog is ready")
+        logging.info(f"[{__name__}] Cog is ready")
 
     @app_commands.command()
     async def roll(self, interaction: discord.Interaction, max: int = None):

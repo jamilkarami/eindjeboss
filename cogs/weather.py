@@ -29,7 +29,7 @@ class Weather(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"{__name__} Cog is ready")
+        logging.info(f"[{__name__}] Cog is ready")
         crontab(WEATHER_DT, func=self.schedule_weather, start=True)
 
     def __init__(self, bot: discord.Client):

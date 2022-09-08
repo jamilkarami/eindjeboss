@@ -15,7 +15,7 @@ class Bonk(commands.Cog, name="Bonk"):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"{__name__} Cog is ready")
+        logging.info(f"[{__name__}] Cog is ready")
 
     @commands.command()
     async def bonk(self, ctx):
