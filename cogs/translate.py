@@ -37,13 +37,10 @@ class Translate(commands.Cog):
 
         lang = LANGUAGES[translated.src]
 
-        src_msg = "You asked me to translate the following message: " + message.content
-        dst_msg = "Translated from (" + \
-            lang.capitalize() + "): " + translated.text
+        translate_msg = f"You asked me to translate the following message: {message.content}\n\nTranslated from ({lang.capitalize()}): {translated.text}"
 
-        
-        await payload.member.send(content=src_msg)
-        await payload.member.send(content=dst_msg)
+        await payload.member.send(content=translate_msg)
+        logging.info(f"Sent translation to {payload.member.name} for message \"{message.content}\" by {message.author.name}")
         return
 
 

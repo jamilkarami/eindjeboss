@@ -5,6 +5,7 @@ import discord
 from util.vars.eind_vars import *
 from datetime import datetime
 import os
+from discord.threads import ThreadMember
 
 CANDY_CHANNEL_ID = os.getenv('CANDY_CHANNEL_ID')
 FOCUS_ROLE = "Focus"
@@ -21,6 +22,10 @@ class Messages(commands.Cog, name="Messages"):
     @app_commands.command(name="fc", description="Free Cuntus")
     async def free_cuntus(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FreeCuntus")
+
+    @app_commands.command(name="fa", description="Free Anisha")
+    async def free_anisha(self, interaction: discord.Interaction):
+        await interaction.response.send_message("#FreeAnisha")
 
     @app_commands.command(name="msi", description="The Eindhoven Community Discord's collectively humble opinion on MSI")
     async def f_msi(self, interaction: discord.Interaction):
@@ -64,6 +69,19 @@ class Messages(commands.Cog, name="Messages"):
 
         return
 
+    @app_commands.command(name="tagall")
+    async def tagall(self, interaction: discord.Interaction):
+        if type(interaction.channel).__name__ != "Thread":
+            await interaction.response.send_message("You can only use this command inside threads.", ephemeral=True)
+            return
+
+        users = await interaction.channel.fetch_members()
+        message = ""
+        user : ThreadMember
+        for user in users:
+            if user.id != self.bot.user.id:
+                message = message + f"<@{user.id}> "
+        await interaction.response.send_message(message)
 
 async def setup(bot):
     await bot.add_cog(Messages(bot))

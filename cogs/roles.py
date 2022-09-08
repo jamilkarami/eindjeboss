@@ -20,8 +20,10 @@ class Roles(commands.Cog):
 
         guild = self.client.get_guild(payload.guild_id)
         if payload.emoji.name == ROLE_VARS[payload.message_id][0]:
-            role = discord.utils.get(guild.roles, name=ROLE_VARS[payload.message_id][1])
+            role_name = ROLE_VARS[payload.message_id][1]
+            role = discord.utils.get(guild.roles, name=role_name)
             await payload.member.add_roles(role)
+            logging.info(f"Added {role_name} role for {payload.member.name}")
             return
 
     @commands.Cog.listener()
@@ -32,8 +34,10 @@ class Roles(commands.Cog):
         guild = self.client.get_guild(payload.guild_id)
         member = discord.utils.get(guild.members, id=payload.user_id)
         if payload.emoji.name == ROLE_VARS[payload.message_id][0]:
-            role = discord.utils.get(guild.roles, name=ROLE_VARS[payload.message_id][1])
+            role_name = ROLE_VARS[payload.message_id][1]
+            role = discord.utils.get(guild.roles, name=role_name)
             await member.remove_roles(role)
+            logging.info(f"Removed {role_name} role for {payload.member.name}")
             return
 
     @app_commands.command(name="focus", description="Limits your view to the conversation channels")
@@ -43,10 +47,12 @@ class Roles(commands.Cog):
         if role in interaction.user.roles:
             await interaction.user.remove_roles(role)
             await interaction.response.send_message("Focus mode off. Use /focus again to turn it on.", ephemeral=True)
+            logging.info(f"Removed focus role for {interaction.user.name}")
             return
         
         await interaction.user.add_roles(role)
         await interaction.response.send_message("Focus mode on. Use /focus again to turn it off.", ephemeral=True)
+        logging.info(f"Added focus role for {interaction.user.name}")
         return
 
 async def setup(bot):

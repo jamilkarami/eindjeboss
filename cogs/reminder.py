@@ -105,6 +105,7 @@ class Reminder(commands.Cog):
         for id in to_remove:
             reminders.pop(id)
 
+        logging.info(f"{len(reminders)} reminders found.")
         save_json_file(reminders, REMINDER_FILE)
 
     async def add_reminder(self, author, time, reason, guild):
@@ -126,7 +127,6 @@ class Reminder(commands.Cog):
     async def start_reminder(self, reminder_id, author, tm, reason, guild_id):
         user = self.client.get_user(author)
 
-        logging.info(f"Reminder found for {user.name} for {reason} at {tm}")
         await asyncio.sleep(tm - time.time())
         if reminder_id in load_json_file(REMINDER_FILE):
             guild = self.client.get_guild(guild_id)
