@@ -14,7 +14,8 @@ from util.vars.periodic_reminders import TOP_REDDIT_CAT_DT
 from aiocron import crontab
 
 SUBREDDIT_REGEX = "(?<!reddit.com)\/r\/[a-zA-Z0-9]{3,}"
-I_REDDIT_REGEX = "i.reddit.com\/[a-zA-Z0-9]*\.(png|jpg)"
+I_REDDIT_REGEX = "https:\/\/i.redd.it\/[a-zA-Z0-9]*\.(png|jpg)"
+I_IMGUR_REGEX = "https:\/\/i.imgur.com/[a-zA-Z0-9]*\.(png|jpg)"
 CHANNEL_ID = int(os.getenv("ANIMALS_CHANNEL_ID"))
 CATS = "cats"
 
@@ -59,8 +60,8 @@ class Reddit(commands.Cog):
         chosen_sub = random.choice(CAT_SUBREDDITS)
         sub = await self.reddit.subreddit(chosen_sub)
         posts = [post async for post in sub.hot(limit=20)]
-        chosen_post = posts[random.randint(0,20)]
-        while not (re.match(chosen_post.url, I_REDDIT_REGEX) and chosen_post.is_reddit_media_domain):
+        chosen_post = posts[random.randint(0,len(posts)-1)]
+        while not re.match(I_REDDIT_REGEX, chosen_post.url) and not re.match(I_IMGUR_REGEX, chosen_post.url):
             chosen_post = random.choice(posts)
         await interaction.response.send_message(chosen_post.url)
         return
