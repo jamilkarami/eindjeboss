@@ -29,16 +29,16 @@ class Reminder(commands.Cog):
 
     @app_commands.command(name="remindme", description="Set a reminder")
     async def remindme(self, interaction: discord.Interaction, reminder_time: str, message: str, repeat: bool):
+        parsed_time = dateparser.parse(reminder_time, settings=DATE_PARSER_SETTINGS)
+
+        if not parsed_time:
+            await interaction.response.send_message("Could not parse the time. Please try again!")
+            return
 
         if not repeat:
-            parsed_time = dateparser.parse(reminder_time, settings=DATE_PARSER_SETTINGS)
 
             if parsed_time.timestamp() < time.time():
                 await interaction.response.send_message("Stop living in the past, child. Look to the future.")
-                return
-
-            if not parsed_time:
-                await interaction.response.send_message("Could not parse the time. Please try again!")
                 return
 
             reminder_time_readable_day = parsed_time.strftime('%d/%m/%Y')
@@ -133,6 +133,8 @@ class Reminder(commands.Cog):
     async def start_reminder(self, reminder_id, author, tm, reason, guild_id, repeat):
         if repeat:
             tm = dateparser.parse(tm, settings=DATE_PARSER_SETTINGS).timestamp()
+            if tm < time.time():
+                tm = tm + 86400
         user = self.client.get_user(author)
 
         await asyncio.sleep(tm - time.time())
