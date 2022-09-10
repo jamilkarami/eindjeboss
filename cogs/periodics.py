@@ -17,7 +17,8 @@ class Periodics(commands.Cog):
         guild = await self.client.fetch_guild(guild_id)
         logging.info(f"[{__name__}] Cog is ready")
         periodics = util.util.load_json_file('periodic_messages')
-        logging.info(f"[{__name__}] Scheduling periodic messages")
+        periodic_message_count = len(periodics.keys())
+        plural = "" if periodic_message_count == 1 else "s"
         for periodic in periodics.keys():
             vals = periodics[periodic]
 
@@ -26,6 +27,7 @@ class Periodics(commands.Cog):
             msg = vals['message']
 
             crontab(msg_time, func=self.send_periodic_message, args=(msg, msg_channel, guild), start=True)
+        logging.info(f"[{__name__}] Scheduled {periodic_message_count} periodic message{plural}")
 
 
     async def send_periodic_message(self, message, channel_id, guild):

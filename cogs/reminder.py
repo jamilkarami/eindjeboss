@@ -100,18 +100,21 @@ class Reminder(commands.Cog):
 
         to_remove = []
         loop = asyncio.get_running_loop()
+        repeat_count = 0
 
         for reminder, vals in reminders.items():
             if not vals['repeat'] and vals['time'] < time.time():
                 to_remove.append(reminder)
             else:
+                if vals['repeat']:
+                    repeat_count = repeat_count + 1
                 loop.create_task(self.start_reminder(
                     reminder, vals['author'], vals['time'], vals['reason'], vals['guild'], vals['repeat']))
 
         for id in to_remove:
             reminders.pop(id)
 
-        logging.info(f"[{__name__}] {len(reminders)} reminders found.")
+        logging.info(f"[{__name__}] {len(reminders)} reminders found. ({repeat_count} daily)")
         save_json_file(reminders, REMINDER_FILE)
 
     async def add_reminder(self, author, time, reason, guild, repeat):
@@ -141,7 +144,8 @@ class Reminder(commands.Cog):
         if reminder_id in load_json_file(REMINDER_FILE):
             guild = self.client.get_guild(guild_id)
             await self.notify_user(reason, user, guild)
-            await self.delete_reminder(reminder_id)
+            if not repeat:
+                await self.delete_reminder(reminder_id)
             return
 
     async def notify_user(self, reason, user: discord.user.User, guild: discord.Guild):

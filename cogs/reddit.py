@@ -28,9 +28,6 @@ class Reddit(commands.Cog):
         user_agent=REDDIT_USER_AGENT
     )
 
-    load_dotenv()
-    CAT_CHAN_ID = os.getenv("ANIMALS_CHANNEL_ID")
-
     @commands.Cog.listener()
     async def on_ready(self):
         logging.info(f"[{__name__}] Cog is ready")
@@ -57,14 +54,22 @@ class Reddit(commands.Cog):
 
     @app_commands.command(name="randomcat", description="Sends a random cat picture off of reddit")
     async def send_random_cat(self, interaction: discord.Interaction):
-        chosen_sub = random.choice(CAT_SUBREDDITS)
+        await interaction.response.send_message(await self.get_random_image_post(CAT_SUBREDDITS))
+        return
+
+    @app_commands.command(name="randomdog", description="Sends a random dog picture off of reddit")
+    async def send_random_dog(self, interaction: discord.Interaction):
+        await interaction.response.send_message(await self.get_random_image_post(DOG_SUBREDDITS))
+        return
+
+    async def get_random_image_post(self, subreddit_list):
+        chosen_sub = random.choice(subreddit_list)
         sub = await self.reddit.subreddit(chosen_sub)
         posts = [post async for post in sub.hot(limit=20)]
         chosen_post = posts[random.randint(0,len(posts)-1)]
         while not re.match(I_REDDIT_REGEX, chosen_post.url) and not re.match(I_IMGUR_REGEX, chosen_post.url):
             chosen_post = random.choice(posts)
-        await interaction.response.send_message(chosen_post.url)
-        return
+        return chosen_post.url
 
     async def schedule_cat_pic(self):
         channel = await self.bot.fetch_channel(CHANNEL_ID)
