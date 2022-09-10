@@ -26,17 +26,5 @@ WEATHER_EMOJI_STORM = "⛈"
 WEATHER_EMOJI_SNOW = "❄"
 BONK_LEADERBOARD_FILE = "bonk_leaderboard"
 LAST_BONK_FILE = "last_bonk"
-CAT_SUBREDDITS = [  
-                    "Cats","Kitten","CatSpotting",
-                    "IllegallySmolCats","IllegallyBigCats","IllegallyLongCats",
-                    "Kitty","GrumpyCats","TruckerCats",
-                    "FromKittenToCat","WetCats","SeniorCats"
-                    ,"SleepingCats","Displeased_Kitties","FluffyCats"
-                    ,"SuspiciousKitties","CatsCalledFood","catshuggingcats"
-                    ,"SadCats","PirateKitties","meowormyson"
-                    ,"goodcats","C_AT","thisismylifemeow",
-                    "pimpcats","fatcats","divorcedcats",
-                    "notmycat","nowmycat","ChristmasCats",
-                    "scrungycats","AdorableCats","AliveNamedCats",
-                    "Medieval_Cats"
-                ]
+CAT_SUBREDDITS = ["Cats","Kitten","CatSpotting","IllegallySmolCats","IllegallyBigCats","IllegallyLongCats","Kitty","GrumpyCats","TruckerCats","FromKittenToCat","WetCats","SeniorCats","SleepingCats","Displeased_Kitties","FluffyCats","SuspiciousKitties","CatsCalledFood","catshuggingcats","SadCats","PirateKitties","meowormyson","goodcats","C_AT","thisismylifemeow","pimpcats","fatcats","divorcedcats","notmycat","nowmycat","ChristmasCats","scrungycats","AdorableCats","AliveNamedCats","Medieval_Cats"]
+DOG_SUBREDDITS = ["rarepuppers","goldenretrievers","shiba","dogswithjobs","Doggles","dogs","lookatmydog","corgi","WiggleButts","bostonterrier","blop","PuppySmiles","WhatsWrongWithYourDog"]

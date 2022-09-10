@@ -11,7 +11,8 @@ from datetime import datetime
 
 CHANNEL_ID = int(os.getenv("WEATHER_CHANNEL_ID"))
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
-CITY = "EINDHOVEN, NL"
+CITY_QUERY = "EINDHOVEN, NL"
+CITY_NAME = "Eindhoven"
 BASE_URL = "http://api.openweathermap.org/data/2.5/forecast?"
 UNIT = "metric"
 
@@ -30,16 +31,16 @@ class Weather(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         logging.info(f"[{__name__}] Cog is ready")
-        crontab(WEATHER_DT, func=self.schedule_weather, start=True)
+        crontab(WEATHER_DT, func=self.send_weather_forecast, start=True)
 
     def __init__(self, bot: discord.Client):
         self.bot = bot
 
-    async def schedule_weather(self):
+    async def send_weather_forecast(self):
         today = datetime.today().strftime('%d-%m-%Y')
-        embed_title = f"Weather in Eindhoven Today ({today})"
+        embed_title = f"Weather in {CITY_NAME} Today ({today})"
         channel = await self.bot.fetch_channel(CHANNEL_ID)
-        weather_url = f"{BASE_URL}q={CITY}&appid={OPENWEATHER_API_KEY}&cnt=6&units={UNIT}"
+        weather_url = f"{BASE_URL}q={CITY_QUERY}&appid={OPENWEATHER_API_KEY}&cnt=6&units={UNIT}"
         response = requests.get(weather_url)
         data = response.json()
         lst = data['list']
