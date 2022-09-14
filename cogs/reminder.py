@@ -13,10 +13,12 @@ from util.util import *
 
 REMINDER_FILE = "reminders"
 REMINDER_CHANNEL_ID = int(os.getenv("REMINDER_CHANNEL_ID"))
-DATE_PARSER_SETTINGS = {'PREFER_DATES_FROM': 'future', 'DATE_ORDER': 'DMY'}
+DATE_PARSER_SETTINGS = {'PREFER_DATES_FROM': 'future', 'DATE_ORDER': 'DMY', 'TIMEZONE': 'Europe/Amsterdam'}
 
 
 class Reminder(commands.Cog):
+
+    loop = asyncio.get_running_loop()
 
     def __init__(self, client):
         self.client = client
@@ -99,7 +101,6 @@ class Reminder(commands.Cog):
         reminders = load_json_file(REMINDER_FILE)
 
         to_remove = []
-        loop = asyncio.get_running_loop()
         repeat_count = 0
 
         for reminder, vals in reminders.items():
@@ -108,7 +109,7 @@ class Reminder(commands.Cog):
             else:
                 if vals['repeat']:
                     repeat_count = repeat_count + 1
-                loop.create_task(self.start_reminder(
+                self.loop.create_task(self.start_reminder(
                     reminder, vals['author'], vals['time'], vals['reason'], vals['guild'], vals['repeat']))
 
         for id in to_remove:
@@ -130,9 +131,6 @@ class Reminder(commands.Cog):
         del (reminders[id])
         save_json_file(reminders, REMINDER_FILE)
 
-    def parse_reminders():
-        pass
-
     async def start_reminder(self, reminder_id, author, tm, reason, guild_id, repeat):
         if repeat:
             tm = dateparser.parse(tm, settings=DATE_PARSER_SETTINGS).timestamp()
@@ -146,6 +144,8 @@ class Reminder(commands.Cog):
             await self.notify_user(reason, user, guild)
             if not repeat:
                 await self.delete_reminder(reminder_id)
+            else:
+                self.loop.create_task(self.start_reminder(reminder_id, author, tm, reason, guild_id, repeat))
             return
 
     async def notify_user(self, reason, user: discord.user.User, guild: discord.Guild):
