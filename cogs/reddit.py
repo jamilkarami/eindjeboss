@@ -62,10 +62,15 @@ class Reddit(commands.Cog):
         await interaction.response.send_message(await self.get_random_image_post(DOG_SUBREDDITS))
         return
 
+    @app_commands.command(name="car", description="Sends a random car picture off of reddit")
+    async def send_random_car(self, interaction: discord.Interaction):
+        await interaction.response.send_message(await self.get_random_image_post(CAR_SUBREDDITS))
+        return
+
     async def get_random_image_post(self, subreddit_list):
         chosen_sub = random.choice(subreddit_list)
         sub = await self.reddit.subreddit(chosen_sub)
-        posts = [post async for post in sub.hot(limit=20)]
+        posts = [post async for post in sub.hot(limit=50)]
         chosen_post = posts[random.randint(0,len(posts)-1)]
         while not re.match(I_REDDIT_REGEX, chosen_post.url) and not re.match(I_IMGUR_REGEX, chosen_post.url):
             chosen_post = random.choice(posts)

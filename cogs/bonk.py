@@ -6,6 +6,7 @@ import logging
 from util.util import *
 from table2ascii import table2ascii as t2a, PresetStyle
 import os
+import itertools
 
 N_CHANNEL_ID = os.getenv('N_CHANNEL_ID')
 class Bonk(commands.Cog, name="Bonk"):
@@ -52,9 +53,8 @@ class Bonk(commands.Cog, name="Bonk"):
         body = []
 
         leaderboard = load_json_file(BONK_LEADERBOARD_FILE)
-        sorted_leaderboard = {k: v for (k, v) in sorted(
-            leaderboard.items(), key=lambda x: x[1]['score'], reverse=True)[:num]}
-        for k, v in sorted_leaderboard.items():
+        filtered_leaderboard = dict(itertools.islice(leaderboard.items(), num))
+        for k, v in filtered_leaderboard.items():
             body.append([v['name'], v['score']])
 
         output = t2a(
@@ -73,7 +73,9 @@ class Bonk(commands.Cog, name="Bonk"):
                                       'score': leaderboard[author_id]['score']+1}
         else:
             leaderboard[author_id] = {'name': author.name, 'score': 1}
-        save_json_file(leaderboard, BONK_LEADERBOARD_FILE)
+        sorted_leaderboard = {k: v for (k, v) in sorted(
+            leaderboard.items(), key=lambda x: x[1]['score'], reverse=True)}
+        save_json_file(sorted_leaderboard, BONK_LEADERBOARD_FILE)
 
 
 async def setup(bot: commands.Bot):

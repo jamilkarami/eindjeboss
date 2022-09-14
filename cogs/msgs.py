@@ -8,7 +8,6 @@ import os
 from discord.threads import ThreadMember
 
 CANDY_CHANNEL_ID = os.getenv('CANDY_CHANNEL_ID')
-FOCUS_ROLE = "Focus"
 
 class Messages(commands.Cog, name="Messages"):
 
@@ -61,6 +60,11 @@ class Messages(commands.Cog, name="Messages"):
 
         if message_content == "ok":
             await message.add_reaction(WICKED_EMOJI)
+            return
+
+        if message_content == "ok?":
+            await message.add_reaction(WICKED_EMOJI)
+            await message.add_reaction(QUESTION_EMOJI)
             return
 
         if message_content == "ass":
