@@ -51,7 +51,7 @@ class Reminder(commands.Cog):
             await self.add_reminder(interaction.user, reminder_time_timestamp, message, interaction.guild_id, repeat)
 
         else:
-            await interaction.response.send_message(f"I will remind you of **{message}** every day at **{reminder_time}** :timer:")
+            await interaction.response.send_message(f"I will remind you of **{message}** every day at **{reminder_time}** :timer:", ephemeral=True)
             await self.add_reminder(interaction.user, reminder_time, message, interaction.guild_id, repeat)
 
         return
@@ -133,12 +133,12 @@ class Reminder(commands.Cog):
 
     async def start_reminder(self, reminder_id, author, tm, reason, guild_id, repeat):
         if repeat:
-            tm = dateparser.parse(tm, settings=DATE_PARSER_SETTINGS).timestamp()
-            if tm < time.time():
-                tm = tm + 86400
+            tm_to_remind = dateparser.parse(tm, settings=DATE_PARSER_SETTINGS).timestamp()
+            if tm_to_remind < time.time():
+                tm_to_remind = tm_to_remind + 86400
         user = self.client.get_user(author)
 
-        await asyncio.sleep(tm - time.time())
+        await asyncio.sleep(tm_to_remind - time.time())
         if reminder_id in load_json_file(REMINDER_FILE):
             guild = self.client.get_guild(guild_id)
             await self.notify_user(reason, user, guild)
