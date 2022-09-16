@@ -39,7 +39,7 @@ class Bonk(commands.Cog, name="Bonk"):
             return
 
         self.add_to_leaderboard(bonkee)
-        await ctx.message.reference.resolved.reply(BONK_EMOJI)
+        await ctx.message.reference.resolved.add_reaction(BONK_EMOJI)
         return
 
     @app_commands.command(name="hallofshame")

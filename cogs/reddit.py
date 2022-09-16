@@ -9,7 +9,6 @@ from discord.ext import commands
 from discord import app_commands
 
 from util.vars.eind_vars import *
-from dotenv import load_dotenv
 from util.vars.periodic_reminders import TOP_REDDIT_CAT_DT
 from aiocron import crontab
 
@@ -32,7 +31,6 @@ class Reddit(commands.Cog):
     async def on_ready(self):
         logging.info(f"[{__name__}] Cog is ready")
         crontab(TOP_REDDIT_CAT_DT, func=self.schedule_cat_pic, start=True)
-        # await self.schedule_cat_pic()
 
     def __init__(self, bot: discord.Client):
         self.bot = bot

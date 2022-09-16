@@ -68,9 +68,12 @@ class Reminder(commands.Cog):
         body = []
 
         for rem in user_reminders:
-            rem_timestamp = datetime.datetime.fromtimestamp(
-                reminders[rem]['time'])
-            rem_time = rem_timestamp.strftime("%a %d-%m-%Y - %H:%M")
+            if reminders[rem]['repeat']:
+                rem_time = reminders[rem]['time']
+            else:
+                rem_timestamp = datetime.datetime.fromtimestamp(
+                    reminders[rem]['time'])
+                rem_time = rem_timestamp.strftime("%a %d-%m-%Y - %H:%M")
             reason = reminders[rem]['reason']
 
             body.append([rem, rem_time, reason])
@@ -136,6 +139,8 @@ class Reminder(commands.Cog):
             tm_to_remind = dateparser.parse(tm, settings=DATE_PARSER_SETTINGS).timestamp()
             if tm_to_remind < time.time():
                 tm_to_remind = tm_to_remind + 86400
+        else:
+            tm_to_remind = tm
         user = self.client.get_user(author)
 
         await asyncio.sleep(tm_to_remind - time.time())
