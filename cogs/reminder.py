@@ -51,7 +51,7 @@ class Reminder(commands.Cog):
             await self.add_reminder(interaction.user, reminder_time_timestamp, message, interaction.guild_id, repeat)
 
         else:
-            await interaction.response.send_message(f"I will remind you of **{message}** every day at **{reminder_time}** :timer:", ephemeral=True)
+            await interaction.response.send_message(f"I will remind you of **{message}** every day at **{reminder_time}** :timer:")
             await self.add_reminder(interaction.user, reminder_time, message, interaction.guild_id, repeat)
 
         return
