@@ -7,6 +7,7 @@ from util.util import *
 from table2ascii import table2ascii as t2a, PresetStyle
 import os
 import itertools
+import time
 
 N_CHANNEL_ID = os.getenv('N_CHANNEL_ID')
 class Bonk(commands.Cog, name="Bonk"):
@@ -21,8 +22,11 @@ class Bonk(commands.Cog, name="Bonk"):
     @commands.command()
     async def bonk(self, ctx):
         if not ctx.message.reference:
-            await ctx.message.reply("I need someone to bonk.")
+            await ctx.message.reply("I need someone to bonk. (call !bonk as a reply to another message)")
             return
+
+        guild = ctx.guild
+        bonk_timeout_role = discord.utils.get(guild.roles, id=int(os.getenv("BONK_TIMEOUT_ROLE_ID")))
 
         bonker = ctx.message.author
         bonkee = ctx.message.reference.resolved.author
@@ -37,9 +41,38 @@ class Bonk(commands.Cog, name="Bonk"):
         if(bonkee == bonker):
             await ctx.message.reply("No self-bonking.")
             return
+        if(bonk_timeout_role in bonker.roles and self.get_last_bonk(bonker) is not None and time.time() - self.get_last_bonk(bonker) < BONK_TIMEOUT_SLOW):
+            await ctx.message.reply("You're on bonk timeout. You can only bonk once every 4 hours. Please wait.")
+            return
+        if(self.get_last_bonk(bonker) is not None and time.time() - self.get_last_bonk(bonker) < BONK_TIMEOUT):
+            await ctx.message.reply("You can only bonk once every 5 minutes. Please wait.")
+            return
 
         self.add_to_leaderboard(bonkee)
+        self.save_last_bonk(bonker)
         await ctx.message.reference.resolved.add_reaction(BONK_EMOJI)
+        logging.info(f"{bonker.name} bonked {bonkee.name}.")
+        return
+
+    @app_commands.command(name="bonktimeout")
+    async def bonk_timeout(self, interaction: discord.Interaction, member: discord.Member):
+        guild = interaction.guild
+        moderator_role = discord.utils.get(guild.roles, id=int(os.getenv("MODERATOR_ROLE_ID")))
+        bonk_timeout_role = discord.utils.get(guild.roles, id=int(os.getenv("BONK_TIMEOUT_ROLE_ID")))
+
+        if moderator_role not in interaction.user.roles:
+            await interaction.response.send_message("You are not allowed to use this command.", ephemeral=True)
+            return
+
+        if bonk_timeout_role not in member.roles:
+            await member.add_roles(bonk_timeout_role)
+            logging.info(f"Added bonk timeout role to {member.name}")
+            await interaction.response.send_message(f"{member.mention} is now on bonk timeout.")
+        else:
+            await member.remove_roles(bonk_timeout_role)
+            logging.info(f"Removed bonk timeout role from {member.name}")
+            await interaction.response.send_message(f"{member.mention} is not on bonk timeout anymore.")
+
         return
 
     @app_commands.command(name="hallofshame")
@@ -64,6 +97,21 @@ class Bonk(commands.Cog, name="Bonk"):
         )
 
         return output
+
+    def get_last_bonk(self, author):
+        last_bonks = load_json_file(LAST_BONK_FILE)
+        author_id = str(author.id)
+        if(author_id not in last_bonks.keys()):
+            return None
+        return last_bonks[author_id]["last_bonk"]
+
+    def save_last_bonk(self, author):
+        last_bonks = load_json_file(LAST_BONK_FILE)
+        author_id = str(author.id)
+        last_bonks[author_id] = {'name': author.name,
+                                    'last_bonk': time.time()}
+        save_json_file(last_bonks, LAST_BONK_FILE)
+
 
     def add_to_leaderboard(self, author):
         leaderboard = load_json_file(BONK_LEADERBOARD_FILE)
