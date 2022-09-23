@@ -8,6 +8,8 @@ from table2ascii import table2ascii as t2a, PresetStyle
 import os
 import itertools
 import time
+from datetime import datetime
+import math
 
 N_CHANNEL_ID = os.getenv('N_CHANNEL_ID')
 class Bonk(commands.Cog, name="Bonk"):
@@ -30,22 +32,45 @@ class Bonk(commands.Cog, name="Bonk"):
 
         bonker = ctx.message.author
         bonkee = ctx.message.reference.resolved.author
+        last_bonk_time = self.get_last_bonk(bonker)
+        current_time = time.time()
+        time_diff = current_time - last_bonk_time if last_bonk_time else math.inf
 
         if ctx.message.channel.id == int(N_CHANNEL_ID):
             await ctx.message.reply("This is a bonk-free zone.")
             return
-        if(bonkee == self.bot.user):
+
+        if bonkee == self.bot.user:
             await ctx.message.reply(f"No u {BONK_EMOJI}")
             self.add_to_leaderboard(bonker)
             return
-        if(bonkee == bonker):
+
+        if bonkee == bonker:
             await ctx.message.reply("No self-bonking.")
             return
-        if(bonk_timeout_role in bonker.roles and self.get_last_bonk(bonker) is not None and time.time() - self.get_last_bonk(bonker) < BONK_TIMEOUT_SLOW):
-            await ctx.message.reply("You're on bonk timeout. You can only bonk once every 4 hours. Please wait.")
-            return
-        if(self.get_last_bonk(bonker) is not None and time.time() - self.get_last_bonk(bonker) < BONK_TIMEOUT):
-            await ctx.message.reply("You can only bonk once every 5 minutes. Please wait.")
+
+        bonk_timeout = BONK_TIMEOUT_SLOW if bonk_timeout_role in bonker.roles else BONK_TIMEOUT
+
+        if time_diff < bonk_timeout:
+            next_bonk_time = last_bonk_time + bonk_timeout
+            time_until_bonk = next_bonk_time - current_time
+            bonk_time_hm = datetime.fromtimestamp(next_bonk_time).strftime("%H:%M")
+
+            hours_until_bonk = int(time_until_bonk//3600)
+            minutes_until_bonk = int((time_until_bonk%3600)//60)
+            seconds_until_bonk = int((time_until_bonk%3600)%60)
+            
+            str_time_to_bonk = ""
+            if hours_until_bonk:
+                str_time_to_bonk = str_time_to_bonk + f" {hours_until_bonk} hours"
+            if minutes_until_bonk:
+                str_time_to_bonk = str_time_to_bonk + f" {minutes_until_bonk} minutes"
+            if seconds_until_bonk:
+                str_time_to_bonk = str_time_to_bonk + f" {seconds_until_bonk} seconds"
+            
+            msg = "You're on bonk timeout. " if bonk_timeout_role in bonker.roles else "You can only bonk once every 5 minutes. "
+            msg = msg + f"You can bonk again in{str_time_to_bonk} (at {bonk_time_hm}). Please wait."
+            await ctx.message.reply(msg)
             return
 
         self.add_to_leaderboard(bonkee)
@@ -85,7 +110,7 @@ class Bonk(commands.Cog, name="Bonk"):
     def get_top_n(self, num):
         body = []
 
-        leaderboard = load_json_file(BONK_LEADERBOARD_FILE)
+        leaderboard = load_json_file(get_file(BONK_LEADERBOARD_FILE))
         filtered_leaderboard = dict(itertools.islice(leaderboard.items(), num))
         for k, v in filtered_leaderboard.items():
             body.append([v['name'], v['score']])
@@ -98,33 +123,33 @@ class Bonk(commands.Cog, name="Bonk"):
 
         return output
 
+    def add_to_leaderboard(self, author):
+        bonk_file = get_file(BONK_LEADERBOARD_FILE)
+        leaderboard = load_json_file(bonk_file)
+        author_id = str(author.id)
+
+        if str(author.id) in leaderboard.keys():
+            leaderboard[author_id] = {'name': author.name, 'score': leaderboard[author_id]['score']+1}
+        else:
+            leaderboard[author_id] = {'name': author.name, 'score': 1}
+
+        sorted_leaderboard = {k: v for (k, v) in sorted(leaderboard.items(), key=lambda x: x[1]['score'], reverse=True)}
+        save_json_file(sorted_leaderboard, bonk_file)
+
     def get_last_bonk(self, author):
-        last_bonks = load_json_file(LAST_BONK_FILE)
+        last_bonks = load_json_file(get_file(LAST_BONK_FILE))
         author_id = str(author.id)
         if(author_id not in last_bonks.keys()):
             return None
         return last_bonks[author_id]["last_bonk"]
 
     def save_last_bonk(self, author):
-        last_bonks = load_json_file(LAST_BONK_FILE)
+        last_bonk_file = get_file(LAST_BONK_FILE)
+        last_bonks = load_json_file(last_bonk_file)
         author_id = str(author.id)
         last_bonks[author_id] = {'name': author.name,
                                     'last_bonk': time.time()}
-        save_json_file(last_bonks, LAST_BONK_FILE)
-
-
-    def add_to_leaderboard(self, author):
-        leaderboard = load_json_file(BONK_LEADERBOARD_FILE)
-        author_id = str(author.id)
-        if str(author.id) in leaderboard.keys():
-            leaderboard[author_id] = {'name': author.name,
-                                      'score': leaderboard[author_id]['score']+1}
-        else:
-            leaderboard[author_id] = {'name': author.name, 'score': 1}
-        sorted_leaderboard = {k: v for (k, v) in sorted(
-            leaderboard.items(), key=lambda x: x[1]['score'], reverse=True)}
-        save_json_file(sorted_leaderboard, BONK_LEADERBOARD_FILE)
-
+        save_json_file(last_bonks, last_bonk_file)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Bonk(bot))
