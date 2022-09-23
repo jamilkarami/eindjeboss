@@ -129,10 +129,6 @@ dmypy.json
 .pyre/
 
 # Others
-reminders
-bonk_leaderboard
-last_bonk
-periodic_messages
-daily_reminders
+files
 test.py
 helper.py

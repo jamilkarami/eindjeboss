@@ -10,11 +10,12 @@ import datetime
 import os
 from table2ascii import table2ascii as t2a, PresetStyle
 from util.util import *
+from util.vars.eind_vars import REMINDER_FILE
 
-REMINDER_FILE = "reminders"
 REMINDER_CHANNEL_ID = int(os.getenv("REMINDER_CHANNEL_ID"))
 DATE_PARSER_SETTINGS = {'PREFER_DATES_FROM': 'future', 'DATE_ORDER': 'DMY', 'TIMEZONE': 'Europe/Amsterdam'}
 
+reminder_file = get_file(REMINDER_FILE)
 
 class Reminder(commands.Cog):
 
@@ -58,7 +59,7 @@ class Reminder(commands.Cog):
 
     @app_commands.command(name="myreminders", description="Get a list of your active reminders")
     async def myreminders(self, interaction: discord.Interaction):
-        reminders = load_json_file(REMINDER_FILE)
+        reminders = load_json_file(reminder_file)
         user_reminders = self.get_user_reminders(interaction.user)
 
         if not user_reminders:
@@ -101,7 +102,7 @@ class Reminder(commands.Cog):
         return
 
     async def startup_reminders(self):
-        reminders = load_json_file(REMINDER_FILE)
+        reminders = load_json_file(reminder_file)
 
         to_remove = []
         repeat_count = 0
@@ -119,20 +120,20 @@ class Reminder(commands.Cog):
             reminders.pop(id)
 
         logging.info(f"[{__name__}] {len(reminders)} reminders found. ({repeat_count} daily)")
-        save_json_file(reminders, REMINDER_FILE)
+        save_json_file(reminders, reminder_file)
 
     async def add_reminder(self, author, time, reason, guild, repeat):
         rem_id = str(uuid.uuid1())[:5]
-        reminders = load_json_file(REMINDER_FILE)
+        reminders = load_json_file(reminder_file)
         reminders[rem_id] = {'author': author.id,
                              'time': time, 'reason': reason, 'guild': guild, 'repeat': repeat}
-        save_json_file(reminders, REMINDER_FILE)
+        save_json_file(reminders, reminder_file)
         await self.start_reminder(rem_id, author.id, time, reason, guild, repeat)
 
     async def delete_reminder(self, id):
-        reminders = load_json_file(REMINDER_FILE)
+        reminders = load_json_file(reminder_file)
         del (reminders[id])
-        save_json_file(reminders, REMINDER_FILE)
+        save_json_file(reminders, reminder_file)
 
     async def start_reminder(self, reminder_id, author, tm, reason, guild_id, repeat):
         if repeat:
@@ -144,7 +145,7 @@ class Reminder(commands.Cog):
         user = self.client.get_user(author)
 
         await asyncio.sleep(tm_to_remind - time.time())
-        if reminder_id in load_json_file(REMINDER_FILE):
+        if reminder_id in load_json_file(reminder_file):
             guild = self.client.get_guild(guild_id)
             await self.notify_user(reason, user, guild)
             if not repeat:
@@ -166,7 +167,7 @@ class Reminder(commands.Cog):
         return
 
     def get_user_reminders(self, user):
-        reminders = load_json_file(REMINDER_FILE)
+        reminders = load_json_file(reminder_file)
         user_reminders = {k: v for k,
                           v in reminders.items() if v['author'] == user.id}
         return user_reminders

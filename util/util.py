@@ -12,3 +12,6 @@ def save_json_file(data, path):
     f = open(path, 'w')
     output = json.dumps(data, indent=4)
     print(output, file=f)
+
+def get_file(path):
+    return f"files/{path}"

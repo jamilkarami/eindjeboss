@@ -1,8 +1,10 @@
 from discord.ext import commands
 import logging
 import os
-import util.util
+from util.util import *
 from aiocron import crontab
+
+from util.vars.eind_vars import *
 
 class Periodics(commands.Cog):
 
@@ -14,7 +16,8 @@ class Periodics(commands.Cog):
         guild_id = os.getenv("GUILD_ID")
         guild = await self.client.fetch_guild(guild_id)
         logging.info(f"[{__name__}] Cog is ready")
-        periodics = util.util.load_json_file('periodic_messages')
+        
+        periodics = load_json_file(get_file(PERIODIC_MESSAGES_FILE))
         periodic_message_count = len(periodics.keys())
         plural = "" if periodic_message_count == 1 else "s"
         for periodic in periodics.keys():
