@@ -23,6 +23,11 @@ class Translate(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+        self.ctx_menu = app_commands.ContextMenu(
+            name='Translate Message',
+            callback=self.translate_context,
+        )
+        self.client.tree.add_command(self.ctx_menu)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -43,6 +48,16 @@ class Translate(commands.Cog):
         logging.info(f"Sent translation to {payload.member.name} for message \"{message.content}\" by {message.author.name}")
         return
 
+    async def translate_context(self, interaction: discord.Interaction, message: discord.Message):
+        translated = TranslateUtil.translate_message(message.content, None)
+
+        lang = LANGUAGES[translated.src]
+
+        translate_msg = f"Translation for \"{message.content}\" from ({lang.capitalize()}):\n\n{translated.text}"
+
+        await interaction.response.send_message(content=translate_msg, ephemeral=True)
+        logging.info(f"Sent translation to {interaction.user.name} for message \"{message.content}\" by {message.author.name}")
+        return
 
     @commands.command(aliases=[])
     async def tr(self, ctx, *args):
