@@ -33,3 +33,5 @@ DOG_SUBREDDITS = ["rarepuppers","goldenretrievers","shiba","dogswithjobs","Doggl
 CAR_SUBREDDITS = ["Porsche", "ferrari", "carporn", "spotted", "JDM", "weirdwheels", "classiccars", "battlecars", "skyline", "itasha", "autos", "audi", "mini", "GT3", "awesomecarmods", "racecarporn", "wec", "super_gt", "rally", "rallyporn"]
 BONK_TIMEOUT = 300
 BONK_TIMEOUT_SLOW = 14400
+TABLE_FLIP = "(╯°□°）╯︵ ┻━┻"
+TABLE_FIX = "┬─┬ ノ( ゜-゜ノ)"

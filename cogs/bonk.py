@@ -2,6 +2,7 @@ from discord.ext import commands
 from discord import app_commands
 import discord
 from util.vars.eind_vars import *
+from util.custom.permissions import Permissions
 import logging
 from util.util import *
 from table2ascii import table2ascii as t2a, PresetStyle
@@ -10,6 +11,7 @@ import itertools
 import time
 from datetime import datetime
 import math
+import discord.errors
 
 N_CHANNEL_ID = os.getenv('N_CHANNEL_ID')
 class Bonk(commands.Cog, name="Bonk"):
@@ -36,6 +38,10 @@ class Bonk(commands.Cog, name="Bonk"):
         current_time = time.time()
         time_diff = current_time - last_bonk_time if last_bonk_time else math.inf
 
+        if guild.get_member(bonkee.id) is None:
+            await ctx.message.reply("This user is not currently on the server.")
+            return
+
         if ctx.message.channel.id == int(N_CHANNEL_ID):
             await ctx.message.reply("This is a bonk-free zone.")
             return
@@ -43,6 +49,8 @@ class Bonk(commands.Cog, name="Bonk"):
         if bonkee == self.bot.user:
             await ctx.message.reply(f"No u {BONK_EMOJI}")
             self.add_to_leaderboard(bonker)
+            self.save_last_bonk(bonker)
+            logging.info(f"{bonker.name} tried to bonk me and failed miserably.")
             return
 
         if bonkee == bonker:

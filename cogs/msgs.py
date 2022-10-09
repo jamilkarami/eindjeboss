@@ -58,6 +58,10 @@ class Messages(commands.Cog, name="Messages"):
             await message.reply(f'Blaze it! {HARAM_EMOJI}')
             return
 
+        if TABLE_FLIP in message_content:
+            await message.reply(f"Respect tables. {TABLE_FIX}")
+            return
+
         if message_content == "ok":
             await message.add_reaction(WICKED_EMOJI)
             return
