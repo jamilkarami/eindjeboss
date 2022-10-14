@@ -6,6 +6,7 @@ from aiocron import crontab
 
 from util.vars.eind_vars import *
 
+
 class Periodics(commands.Cog):
 
     def __init__(self, client):
@@ -16,7 +17,7 @@ class Periodics(commands.Cog):
         guild_id = os.getenv("GUILD_ID")
         guild = await self.client.fetch_guild(guild_id)
         logging.info(f"[{__name__}] Cog is ready")
-        
+
         periodics = load_json_file(get_file(PERIODIC_MESSAGES_FILE))
         periodic_message_count = len(periodics.keys())
         plural = "" if periodic_message_count == 1 else "s"
@@ -30,11 +31,10 @@ class Periodics(commands.Cog):
             crontab(msg_time, func=self.send_periodic_message, args=(msg, msg_channel, guild), start=True)
         logging.info(f"[{__name__}] Scheduled {periodic_message_count} periodic message{plural}")
 
-
     async def send_periodic_message(self, message, channel_id, guild):
         channel = await guild.fetch_channel(channel_id)
         await channel.send(message)
-        
+
 
 async def setup(bot):
     await bot.add_cog(Periodics(bot))

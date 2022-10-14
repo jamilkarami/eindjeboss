@@ -4,8 +4,9 @@ import discord
 import logging
 from util.vars.role_vars import ROLE_VARS
 
+
 class Roles(commands.Cog):
-    
+
     def __init__(self, client):
         self.client = client
 
@@ -49,11 +50,12 @@ class Roles(commands.Cog):
             await interaction.response.send_message("Focus mode off. Use /focus again to turn it on.", ephemeral=True)
             logging.info(f"Removed focus role for {interaction.user.name}")
             return
-        
+
         await interaction.user.add_roles(role)
         await interaction.response.send_message("Focus mode on. Use /focus again to turn it off.", ephemeral=True)
         logging.info(f"Added focus role for {interaction.user.name}")
         return
+
 
 async def setup(bot):
     await bot.add_cog(Roles(bot))

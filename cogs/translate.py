@@ -45,7 +45,8 @@ class Translate(commands.Cog):
         translate_msg = f"You asked me to translate the following message: {message.content}\n\nTranslated from ({lang.capitalize()}): {translated.text}"
 
         await payload.member.send(content=translate_msg)
-        logging.info(f"Sent translation to {payload.member.name} for message \"{message.content}\" by {message.author.name}")
+        logging.info(
+            f"Sent translation to {payload.member.name} for message \"{message.content}\" by {message.author.name}")
         return
 
     async def translate_context(self, interaction: discord.Interaction, message: discord.Message):
@@ -56,7 +57,8 @@ class Translate(commands.Cog):
         translate_msg = f"Translation for \"{message.content}\" from ({lang.capitalize()}):\n\n{translated.text}"
 
         await interaction.response.send_message(content=translate_msg, ephemeral=True)
-        logging.info(f"Sent translation to {interaction.user.name} for message \"{message.content}\" by {message.author.name}")
+        logging.info(
+            f"Sent translation to {interaction.user.name} for message \"{message.content}\" by {message.author.name}")
         return
 
     @commands.command(aliases=[])
@@ -75,10 +77,12 @@ class Translate(commands.Cog):
 
     @app_commands.command(name="translate")
     @app_commands.choices(src=TRANSLATE_LANGUAGES, dst=TRANSLATE_LANGUAGES)
-    async def translate(self, interaction: discord.Interaction, text: str, src: app_commands.Choice[str], dst: app_commands.Choice[str]):
+    async def translate(self, interaction: discord.Interaction, text: str, src: app_commands.Choice[str],
+                        dst: app_commands.Choice[str]):
         translated = TranslateUtil.translate_message(
             text, src.value, dst.value)
-        await interaction.response.send_message(f"Translation of _\"{text}\"_ from _{src.name}_ to _{dst.name}_: {translated.text}")
+        await interaction.response.send_message(
+            f"Translation of _\"{text}\"_ from _{src.name}_ to _{dst.name}_: {translated.text}")
 
 
 class TranslateUtil():
