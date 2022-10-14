@@ -9,6 +9,7 @@ from discord.threads import ThreadMember
 
 CANDY_CHANNEL_ID = os.getenv('CANDY_CHANNEL_ID')
 
+
 class Messages(commands.Cog, name="Messages"):
 
     def __init__(self, bot):
@@ -26,15 +27,18 @@ class Messages(commands.Cog, name="Messages"):
     async def free_anisha(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FreeAnisha")
 
-    @app_commands.command(name="msi", description="The Eindhoven Community Discord's collectively humble opinion on MSI")
+    @app_commands.command(name="msi",
+                          description="The Eindhoven Community Discord's collectively humble opinion on MSI")
     async def f_msi(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FuckMSI")
 
-    @app_commands.command(name="lenovo", description="The Eindhoven Community Discord's collectively humble opinion on Lenovo")
+    @app_commands.command(name="lenovo",
+                          description="The Eindhoven Community Discord's collectively humble opinion on Lenovo")
     async def f_lenovo(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FuckLenovo")
 
-    @app_commands.command(name="fontys", description="The Eindhoven Community Discord's collectively humble opinion on Fontys")
+    @app_commands.command(name="fontys",
+                          description="The Eindhoven Community Discord's collectively humble opinion on Fontys")
     async def f_fontys(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FuckFontys")
 
@@ -53,7 +57,7 @@ class Messages(commands.Cog, name="Messages"):
 
         current_time = datetime.now().strftime('%H:%M')
         times = ["04:20", "4:20", "16:20"]
-        
+
         if '420' in message_content and str(message.channel.id) == CANDY_CHANNEL_ID and current_time in times:
             await message.reply(f'Blaze it! {HARAM_EMOJI}')
             return
@@ -85,11 +89,12 @@ class Messages(commands.Cog, name="Messages"):
 
         users = await interaction.channel.fetch_members()
         message = ""
-        user : ThreadMember
+        user: ThreadMember
         for user in users:
             if user.id != self.bot.user.id:
                 message = message + f"<@{user.id}> "
         await interaction.response.send_message(message)
+
 
 async def setup(bot):
     await bot.add_cog(Messages(bot))

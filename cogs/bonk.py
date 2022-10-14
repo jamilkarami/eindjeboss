@@ -2,7 +2,6 @@ from discord.ext import commands
 from discord import app_commands
 import discord
 from util.vars.eind_vars import *
-from util.custom.permissions import Permissions
 import logging
 from util.util import *
 from table2ascii import table2ascii as t2a, PresetStyle
@@ -14,6 +13,8 @@ import math
 import discord.errors
 
 N_CHANNEL_ID = os.getenv('N_CHANNEL_ID')
+
+
 class Bonk(commands.Cog, name="Bonk"):
 
     def __init__(self, bot):
@@ -64,10 +65,10 @@ class Bonk(commands.Cog, name="Bonk"):
             time_until_bonk = next_bonk_time - current_time
             bonk_time_hm = datetime.fromtimestamp(next_bonk_time).strftime("%H:%M")
 
-            hours_until_bonk = int(time_until_bonk//3600)
-            minutes_until_bonk = int((time_until_bonk%3600)//60)
-            seconds_until_bonk = int((time_until_bonk%3600)%60)
-            
+            hours_until_bonk = int(time_until_bonk // 3600)
+            minutes_until_bonk = int((time_until_bonk % 3600) // 60)
+            seconds_until_bonk = int((time_until_bonk % 3600) % 60)
+
             str_time_to_bonk = ""
             if hours_until_bonk:
                 str_time_to_bonk = str_time_to_bonk + f" {hours_until_bonk} hours"
@@ -75,7 +76,7 @@ class Bonk(commands.Cog, name="Bonk"):
                 str_time_to_bonk = str_time_to_bonk + f" {minutes_until_bonk} minutes"
             if seconds_until_bonk:
                 str_time_to_bonk = str_time_to_bonk + f" {seconds_until_bonk} seconds"
-            
+
             msg = "You're on bonk timeout. " if bonk_timeout_role in bonker.roles else "You can only bonk once every 5 minutes. "
             msg = msg + f"You can bonk again in{str_time_to_bonk} (at {bonk_time_hm}). Please wait."
             await ctx.message.reply(msg)
@@ -137,7 +138,7 @@ class Bonk(commands.Cog, name="Bonk"):
         author_id = str(author.id)
 
         if str(author.id) in leaderboard.keys():
-            leaderboard[author_id] = {'name': author.name, 'score': leaderboard[author_id]['score']+1}
+            leaderboard[author_id] = {'name': author.name, 'score': leaderboard[author_id]['score'] + 1}
         else:
             leaderboard[author_id] = {'name': author.name, 'score': 1}
 
@@ -147,7 +148,7 @@ class Bonk(commands.Cog, name="Bonk"):
     def get_last_bonk(self, author):
         last_bonks = load_json_file(get_file(LAST_BONK_FILE))
         author_id = str(author.id)
-        if(author_id not in last_bonks.keys()):
+        if (author_id not in last_bonks.keys()):
             return None
         return last_bonks[author_id]["last_bonk"]
 
@@ -155,9 +156,9 @@ class Bonk(commands.Cog, name="Bonk"):
         last_bonk_file = get_file(LAST_BONK_FILE)
         last_bonks = load_json_file(last_bonk_file)
         author_id = str(author.id)
-        last_bonks[author_id] = {'name': author.name,
-                                    'last_bonk': time.time()}
+        last_bonks[author_id] = {'name': author.name, 'last_bonk': time.time()}
         save_json_file(last_bonks, last_bonk_file)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Bonk(bot))

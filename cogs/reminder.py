@@ -17,8 +17,8 @@ DATE_PARSER_SETTINGS = {'PREFER_DATES_FROM': 'future', 'DATE_ORDER': 'DMY', 'TIM
 
 reminder_file = get_file(REMINDER_FILE)
 
-class Reminder(commands.Cog):
 
+class Reminder(commands.Cog):
     loop = asyncio.get_running_loop()
 
     def __init__(self, client):
@@ -48,11 +48,13 @@ class Reminder(commands.Cog):
             reminder_time_readable_time = parsed_time.strftime('%I:%M %p')
             reminder_time_timestamp = parsed_time.timestamp()
 
-            await interaction.response.send_message(f"I will remind you of **{message}** on **{reminder_time_readable_day}** at **{reminder_time_readable_time}** :timer:")
+            await interaction.response.send_message(
+                f"I will remind you of **{message}** on **{reminder_time_readable_day}** at **{reminder_time_readable_time}** :timer:")
             await self.add_reminder(interaction.user, reminder_time_timestamp, message, interaction.guild_id, repeat)
 
         else:
-            await interaction.response.send_message(f"I will remind you of **{message}** every day at **{reminder_time}** :timer:")
+            await interaction.response.send_message(
+                f"I will remind you of **{message}** every day at **{reminder_time}** :timer:")
             await self.add_reminder(interaction.user, reminder_time, message, interaction.guild_id, repeat)
 
         return
@@ -63,7 +65,8 @@ class Reminder(commands.Cog):
         user_reminders = self.get_user_reminders(interaction.user)
 
         if not user_reminders:
-            await interaction.response.send_message(content="You don't have any reminders set. Set some with /remindme.", ephemeral=True)
+            await interaction.response.send_message(
+                content="You don't have any reminders set. Set some with /remindme.", ephemeral=True)
             return
 
         body = []
@@ -98,7 +101,9 @@ class Reminder(commands.Cog):
                 await interaction.response.send_message(f"Reminder {reminder_id} deleted. ✅", ephemeral=True)
                 return
 
-        await interaction.response.send_message("You have no reminders with that ID. Please use /myreminders to check your current reminder IDs.", ephemeral=True)
+        await interaction.response.send_message(
+            "You have no reminders with that ID. Please use /myreminders to check your current reminder IDs.",
+            ephemeral=True)
         return
 
     async def startup_reminders(self):
@@ -169,7 +174,7 @@ class Reminder(commands.Cog):
     def get_user_reminders(self, user):
         reminders = load_json_file(reminder_file)
         user_reminders = {k: v for k,
-                          v in reminders.items() if v['author'] == user.id}
+                                   v in reminders.items() if v['author'] == user.id}
         return user_reminders
 
 

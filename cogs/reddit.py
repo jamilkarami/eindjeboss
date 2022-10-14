@@ -20,7 +20,6 @@ CATS = "cats"
 
 
 class Reddit(commands.Cog):
-
     reddit = asyncpraw.Reddit(
         client_id=os.getenv("REDDIT_ID"),
         client_secret=os.getenv("REDDIT_SECRET"),
@@ -69,7 +68,7 @@ class Reddit(commands.Cog):
         chosen_sub = random.choice(subreddit_list)
         sub = await self.reddit.subreddit(chosen_sub)
         posts = [post async for post in sub.hot(limit=50)]
-        chosen_post = posts[random.randint(0,len(posts)-1)]
+        chosen_post = posts[random.randint(0, len(posts) - 1)]
         while not re.match(I_REDDIT_REGEX, chosen_post.url) and not re.match(I_IMGUR_REGEX, chosen_post.url):
             chosen_post = random.choice(posts)
         return chosen_post.url
