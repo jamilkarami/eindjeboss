@@ -7,6 +7,7 @@ import random
 import discord
 from discord.ext import commands
 from discord import app_commands
+from sqlalchemy import desc
 
 from util.vars.eind_vars import *
 from util.vars.periodic_reminders import TOP_REDDIT_CAT_DT
@@ -51,23 +52,26 @@ class Reddit(commands.Cog):
 
     @app_commands.command(name="randomcat", description="Sends a random cat picture off of reddit")
     async def send_random_cat(self, interaction: discord.Interaction):
-        await interaction.response.send_message(await self.get_random_image_post(CAT_SUBREDDITS))
+        await interaction.response.send_message(await self.get_random_image_post(random.choice(CAT_SUBREDDITS), 50))
         return
 
     @app_commands.command(name="randomdog", description="Sends a random dog picture off of reddit")
     async def send_random_dog(self, interaction: discord.Interaction):
-        await interaction.response.send_message(await self.get_random_image_post(DOG_SUBREDDITS))
+        await interaction.response.send_message(await self.get_random_image_post(random.choice(DOG_SUBREDDITS), 50))
         return
 
     @app_commands.command(name="car", description="Sends a random car picture off of reddit")
     async def send_random_car(self, interaction: discord.Interaction):
-        await interaction.response.send_message(await self.get_random_image_post(CAR_SUBREDDITS))
+        await interaction.response.send_message(await self.get_random_image_post(random.choice(CAR_SUBREDDITS), 50))
         return
 
-    async def get_random_image_post(self, subreddit_list):
-        chosen_sub = random.choice(subreddit_list)
-        sub = await self.reddit.subreddit(chosen_sub)
-        posts = [post async for post in sub.hot(limit=50)]
+    @app_commands.command(name="hotwheels", description="Sends a random hot wheels picture off of reddit")
+    async def send_random_hot_wheel(self, interaction: discord.Interaction):
+        await interaction.response.send_message(await self.get_random_image_post(HOT_WHEELS_SUBREDDIT, 100))
+
+    async def get_random_image_post(self, subreddit, limit):
+        sub = await self.reddit.subreddit(subreddit)
+        posts = [post async for post in sub.hot(limit=limit)]
         chosen_post = posts[random.randint(0, len(posts) - 1)]
         while not re.match(I_REDDIT_REGEX, chosen_post.url) and not re.match(I_IMGUR_REGEX, chosen_post.url):
             chosen_post = random.choice(posts)

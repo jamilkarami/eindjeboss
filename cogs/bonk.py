@@ -111,18 +111,23 @@ class Bonk(commands.Cog, name="Bonk"):
 
     @app_commands.command(name="hallofshame")
     async def bonk_leaderboard(self, interaction: discord.Interaction):
-        embed_title = "Hall of Shame"
-        output = self.get_top_n(10)
+        output, total = self.get_top_n(10)
+        embed_title = f"Hall of Shame ({total} total bonks)"
+
         embed = discord.Embed(title=embed_title, description=f"```{output}```")
         await interaction.response.send_message(embed=embed)
+        logging.info(f"Sent bonk leaderboard to {interaction.user.name}")
 
     def get_top_n(self, num):
         body = []
 
         leaderboard = load_json_file(get_file(BONK_LEADERBOARD_FILE))
         filtered_leaderboard = dict(itertools.islice(leaderboard.items(), num))
+        total = 0
+
         for k, v in filtered_leaderboard.items():
             body.append([v['name'], v['score']])
+            total = total + v['score']
 
         output = t2a(
             header=["Name", "Bonks"],
@@ -130,7 +135,7 @@ class Bonk(commands.Cog, name="Bonk"):
             style=PresetStyle.ascii_borderless
         )
 
-        return output
+        return output, total
 
     def add_to_leaderboard(self, author):
         bonk_file = get_file(BONK_LEADERBOARD_FILE)

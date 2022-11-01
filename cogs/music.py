@@ -24,7 +24,7 @@ class Music(commands.Cog):
     async def spotify(self, interaction: discord.Interaction, query: str):
         try:
             result = sp.search(f"{query}", type="track")
-            if (len(result['tracks']['items']) > 0):
+            if len(result['tracks']['items']) > 0:
                 await interaction.response.send_message(result['tracks']['items'][0]['external_urls']['spotify'])
             else:
                 await interaction.response.send_message('No results found for: ' + query)
