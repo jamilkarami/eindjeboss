@@ -3,7 +3,6 @@ from discord.ext import commands
 import discord
 from discord import app_commands
 import random
-import time
 
 
 class Casino(commands.Cog):
@@ -20,7 +19,7 @@ class Casino(commands.Cog):
         if not max:
             max = 20
 
-        random.seed(time.time())
+        random.seed()
         num = random.randint(1, max)
 
         await interaction.response.send_message("You roll a D{max}. You get: {num}.".format(max=str(max), num=str(num)))
@@ -30,7 +29,7 @@ class Casino(commands.Cog):
     async def ball(self, interaction: discord.Interaction):
         options = ["Yes ✅", "It is decidedly so ✅", "All signs point to yes ✅", "Definitely ✅",
                    "No ❌", "I don't think so ❌", "Don't count on it ❌", "My sources say nope ❌"]
-        random.seed(time.time())
+        random.seed()
         message = f"Magic 8 ball says: {random.choice(options)}"
         await interaction.response.send_message(message)
         return
@@ -38,9 +37,20 @@ class Casino(commands.Cog):
     @app_commands.command()
     async def coin(self, interaction: discord.Interaction):
         options = ["Heads", "Tails"]
-        random.seed(time.time())
+        random.seed()
         message = f"You flip a coin. It lands on: {random.choice(options)}"
         await interaction.response.send_message(message)
+        return
+
+    @app_commands.command(name="chooseforme", description="Let Arnol choose from a list of options. Handy for when you don't know what to pick.")
+    async def choose(self, interaction: discord.Interaction, options: str):
+        split_options = [x.strip().capitalize() for x in options.split(',')]
+        response_options = ", ".join([f"**{x}**" for x in split_options])
+        choice = random.choice(
+            split_options) if "takumi" not in options.lower() else "Takumi"
+        response_text = f"You asked me to choose from {response_options}.\n\nI choose: **{choice}**"
+
+        await interaction.response.send_message(response_text)
         return
 
 

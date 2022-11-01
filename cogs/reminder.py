@@ -33,20 +33,18 @@ class Reminder(commands.Cog):
     @app_commands.command(name="remindme", description="Set a reminder")
     async def remindme(self, interaction: discord.Interaction, reminder_time: str, message: str, repeat: bool):
         parsed_time = dateparser.parse(reminder_time, settings=DATE_PARSER_SETTINGS)
+        reminder_time_readable_day = parsed_time.strftime('%d/%m/%Y')
+        reminder_time_readable_time = parsed_time.strftime('%I:%M %p')
+        reminder_time_timestamp = parsed_time.timestamp()
 
         if not parsed_time:
             await interaction.response.send_message("Could not parse the time. Please try again!")
             return
 
         if not repeat:
-
             if parsed_time.timestamp() < time.time():
                 await interaction.response.send_message("Stop living in the past, child. Look to the future.")
                 return
-
-            reminder_time_readable_day = parsed_time.strftime('%d/%m/%Y')
-            reminder_time_readable_time = parsed_time.strftime('%I:%M %p')
-            reminder_time_timestamp = parsed_time.timestamp()
 
             await interaction.response.send_message(
                 f"I will remind you of **{message}** on **{reminder_time_readable_day}** at **{reminder_time_readable_time}** :timer:")
@@ -54,8 +52,8 @@ class Reminder(commands.Cog):
 
         else:
             await interaction.response.send_message(
-                f"I will remind you of **{message}** every day at **{reminder_time}** :timer:")
-            await self.add_reminder(interaction.user, reminder_time, message, interaction.guild_id, repeat)
+                f"I will remind you of **{message}** every day at **{reminder_time_readable_time}** :timer:")
+            await self.add_reminder(interaction.user, reminder_time_readable_time, message, interaction.guild_id, repeat)
 
         return
 
