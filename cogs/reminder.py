@@ -13,7 +13,8 @@ from util.util import *
 from util.vars.eind_vars import REMINDER_FILE
 
 REMINDER_CHANNEL_ID = int(os.getenv("REMINDER_CHANNEL_ID"))
-DATE_PARSER_SETTINGS = {'PREFER_DATES_FROM': 'future', 'DATE_ORDER': 'DMY', 'TIMEZONE': 'Europe/Amsterdam'}
+DATE_PARSER_SETTINGS = {'PREFER_DATES_FROM': 'future',
+                        'DATE_ORDER': 'DMY', 'TIMEZONE': 'Europe/Amsterdam'}
 
 reminder_file = get_file(REMINDER_FILE)
 
@@ -32,9 +33,10 @@ class Reminder(commands.Cog):
 
     @app_commands.command(name="remindme", description="Set a reminder")
     async def remindme(self, interaction: discord.Interaction, reminder_time: str, message: str, repeat: bool):
-        parsed_time = dateparser.parse(reminder_time, settings=DATE_PARSER_SETTINGS)
+        parsed_time = dateparser.parse(
+            reminder_time, settings=DATE_PARSER_SETTINGS)
         reminder_time_readable_day = parsed_time.strftime('%d/%m/%Y')
-        reminder_time_readable_time = parsed_time.strftime('%I:%M %p')
+        reminder_time_readable_time = parsed_time.strftime('%H:%M')
         reminder_time_timestamp = parsed_time.timestamp()
 
         if not parsed_time:
@@ -122,7 +124,8 @@ class Reminder(commands.Cog):
         for id in to_remove:
             reminders.pop(id)
 
-        logging.info(f"[{__name__}] {len(reminders)} reminders found. ({repeat_count} daily)")
+        logging.info(
+            f"[{__name__}] {len(reminders)} reminders found. ({repeat_count} daily)")
         save_json_file(reminders, reminder_file)
 
     async def add_reminder(self, author, time, reason, guild, repeat):
@@ -140,7 +143,8 @@ class Reminder(commands.Cog):
 
     async def start_reminder(self, reminder_id, author, tm, reason, guild_id, repeat):
         if repeat:
-            tm_to_remind = dateparser.parse(tm, settings=DATE_PARSER_SETTINGS).timestamp()
+            tm_to_remind = dateparser.parse(
+                tm, settings=DATE_PARSER_SETTINGS).timestamp()
             if tm_to_remind < time.time():
                 tm_to_remind = tm_to_remind + 86400
         else:
@@ -154,7 +158,8 @@ class Reminder(commands.Cog):
             if not repeat:
                 await self.delete_reminder(reminder_id)
             else:
-                self.loop.create_task(self.start_reminder(reminder_id, author, tm, reason, guild_id, repeat))
+                self.loop.create_task(self.start_reminder(
+                    reminder_id, author, tm, reason, guild_id, repeat))
             return
 
     async def notify_user(self, reason, user: discord.user.User, guild: discord.Guild):
@@ -172,7 +177,7 @@ class Reminder(commands.Cog):
     def get_user_reminders(self, user):
         reminders = load_json_file(reminder_file)
         user_reminders = {k: v for k,
-                                   v in reminders.items() if v['author'] == user.id}
+                          v in reminders.items() if v['author'] == user.id}
         return user_reminders
 
 

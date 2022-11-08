@@ -3,12 +3,43 @@ from discord.ext import commands
 import discord
 from discord import app_commands
 import random
+from util.vars.eind_vars import *
 
+DEFAULT_ROLL = 20
+ROLL_FOR_TEXT = "roll for "
+HEY_ARNOL_TEXT = "hey arnol, "
+EIGHT_BALL_OPTIONS = ["Yes ✅", "It is decidedly so ✅", "All signs point to yes ✅", "Definitely ✅",
+            "No ❌", "I don't think so ❌", "Don't count on it ❌", "My sources say nope ❌"]
 
 class Casino(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author == self.client.user:
+            return
+        if message.channel.name in CHANNEL_IGNORE_LIST:
+            return
+
+        message_content : str = message.content.lower()
+
+        if message_content.startswith(ROLL_FOR_TEXT):
+            reason_for_roll = message_content[len(ROLL_FOR_TEXT):]
+            random.seed()
+            num = random.randint(1, DEFAULT_ROLL)
+            await message.reply(f"You roll a D20 for _\"{reason_for_roll}\"_. You get a {num}.")
+            return
+
+        if message_content.startswith(HEY_ARNOL_TEXT) and message_content.endswith("?"):
+            random.seed()
+            answer = random.choice(EIGHT_BALL_OPTIONS)
+            await message.reply(answer)
+            return
+
+        return
+
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -17,7 +48,10 @@ class Casino(commands.Cog):
     @app_commands.command()
     async def roll(self, interaction: discord.Interaction, max: int = None):
         if not max:
-            max = 20
+            max = DEFAULT_ROLL
+        if max < 2:
+            await interaction.response.send_message("The maximum can only be 2 and above. Please try again.", ephemeral=True)
+            return
 
         random.seed()
         num = random.randint(1, max)
@@ -27,10 +61,8 @@ class Casino(commands.Cog):
 
     @app_commands.command(name="8ball")
     async def ball(self, interaction: discord.Interaction):
-        options = ["Yes ✅", "It is decidedly so ✅", "All signs point to yes ✅", "Definitely ✅",
-                   "No ❌", "I don't think so ❌", "Don't count on it ❌", "My sources say nope ❌"]
         random.seed()
-        message = f"Magic 8 ball says: {random.choice(options)}"
+        message = f"Magic 8 ball says: {random.choice(EIGHT_BALL_OPTIONS)}"
         await interaction.response.send_message(message)
         return
 
@@ -52,6 +84,7 @@ class Casino(commands.Cog):
 
         await interaction.response.send_message(response_text)
         return
+        
 
 
 async def setup(bot):

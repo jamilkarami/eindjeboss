@@ -49,6 +49,7 @@ class Bonk(commands.Cog, name="Bonk"):
 
         if bonkee == self.bot.user:
             await ctx.message.reply(f"No u {BONK_EMOJI}")
+            await ctx.message.add_reaction(BONK_EMOJI)
             self.add_to_leaderboard(bonker)
             self.save_last_bonk(bonker)
             logging.info(f"{bonker.name} tried to bonk me and failed miserably.")

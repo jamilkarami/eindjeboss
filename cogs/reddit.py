@@ -43,7 +43,7 @@ class Reddit(commands.Cog):
             return
 
         message_content = message.content.lower()
-        matches = re.findall(SUBREDDIT_REGEX, message_content)
+        matches = set(re.findall(SUBREDDIT_REGEX, message_content))
 
         if matches:
             await self.handle_reddit_matches(matches, message)
@@ -90,8 +90,8 @@ class Reddit(commands.Cog):
         return
 
     async def handle_reddit_matches(self, matches, message):
-        plural = "s" if len(matches) > 1 else ""
-        payload = f"Found {len(matches)} subreddit link{plural} in your message:\n"
+        match_count = len(matches)
+        payload = f"Found {match_count} subreddit link{'s'[:match_count^1]} in your message:\n"
         safe_matches = await self.get_safe_matches(matches)
 
         if not safe_matches:
