@@ -8,7 +8,7 @@ import requests
 from util.vars.periodic_reminders import *
 from util.vars.eind_vars import *
 from table2ascii import table2ascii as t2a, PresetStyle
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 from dateparser import parser
 
 
@@ -36,7 +36,7 @@ class Periodics(commands.Cog):
     async def on_ready(self):
         logging.info(f"[{__name__}] Cog is ready")
         await self.schedule_periodic_messages()
-        logging.info("Schedule periodic messages lolol")
+        logging.info("Scheduling periodic messages")
         crontab(WEATHER_DT, func=self.send_weather_forecast, start=True)
         crontab(PSV_DT, func=self.check_psv_game, start=True)
 
@@ -45,7 +45,6 @@ class Periodics(commands.Cog):
         guild = await self.client.fetch_guild(guild_id)
         periodics = load_json_file(get_file(PERIODIC_MESSAGES_FILE))
         periodic_message_count = len(periodics.keys())
-        plural = "" if periodic_message_count == 1 else "s"
         for periodic in periodics.keys():
             vals = periodics[periodic]
 
@@ -56,7 +55,7 @@ class Periodics(commands.Cog):
             crontab(msg_time, func=self.send_periodic_message,
                     args=(msg, msg_channel, guild), start=True)
         logging.info(
-            f"[{__name__}] Scheduled {periodic_message_count} periodic message{plural}")
+            f"[{__name__}] Scheduled {(s:=periodic_message_count)} periodic message{'s'[:s^1]}")
 
     async def send_periodic_message(self, message, channel_id, guild):
         channel = await guild.fetch_channel(channel_id)
@@ -107,16 +106,20 @@ class Periodics(commands.Cog):
         content = json.loads(response.content)
 
         if not content['response']:
+            logging.info("PSV is not playing today.")
             return
 
         if not content['response'][0]['teams']['home']['id'] == PSV_TEAM_ID:
+            logging.info("PSV is playing today, but not at home")
             return
 
         dt = content['response'][0]['fixture']['date']
 
-        match_time = (parser.parse(dt)).strftime("%H:%M")
+        match_time = parser.parse(dt).strftime("%H:%M")
         opponent = content['response'][0]['teams']['away']['name']
 
+        logging.info(
+            "PSV is playing in Philips Stadion today. Sending notice to English channel.")
         await channel.send(f"PSV Eindhoven will be playing {opponent} in Philips Stadion today at {match_time}. Expect heavy traffic around the stadium.")
 
         return
