@@ -15,3 +15,13 @@ def save_json_file(data, path):
 
 def get_file(path):
     return f"files/{path}"
+
+def check_limit(command: str):
+    limits = load_json_file("limits.json")
+    current = limits[command]["current"]
+    max = limits[command]["max"]
+    if current < max:
+        limits[command]["current"] = current + 1
+        save_json_file(limits, "limits.json")
+        return True
+    return False

@@ -132,3 +132,4 @@ dmypy.json
 files
 test.py
 helper.py
+limits.json

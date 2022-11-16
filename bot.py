@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 import asyncio
 import logging
 import os
+from aiocron import crontab
+from util.vars.periodic_reminders import *
+from util.util import *
 
 
 async def main():
@@ -22,6 +25,7 @@ async def main():
     @client.event
     async def on_ready():
         print(f'Eindjeboss is ready to serve.')
+        crontab(RESET_DT, func=reset_limits, start=True)
 
     @client.event
     async def on_connect():
@@ -35,6 +39,12 @@ async def main():
             extension_name = f"cogs.{filename[:-3]}"
             logging.info(f"Loading extension: {extension_name}")
             await client.load_extension(extension_name)
+
+    def reset_limits():
+        limits = load_json_file("limits.json")
+        for limit in limits:
+            limit["current"] = 0
+        save_json_file(limits, "limits.json")
 
     async with client:
         await load_extensions()

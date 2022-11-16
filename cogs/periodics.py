@@ -9,7 +9,7 @@ from util.vars.periodic_reminders import *
 from util.vars.eind_vars import *
 from table2ascii import table2ascii as t2a, PresetStyle
 from datetime import datetime, date
-from dateparser import parser
+import dateparser
 
 
 # Weather
@@ -109,18 +109,18 @@ class Periodics(commands.Cog):
             logging.info("PSV is not playing today.")
             return
 
-        if not content['response'][0]['teams']['home']['id'] == PSV_TEAM_ID:
+        if not str(content['response'][0]['teams']['home']['id']) == PSV_TEAM_ID:
             logging.info("PSV is playing today, but not at home")
             return
 
         dt = content['response'][0]['fixture']['date']
 
-        match_time = parser.parse(dt).strftime("%H:%M")
+        match_time = dateparser.parse(dt).strftime("%H:%M")
         opponent = content['response'][0]['teams']['away']['name']
 
         logging.info(
             "PSV is playing in Philips Stadion today. Sending notice to English channel.")
-        await channel.send(f"PSV Eindhoven will be playing {opponent} in Philips Stadion today at {match_time}. Expect heavy traffic around the stadium.")
+        await channel.send(f"**PSV Eindhoven** will be playing against **{opponent}** in **Philips Stadion** today at **{match_time}**. Expect heavy traffic around the stadium.")
 
         return
 

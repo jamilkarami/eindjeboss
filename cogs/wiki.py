@@ -3,17 +3,17 @@ from discord import app_commands
 from discord.ext import commands
 
 import logging
-import wikipedia
-import wikipediaapi
-from wikipedia.exceptions import PageError, DisambiguationError
 
-wiki = wikipediaapi.Wikipedia('en')
+from wikipedia_summary import WikipediaSummary
 
 
 class Wiki(commands.Cog):
 
+    wiki_summary : WikipediaSummary
+
     def __init__(self, client):
         self.client = client
+        self.wiki_summary = WikipediaSummary()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -21,24 +21,18 @@ class Wiki(commands.Cog):
 
     @app_commands.command(name="wiki")
     async def wiki(self, interaction: discord.Interaction, query: str):
-        embed = discord.Embed(title=query)
-        url = wikipedia.page(f"{query}", auto_suggest=False).url
-
-        try:
-            summary = wikipedia.summary(
-                f"{query}", auto_suggest=False, sentences=3)
-            payload = summary + f" [link]({url})"
-        except PageError as e:
-            payload = "Could not find page for query: " + f"{query}"
+        details = self.wiki_summary.get_summary(query)
+        if not details:
+            await interaction.response.send_message(f"Could not find page for query: {query}", ephemeral=True)
+            return
+        try: 
+            embed = discord.Embed(title=query, url=details.url, description=details.summary)
+            embed.set_image(url=details.thumbnail_url)
+            await interaction.response.send_message(embed=embed)
+            return
+        except Exception as e:
+            logging.info(f"Failed to send Wiki page to {interaction.user.name} for query {query}")
             print(e)
-        except DisambiguationError as e:
-            summary = wikipedia.summary(
-                e.options[0], auto_suggest=False, sentences=3)
-            payload = summary + f" [(link)]({url})"
-
-        embed.description = payload
-        await interaction.response.send_message(embed=embed)
-        return
 
 
 async def setup(bot):

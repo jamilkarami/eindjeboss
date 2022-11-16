@@ -78,6 +78,7 @@ class Casino(commands.Cog):
     async def choose(self, interaction: discord.Interaction, options: str):
         split_options = [x.strip().capitalize() for x in options.split(',')]
         response_options = ", ".join([f"**{x}**" for x in split_options])
+        random.seed()
         choice = random.choice(
             split_options) if "takumi" not in options.lower() else "Takumi"
         response_text = f"You asked me to choose from {response_options}.\n\nI choose: **{choice}**"
