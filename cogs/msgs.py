@@ -27,6 +27,10 @@ class Messages(commands.Cog, name="Messages"):
     async def free_anisha(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FreeAnisha")
 
+    @app_commands.command(name="fg", description="Free Graggy")
+    async def free_graggy(self, interaction: discord.Interaction):
+        await interaction.response.send_message("#FreeGraggy")
+
     @app_commands.command(name="msi",
                           description="The Eindhoven Community Discord's collectively humble opinion on MSI")
     async def f_msi(self, interaction: discord.Interaction):

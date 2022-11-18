@@ -11,6 +11,7 @@ import time
 from datetime import datetime
 import math
 import discord.errors
+from discord.errors import Forbidden
 
 N_CHANNEL_ID = os.getenv('N_CHANNEL_ID')
 
@@ -85,7 +86,11 @@ class Bonk(commands.Cog, name="Bonk"):
 
         self.add_to_leaderboard(bonkee)
         self.save_last_bonk(bonker)
-        await ctx.message.reference.resolved.add_reaction(BONK_EMOJI)
+        try:
+            await ctx.message.reference.resolved.add_reaction(BONK_EMOJI)
+        except Forbidden as e:
+            await ctx.channel.send(f"{bonkee.mention} has likely blocked Arnol and therefore the bonk reaction cannot be added to their message. Shame.")
+            logging.info(f"Failed to add bonk reaction to {bonkee.name}'s message. They have likely blocked this bot.")
         logging.info(f"{bonker.name} bonked {bonkee.name}.")
         return
 
@@ -123,12 +128,12 @@ class Bonk(commands.Cog, name="Bonk"):
         body = []
 
         leaderboard = load_json_file(get_file(BONK_LEADERBOARD_FILE))
-        filtered_leaderboard = dict(itertools.islice(leaderboard.items(), num))
-        total = 0
+        filtered_leaderboard = dict(itertools.islice(leaderboard['bonks'].items(), num))
+        total = leaderboard['total_bonks']
 
         for k, v in filtered_leaderboard.items():
-            body.append([v['name'], v['score']])
-            total = total + v['score']
+            percentage = round(v['score']*100/total, 2)
+            body.append([v['name'], f"{v['score']} ({percentage}%)"])
 
         output = t2a(
             header=["Name", "Bonks"],
@@ -143,13 +148,18 @@ class Bonk(commands.Cog, name="Bonk"):
         leaderboard = load_json_file(bonk_file)
         author_id = str(author.id)
 
-        if str(author.id) in leaderboard.keys():
-            leaderboard[author_id] = {'name': author.name, 'score': leaderboard[author_id]['score'] + 1}
-        else:
-            leaderboard[author_id] = {'name': author.name, 'score': 1}
+        bonks = leaderboard['bonks']
 
-        sorted_leaderboard = {k: v for (k, v) in sorted(leaderboard.items(), key=lambda x: x[1]['score'], reverse=True)}
-        save_json_file(sorted_leaderboard, bonk_file)
+        if str(author.id) in bonks.keys():
+            bonks[author_id] = {'name': author.name, 'score': bonks[author_id]['score'] + 1}
+        else:
+            bonks[author_id] = {'name': author.name, 'score': 1}
+
+        leaderboard['total_bonks'] = leaderboard['total_bonks'] + 1
+
+        bonks = {k: v for (k, v) in sorted(bonks.items(), key=lambda x: x[1]['score'], reverse=True)}
+        leaderboard['bonks'] = bonks
+        save_json_file(leaderboard, bonk_file)
 
     def get_last_bonk(self, author):
         last_bonks = load_json_file(get_file(LAST_BONK_FILE))
