@@ -1,15 +1,15 @@
 import discord
-from discord.ext import commands
 import logging
 import os
+import requests
+import dateparser
+from discord.ext import commands
+from datetime import datetime, date
 from util.util import *
 from aiocron import crontab
-import requests
 from util.vars.periodic_reminders import *
 from util.vars.eind_vars import *
 from table2ascii import table2ascii as t2a, PresetStyle
-from datetime import datetime, date
-import dateparser
 
 
 # Weather

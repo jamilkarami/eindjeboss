@@ -1,10 +1,9 @@
 import os
 import discord
-from discord.ext import commands
-from dotenv import load_dotenv
 import asyncio
 import logging
-import os
+from discord.ext import commands
+from dotenv import load_dotenv
 from aiocron import crontab
 from util.vars.periodic_reminders import *
 from util.util import *

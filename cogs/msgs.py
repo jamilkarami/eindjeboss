@@ -1,10 +1,10 @@
-from discord.ext import commands
-from discord import app_commands
 import logging
 import discord
+import os
 from util.vars.eind_vars import *
 from datetime import datetime
-import os
+from discord.ext import commands
+from discord import app_commands
 from discord.threads import ThreadMember
 
 CANDY_CHANNEL_ID = os.getenv('CANDY_CHANNEL_ID')

@@ -1,9 +1,7 @@
 import discord
+import logging
 from discord import app_commands
 from discord.ext import commands
-
-import logging
-
 from wikipedia_summary import WikipediaSummary
 
 
@@ -26,7 +24,9 @@ class Wiki(commands.Cog):
             await interaction.response.send_message(f"Could not find page for query: {query}", ephemeral=True)
             return
         try: 
-            embed = discord.Embed(title=query, url=details.url, description=details.summary)
+            embed = discord.Embed(title=query, url=details.url)
+            embed.add_field(name="Summary", value=details.description, inline=False)
+            embed.add_field(name="Description", value=details.summary, inline=False)
             embed.set_image(url=details.thumbnail_url)
             await interaction.response.send_message(embed=embed)
             return
