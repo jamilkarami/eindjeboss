@@ -1,9 +1,9 @@
 import discord
+import logging
 from discord.ext import commands
 from discord import app_commands
 from discord.ui import Modal, TextInput
 from util.vars.eind_vars import *
-import logging
 
 
 class Polls(commands.Cog):

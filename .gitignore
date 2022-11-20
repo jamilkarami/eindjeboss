@@ -133,3 +133,4 @@ files
 test.py
 helper.py
 limits.json
+*.png

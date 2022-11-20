@@ -1,19 +1,20 @@
-from discord.ext import commands
-from discord import app_commands
 import discord
-from util.vars.eind_vars import *
-import logging
-from util.util import *
-from table2ascii import table2ascii as t2a, PresetStyle
 import os
 import itertools
 import time
-from datetime import datetime
+import logging
 import math
 import discord.errors
+import matplotlib.pyplot as plt
+from util.vars.eind_vars import *
+from util.util import *
+from datetime import datetime
+from discord.ext import commands
+from discord import app_commands
 from discord.errors import Forbidden
 
 N_CHANNEL_ID = os.getenv('N_CHANNEL_ID')
+HALL_OF_SHAME_FILE = "hallofshame.png"
 
 
 class Bonk(commands.Cog, name="Bonk"):
@@ -89,7 +90,7 @@ class Bonk(commands.Cog, name="Bonk"):
         try:
             await ctx.message.reference.resolved.add_reaction(BONK_EMOJI)
         except Forbidden as e:
-            await ctx.channel.send(f"{bonkee.mention} has likely blocked Arnol and therefore the bonk reaction cannot be added to their message. Shame.")
+            await ctx.channel.send(f"{bonkee.mention} has likely blocked Arnol and therefore the bonk reaction ({BONK_EMOJI}) cannot be added to their message. Shame.")
             logging.info(f"Failed to add bonk reaction to {bonkee.name}'s message. They have likely blocked this bot.")
         logging.info(f"{bonker.name} bonked {bonkee.name}.")
         return
@@ -117,31 +118,60 @@ class Bonk(commands.Cog, name="Bonk"):
 
     @app_commands.command(name="hallofshame")
     async def bonk_leaderboard(self, interaction: discord.Interaction):
-        output, total = self.get_top_n(10)
-        embed_title = f"Hall of Shame ({total} total bonks)"
+        names, scores, total = self.get_top_n(10)
+        title = f"Hall of Shame ({total} total bonks)"
 
-        embed = discord.Embed(title=embed_title, description=f"```{output}```")
-        await interaction.response.send_message(embed=embed)
+        #colors
+        colors = ['#BFDAFE','#DEEAE3','#E3DFD5','#E7CED4', '#DDC3D8', '#C5BDED', '#DAE795', '#FBFBCC', '#BCE0F0', '#ECE4D0']
+        
+        fig1, ax1 = plt.subplots()
+        fig1.set_facecolor('#36393E')
+
+        def make_autopct(values):
+            def my_autopct(pct):
+                ttl = sum(values)
+                val = int(round(pct*ttl/100.0))
+                actual_pct = val/total*100
+                return f'{val:d}\n({actual_pct:.0f}%)'
+            return my_autopct
+
+        patches, texts, autotexts = ax1.pie(scores, colors = colors, labels=names, autopct=make_autopct(scores), pctdistance=0.85, rotatelabels=True, shadow=True)
+        for text in texts:
+            text.set_color('white')
+        for autotext in autotexts:
+            autotext.set_color('grey')
+
+        #draw circle
+        centre_circle = plt.Circle((0,0),0.70,fc='#36393E')
+        fig = plt.gcf()
+        fig.gca().add_artist(centre_circle)
+
+        # Equal aspect ratio ensures that pie is drawn as a circle
+        ax1.axis('equal')
+        legend = plt.legend(patches[:3], names[:3], loc="center", title="Hall of Shame", labelcolor="white")
+        legend.get_frame().set_facecolor('#36393E')
+        plt.setp(legend.get_title(), color='white')
+        plt.tight_layout()
+            
+        plt.savefig(HALL_OF_SHAME_FILE, transparent=True)
+
+        await interaction.response.send_message(file=discord.File(HALL_OF_SHAME_FILE))
+        os.remove(HALL_OF_SHAME_FILE)
         logging.info(f"Sent bonk leaderboard to {interaction.user.name}")
 
     def get_top_n(self, num):
-        body = []
-
         leaderboard = load_json_file(get_file(BONK_LEADERBOARD_FILE))
         filtered_leaderboard = dict(itertools.islice(leaderboard['bonks'].items(), num))
         total = leaderboard['total_bonks']
 
+        names = []
+        scores = []
+
         for k, v in filtered_leaderboard.items():
-            percentage = round(v['score']*100/total, 2)
-            body.append([v['name'], f"{v['score']} ({percentage}%)"])
+            names.append(v['name'])
+            scores.append(v['score'])
 
-        output = t2a(
-            header=["Name", "Bonks"],
-            body=body,
-            style=PresetStyle.ascii_borderless
-        )
-
-        return output, total
+        return names, scores, total
 
     def add_to_leaderboard(self, author):
         bonk_file = get_file(BONK_LEADERBOARD_FILE)

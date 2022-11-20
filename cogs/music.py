@@ -1,9 +1,8 @@
 import discord
-from discord.ext import commands
-from discord import app_commands
-
 import logging
 import spotipy
+from discord.ext import commands
+from discord import app_commands
 from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy.exceptions import SpotifyException
 

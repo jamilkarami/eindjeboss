@@ -1,7 +1,7 @@
-from discord.ext import commands
-from discord import app_commands
 import discord
 import logging
+from discord.ext import commands
+from discord import app_commands
 from util.util import *
 from util.vars.eind_vars import *
 

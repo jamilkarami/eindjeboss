@@ -3,12 +3,9 @@ import os
 import asyncpraw
 import re
 import random
-
 import discord
 from discord.ext import commands
 from discord import app_commands
-from sqlalchemy import desc
-
 from util.vars.eind_vars import *
 from util.vars.periodic_reminders import TOP_REDDIT_CAT_DT
 from aiocron import crontab

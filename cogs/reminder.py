@@ -1,6 +1,4 @@
 import discord
-from discord.ext import commands
-from discord import app_commands
 import logging
 import uuid
 import time
@@ -8,6 +6,8 @@ import asyncio
 import dateparser
 import datetime
 import os
+from discord.ext import commands
+from discord import app_commands
 from table2ascii import table2ascii as t2a, PresetStyle
 from util.util import *
 from util.vars.eind_vars import REMINDER_FILE

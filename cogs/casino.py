@@ -1,9 +1,9 @@
-import logging
-from discord.ext import commands
 import discord
-from discord import app_commands
 import random
+import logging
 from util.vars.eind_vars import *
+from discord import app_commands
+from discord.ext import commands
 
 DEFAULT_ROLL = 20
 ROLL_FOR_TEXT = "roll for "
