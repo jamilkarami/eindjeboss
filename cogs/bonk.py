@@ -95,6 +95,16 @@ class Bonk(commands.Cog, name="Bonk"):
         logging.info(f"{bonker.name} bonked {bonkee.name}.")
         return
 
+    @app_commands.command(name="mybonks")
+    async def mybonks(self, interaction: discord.Interaction):
+        leaderboard = load_json_file(get_file(BONK_LEADERBOARD_FILE))
+        score = leaderboard.get('bonks').get(str(interaction.user.id)).get('score')
+        if not score:
+            await interaction.response.send_message('You have not been bonked yet.', ephemeral=True)
+            return
+        await interaction.response.send_message(f"You have been bonked {(s:=score)} time{'s'[:s^1]} so far.", ephemeral=True)
+        return
+
     @app_commands.command(name="bonktimeout")
     async def bonk_timeout(self, interaction: discord.Interaction, member: discord.Member):
         guild = interaction.guild
@@ -119,7 +129,6 @@ class Bonk(commands.Cog, name="Bonk"):
     @app_commands.command(name="hallofshame")
     async def bonk_leaderboard(self, interaction: discord.Interaction):
         names, scores, total = self.get_top_n(10)
-        title = f"Hall of Shame ({total} total bonks)"
 
         #colors
         colors = ['#BFDAFE','#DEEAE3','#E3DFD5','#E7CED4', '#DDC3D8', '#C5BDED', '#DAE795', '#FBFBCC', '#BCE0F0', '#ECE4D0']

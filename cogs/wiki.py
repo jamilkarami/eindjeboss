@@ -24,11 +24,13 @@ class Wiki(commands.Cog):
             await interaction.response.send_message(f"Could not find page for query: {query}", ephemeral=True)
             return
         try: 
-            embed = discord.Embed(title=query, url=details.url)
-            embed.add_field(name="Summary", value=details.description, inline=False)
-            embed.add_field(name="Description", value=details.summary, inline=False)
+            embed = discord.Embed(title=details.title, url=details.url)
+            if details.description:
+                embed.add_field(name="Description", value=details.description, inline=True)
+            embed.add_field(name="Summary", value=details.summary, inline=False)
             embed.set_image(url=details.thumbnail_url)
             await interaction.response.send_message(embed=embed)
+            logging.info(f"Sent Wiki page to {interaction.user.name} for query {query}")
             return
         except Exception as e:
             logging.info(f"Failed to send Wiki page to {interaction.user.name} for query {query}")
