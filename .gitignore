@@ -129,8 +129,11 @@ dmypy.json
 .pyre/
 
 # Others
+.idea/
 files
+temp
 test.py
 helper.py
 limits.json
 *.png
+.vscode

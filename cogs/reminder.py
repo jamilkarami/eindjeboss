@@ -31,7 +31,7 @@ class Reminder(commands.Cog):
         logging.info(f"[{__name__}] Loading reminders")
         await self.startup_reminders()
 
-    @app_commands.command(name="remindme", description="Set a reminder")
+    @app_commands.command(name="remindme", description="Set a reminder.")
     async def remindme(self, interaction: discord.Interaction, reminder_time: str, message: str, repeat: bool):
         parsed_time = dateparser.parse(
             reminder_time, settings=DATE_PARSER_SETTINGS)
@@ -57,9 +57,7 @@ class Reminder(commands.Cog):
                 f"I will remind you of **{message}** every day at **{reminder_time_readable_time}** :timer:")
             await self.add_reminder(interaction.user, reminder_time_readable_time, message, interaction.guild_id, repeat)
 
-        return
-
-    @app_commands.command(name="myreminders", description="Get a list of your active reminders")
+    @app_commands.command(name="myreminders", description="Get a list of your active reminders.")
     async def myreminders(self, interaction: discord.Interaction):
         reminders = load_json_file(reminder_file)
         user_reminders = self.get_user_reminders(interaction.user)
@@ -89,9 +87,8 @@ class Reminder(commands.Cog):
         )
 
         await interaction.response.send_message(content=f"```{output}```", ephemeral=True)
-        return
 
-    @app_commands.command(name="deletereminder", description="Delete one of your set reminders")
+    @app_commands.command(name="deletereminder", description="Delete one of your set reminders.")
     async def deletereminder(self, interaction: discord.Interaction, reminder_id: str):
         user_reminders = self.get_user_reminders(interaction.user)
 
@@ -104,7 +101,6 @@ class Reminder(commands.Cog):
         await interaction.response.send_message(
             "You have no reminders with that ID. Please use /myreminders to check your current reminder IDs.",
             ephemeral=True)
-        return
 
     async def startup_reminders(self):
         reminders = load_json_file(reminder_file)
@@ -160,7 +156,6 @@ class Reminder(commands.Cog):
             else:
                 self.loop.create_task(self.start_reminder(
                     reminder_id, author, tm, reason, guild_id, repeat))
-            return
 
     async def notify_user(self, reason, user: discord.user.User, guild: discord.Guild):
         channels = await guild.fetch_channels()
@@ -172,7 +167,6 @@ class Reminder(commands.Cog):
 
         message = f"{user.mention} You asked to be reminded of **{reason}**. The time has come! :timer:"
         await reminder_channel.send(message)
-        return
 
     def get_user_reminders(self, user):
         reminders = load_json_file(reminder_file)

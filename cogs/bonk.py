@@ -13,12 +13,11 @@ from discord.ext import commands
 from discord import app_commands
 from discord.errors import Forbidden
 
-N_CHANNEL_ID = os.getenv('N_CHANNEL_ID')
+N_CHANNEL_ID = os.getenv("N_CHANNEL_ID")
 HALL_OF_SHAME_FILE = "hallofshame.png"
 
 
 class Bonk(commands.Cog, name="Bonk"):
-
     def __init__(self, bot):
         self.bot = bot
 
@@ -61,7 +60,7 @@ class Bonk(commands.Cog, name="Bonk"):
             await ctx.message.reply("No self-bonking.")
             return
 
-        bonk_timeout = BONK_TIMEOUT_SLOW if bonk_timeout_role in bonker.roles else BONK_TIMEOUT
+        bonk_timeout = (BONK_TIMEOUT_SLOW if bonk_timeout_role in bonker.roles else BONK_TIMEOUT)
 
         if time_diff < bonk_timeout:
             next_bonk_time = last_bonk_time + bonk_timeout
@@ -80,8 +79,8 @@ class Bonk(commands.Cog, name="Bonk"):
             if seconds_until_bonk:
                 str_time_to_bonk = str_time_to_bonk + f" {seconds_until_bonk} seconds"
 
-            msg = "You're on bonk timeout. " if bonk_timeout_role in bonker.roles else "You can only bonk once every 5 minutes. "
-            msg = msg + f"You can bonk again in{str_time_to_bonk} (at {bonk_time_hm}). Please wait."
+            msg = ("You're on bonk timeout. " if bonk_timeout_role in bonker.roles else "You can only bonk once every 5 minutes. ")
+            msg = (msg + f"You can bonk again in{str_time_to_bonk} (at {bonk_time_hm}). Please wait.")
             await ctx.message.reply(msg)
             return
 
@@ -89,23 +88,22 @@ class Bonk(commands.Cog, name="Bonk"):
         self.save_last_bonk(bonker)
         try:
             await ctx.message.reference.resolved.add_reaction(BONK_EMOJI)
-        except Forbidden as e:
+        except Forbidden:
             await ctx.channel.send(f"{bonkee.mention} has likely blocked Arnol and therefore the bonk reaction ({BONK_EMOJI}) cannot be added to their message. Shame.")
             logging.info(f"Failed to add bonk reaction to {bonkee.name}'s message. They have likely blocked this bot.")
         logging.info(f"{bonker.name} bonked {bonkee.name}.")
-        return
 
-    @app_commands.command(name="mybonks")
+    @app_commands.command(name="mybonks", description="See how many times you've been bonked.")
     async def mybonks(self, interaction: discord.Interaction):
         leaderboard = load_json_file(get_file(BONK_LEADERBOARD_FILE))
-        score = leaderboard.get('bonks').get(str(interaction.user.id)).get('score')
+        score = leaderboard.get("bonks").get(str(interaction.user.id)).get("score")
         if not score:
-            await interaction.response.send_message('You have not been bonked yet.', ephemeral=True)
+            await interaction.response.send_message("You have not been bonked yet.", ephemeral=True)
             return
-        await interaction.response.send_message(f"You have been bonked {(s:=score)} time{'s'[:s^1]} so far.", ephemeral=True)
-        return
+        await interaction.response.send_message(f"You have been bonked {score} time{'s'[:score^1]} so far.", ephemeral=True)
 
-    @app_commands.command(name="bonktimeout")
+    @app_commands.command(name="bonktimeout", description="Put a user on bonk timeout, increasing their wait time "
+                                                          "between bonks from 5 minutes to 4 hours.",)
     async def bonk_timeout(self, interaction: discord.Interaction, member: discord.Member):
         guild = interaction.guild
         moderator_role = discord.utils.get(guild.roles, id=int(os.getenv("MODERATOR_ROLE_ID")))
@@ -124,9 +122,8 @@ class Bonk(commands.Cog, name="Bonk"):
             logging.info(f"Removed bonk timeout role from {member.name}")
             await interaction.response.send_message(f"{member.mention} is not on bonk timeout anymore.")
 
-        return
 
-    @app_commands.command(name="hallofshame")
+    @app_commands.command(name="hallofshame", description="Show the Bonk leaderboard/hall of shame.")
     async def bonk_leaderboard(self, interaction: discord.Interaction):
         names, scores, total = self.get_top_n(10)
 
@@ -150,12 +147,10 @@ class Bonk(commands.Cog, name="Bonk"):
         for autotext in autotexts:
             autotext.set_color('grey')
 
-        #draw circle
         centre_circle = plt.Circle((0,0),0.70,fc='#36393E')
         fig = plt.gcf()
         fig.gca().add_artist(centre_circle)
 
-        # Equal aspect ratio ensures that pie is drawn as a circle
         ax1.axis('equal')
         legend = plt.legend(patches[:3], names[:3], loc="center", title="Hall of Shame", labelcolor="white")
         legend.get_frame().set_facecolor('#36393E')
@@ -203,7 +198,7 @@ class Bonk(commands.Cog, name="Bonk"):
     def get_last_bonk(self, author):
         last_bonks = load_json_file(get_file(LAST_BONK_FILE))
         author_id = str(author.id)
-        if (author_id not in last_bonks.keys()):
+        if author_id not in last_bonks.keys():
             return None
         return last_bonks[author_id]["last_bonk"]
 
@@ -211,7 +206,7 @@ class Bonk(commands.Cog, name="Bonk"):
         last_bonk_file = get_file(LAST_BONK_FILE)
         last_bonks = load_json_file(last_bonk_file)
         author_id = str(author.id)
-        last_bonks[author_id] = {'name': author.name, 'last_bonk': time.time()}
+        last_bonks[author_id] = {"name": author.name, "last_bonk": time.time()}
         save_json_file(last_bonks, last_bonk_file)
 
 

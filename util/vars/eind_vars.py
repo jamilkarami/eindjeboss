@@ -14,7 +14,17 @@ NUMBER_EMOJI_SIX = "6️⃣"
 NUMBER_EMOJI_SEV = "7️⃣"
 NUMBER_EMOJI_EIG = "8️⃣"
 NUMBER_EMOJI_NIN = "9️⃣"
-NUMBER_EMOJIS = [NUMBER_EMOJI_ONE, NUMBER_EMOJI_TWO, NUMBER_EMOJI_THR, NUMBER_EMOJI_FOU, NUMBER_EMOJI_FIV, NUMBER_EMOJI_SIX, NUMBER_EMOJI_SEV, NUMBER_EMOJI_EIG, NUMBER_EMOJI_NIN]
+NUMBER_EMOJIS = [
+    NUMBER_EMOJI_ONE,
+    NUMBER_EMOJI_TWO,
+    NUMBER_EMOJI_THR,
+    NUMBER_EMOJI_FOU,
+    NUMBER_EMOJI_FIV,
+    NUMBER_EMOJI_SIX,
+    NUMBER_EMOJI_SEV,
+    NUMBER_EMOJI_EIG,
+    NUMBER_EMOJI_NIN,
+]
 YES_EMOJI = "✅"
 NO_EMOJI = "❌"
 REDDIT_USER_AGENT = "Eindjeboss v1.0"
@@ -29,9 +39,79 @@ LAST_BONK_FILE = "last_bonk.json"
 PERIODIC_MESSAGES_FILE = "periodic_messages.json"
 REMINDER_FILE = "reminders.json"
 GAME_FILE = "games.json"
-CAT_SUBREDDITS = ["Cats","Kitten","CatSpotting","IllegallySmolCats","IllegallyBigCats","IllegallyLongCats","Kitty","GrumpyCats","TruckerCats","FromKittenToCat","WetCats","SeniorCats","SleepingCats","Displeased_Kitties","FluffyCats","SuspiciousKitties","CatsCalledFood","catshuggingcats","SadCats","PirateKitties","meowormyson","goodcats","C_AT","thisismylifemeow","pimpcats","fatcats","divorcedcats","notmycat","nowmycat","ChristmasCats","scrungycats","AdorableCats","AliveNamedCats","Medieval_Cats"]
-DOG_SUBREDDITS = ["rarepuppers","goldenretrievers","shiba","dogswithjobs","Doggles","dogs","lookatmydog","corgi","WiggleButts","bostonterrier","blop","PuppySmiles","WhatsWrongWithYourDog"]
-CAR_SUBREDDITS = ["Porsche", "ferrari", "carporn", "spotted", "JDM", "weirdwheels", "classiccars", "battlecars", "skyline", "itasha", "autos", "audi", "mini", "GT3", "awesomecarmods", "racecarporn", "wec", "super_gt", "rally", "rallyporn"]
+CAT_SUBREDDITS = [
+    "Cats",
+    "Kitten",
+    "CatSpotting",
+    "IllegallySmolCats",
+    "IllegallyBigCats",
+    "IllegallyLongCats",
+    "Kitty",
+    "GrumpyCats",
+    "TruckerCats",
+    "FromKittenToCat",
+    "WetCats",
+    "SeniorCats",
+    "SleepingCats",
+    "Displeased_Kitties",
+    "FluffyCats",
+    "SuspiciousKitties",
+    "CatsCalledFood",
+    "catshuggingcats",
+    "SadCats",
+    "PirateKitties",
+    "meowormyson",
+    "goodcats",
+    "C_AT",
+    "thisismylifemeow",
+    "pimpcats",
+    "fatcats",
+    "divorcedcats",
+    "notmycat",
+    "nowmycat",
+    "ChristmasCats",
+    "scrungycats",
+    "AdorableCats",
+    "AliveNamedCats",
+    "Medieval_Cats",
+]
+DOG_SUBREDDITS = [
+    "rarepuppers",
+    "goldenretrievers",
+    "shiba",
+    "dogswithjobs",
+    "Doggles",
+    "dogs",
+    "lookatmydog",
+    "corgi",
+    "WiggleButts",
+    "bostonterrier",
+    "blop",
+    "PuppySmiles",
+    "WhatsWrongWithYourDog",
+]
+CAR_SUBREDDITS = [
+    "Porsche",
+    "ferrari",
+    "carporn",
+    "spotted",
+    "JDM",
+    "weirdwheels",
+    "classiccars",
+    "battlecars",
+    "skyline",
+    "itasha",
+    "autos",
+    "audi",
+    "mini",
+    "GT3",
+    "awesomecarmods",
+    "racecarporn",
+    "wec",
+    "super_gt",
+    "rally",
+    "rallyporn",
+]
 HOT_WHEELS_SUBREDDIT = "HotWheels"
 BONK_TIMEOUT = 300
 BONK_TIMEOUT_SLOW = 14400

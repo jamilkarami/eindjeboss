@@ -1,13 +1,19 @@
 import logging
 import discord
 import os
+import time
+import requests
 from util.vars.eind_vars import *
 from datetime import datetime
 from discord.ext import commands
 from discord import app_commands
+from discord import Reaction, Emoji
 from discord.threads import ThreadMember
+from util.util import *
 
-CANDY_CHANNEL_ID = os.getenv('CANDY_CHANNEL_ID')
+CANDY_CHANNEL_ID = os.getenv("CANDY_CHANNEL_ID")
+GRAGGY_FILE = "graggy.json"
+MSGTOTAL_URL = "https://discord.com/api/v9/guilds/{}/messages/search?author_id={}"
 
 
 class Messages(commands.Cog, name="Messages"):
@@ -46,6 +52,14 @@ class Messages(commands.Cog, name="Messages"):
     async def f_fontys(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FuckFontys")
 
+    @app_commands.command(name="spontaan")
+    async def spontaan(self, interaction: discord.Interaction):
+        await interaction.response.send_message("SPONTAAN. REIZEN. DRANKJES MET DE MEIDEN. SHOPPEN. SPECIAALBIER. SUSHI. SARCASME.")
+
+    @app_commands.command(name="misterstinkie")
+    async def stinkie(self, interaction: discord.Interaction):
+        await interaction.response.send_message("He will be euthanized.")
+
     @app_commands.command(name="blaze")
     async def blaze(self, interaction: discord.Interaction):
         await interaction.response.send_message(HARAM_EMOJI)
@@ -59,7 +73,7 @@ class Messages(commands.Cog, name="Messages"):
 
         message_content = message.content.lower()
 
-        current_time = datetime.now().strftime('%H:%M')
+        current_time = datetime.now().strftime("%H:%M")
         times = ["04:20", "4:20", "16:20"]
 
         if '420' in message_content and str(message.channel.id) == CANDY_CHANNEL_ID and current_time in times:
@@ -81,9 +95,6 @@ class Messages(commands.Cog, name="Messages"):
 
         if message_content == "ass":
             await message.add_reaction(ASS_EMOJI)
-            return
-
-        return
 
     @app_commands.command(name="tagall")
     async def tagall(self, interaction: discord.Interaction):
@@ -98,6 +109,66 @@ class Messages(commands.Cog, name="Messages"):
             if user.id != self.bot.user.id:
                 message = message + f"<@{user.id}> "
         await interaction.response.send_message(message)
+
+    @app_commands.command(name="addgraggy", description="Add a Graggy quote to the list of Graggy quotes :wicked:")
+    async def addgraggy(self, interaction: discord.Interaction, quote: str):
+        guild = interaction.guild
+        moderator_role = discord.utils.get(guild.roles, id=int(os.getenv("MODERATOR_ROLE_ID")))
+
+        if moderator_role not in interaction.user.roles:
+            await interaction.response.send_message("You are not allowed to use this command.", ephemeral=True)
+            return
+
+        quotes = load_json_file(get_file(GRAGGY_FILE))
+        if quote in quotes:
+            await interaction.response.send_message("This quote was already added. Please choose another one.", ephemeral=True)
+            return
+        quotes[quote] = time.strftime("%B %Y")
+        save_json_file(quotes, get_file(GRAGGY_FILE))
+        await interaction.response.send_message("Quote added.", ephemeral=True)
+
+    @app_commands.command(name="mygraggy", description="See currently added Graggy quotes")
+    async def mygraggy(self, interaction: discord.Interaction):
+        guild = interaction.guild
+        moderator_role = discord.utils.get(guild.roles, id=int(os.getenv("MODERATOR_ROLE_ID")))
+
+        if moderator_role not in interaction.user.roles:
+            await interaction.response.send_message("You are not allowed to use this command.", ephemeral=True)
+            return
+
+        quotes = load_json_file(get_file(GRAGGY_FILE))
+        msg = "\n".join([f"{k} ({v})" for k, v in quotes.items()])
+        await interaction.response.send_message(msg, ephemeral=True)
+
+    @app_commands.command(name="mymsgtotal",description="Find out how many messages you (or someone else) have/has sent in total in this server.",)
+    async def msgtotal(self, interaction: discord.Interaction, user: discord.Member = None):
+        guild_id = interaction.guild_id
+        if not user:
+            user = interaction.user
+        total_messages = self.get_total_messages(guild_id, user.id)
+
+        await interaction.response.send_message(f"{user.mention} has sent a total of around {total_messages} messages in this server.")
+
+    @app_commands.command(name="bonkpercentage",description="Find out how many times you (or someoone else) have/has been bonked per message.",)
+    async def bonkpercentage(self, interaction: discord.Interaction, user: discord.Member = None):
+        guild_id = interaction.guild_id
+        if not user:
+            user = interaction.user
+
+        total_messages = self.get_total_messages(guild_id, user.id)
+        bonks = (load_json_file(get_file("bonk_leaderboard.json")).get("bonks").get(str(user.id)))
+
+        if not bonks:
+            await interaction.response.send_message(f"{user.mention} has not been bonked yet.")
+            return
+
+        percentage = f"{bonks['score']*100/total_messages:.3f}%"
+        await interaction.response.send_message(f"{user.mention}'s bonk percentage is {percentage}.")
+
+    def get_total_messages(self, guild_id, user_id):
+        url = MSGTOTAL_URL.format(guild_id, user_id)
+        data = requests.get(url=url, headers={"Authorization": os.getenv("DISCORD_AUTH_HEADER")})
+        return json.loads(data.content)["total_results"]
 
 
 async def setup(bot):

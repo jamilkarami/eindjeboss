@@ -3,6 +3,7 @@ import logging
 import os
 import requests
 import dateparser
+import random
 from discord.ext import commands
 from datetime import datetime, date
 from util.util import *
@@ -26,6 +27,8 @@ FIXTURES_URL = os.getenv("FOOTBALL_API_FIXTURES_URL")
 FOOTBALL_API_KEY = os.getenv("FOOTBALL_API_KEY")
 X_RAPID_API_HOST = os.getenv("X_RAPID_API_HOST")
 
+# Graggy
+GRAGGY_FILE = "graggy.json"
 
 class Periodics(commands.Cog):
 
@@ -39,12 +42,25 @@ class Periodics(commands.Cog):
         logging.info("Scheduling periodic messages")
         crontab(WEATHER_DT, func=self.send_weather_forecast, start=True)
         crontab(PSV_DT, func=self.check_psv_game, start=True)
+        crontab(GRAGGY_DT, func=self.send_graggy_quote, start=True)
+
+    async def send_graggy_quote(self):
+        guild_id = os.getenv("GUILD_ID")
+        guild = await self.client.fetch_guild(guild_id)
+        quotes = load_json_file(get_file(GRAGGY_FILE))
+        graggy_channel = os.getenv("GRAGGY_CHANNEL_ID")
+
+        random.seed()
+        quote, date = random.choice(list(quotes.items()))
+        msg = f"\"{quote}\" -Graggy, {date}"
+
+        await self.send_periodic_message(msg, graggy_channel, guild)
 
     async def schedule_periodic_messages(self):
         guild_id = os.getenv("GUILD_ID")
         guild = await self.client.fetch_guild(guild_id)
         periodics = load_json_file(get_file(PERIODIC_MESSAGES_FILE))
-        periodic_message_count = len(periodics.keys())
+        count = len(periodics.keys())
         for periodic in periodics.keys():
             vals = periodics[periodic]
 
@@ -54,8 +70,9 @@ class Periodics(commands.Cog):
 
             crontab(msg_time, func=self.send_periodic_message,
                     args=(msg, msg_channel, guild), start=True)
+        count
         logging.info(
-            f"[{__name__}] Scheduled {(s:=periodic_message_count)} periodic message{'s'[:s^1]}")
+            f"[{__name__}] Scheduled {count} periodic message{'s'[:count ^ 1]}")
 
     async def send_periodic_message(self, message, channel_id, guild):
         channel = await guild.fetch_channel(channel_id)
@@ -87,7 +104,6 @@ class Periodics(commands.Cog):
 
         embed = discord.Embed(title=embed_title, description=f"```{output}```")
         await channel.send(embed=embed)
-        return
 
     async def check_psv_game(self):
         today = date.today().strftime('%Y-%m-%d')
@@ -109,7 +125,7 @@ class Periodics(commands.Cog):
             logging.info("PSV is not playing today.")
             return
 
-        if not str(content['response'][0]['teams']['home']['id']) == PSV_TEAM_ID:
+        if str(content['response'][0]['teams']['home']['id']) != PSV_TEAM_ID:
             logging.info("PSV is playing today, but not at home")
             return
 
@@ -118,11 +134,8 @@ class Periodics(commands.Cog):
         match_time = dateparser.parse(dt).strftime("%H:%M")
         opponent = content['response'][0]['teams']['away']['name']
 
-        logging.info(
-            "PSV is playing in Philips Stadion today. Sending notice to English channel.")
+        logging.info("PSV is playing in Philips Stadion today. Sending notice to English channel.")
         await channel.send(f"**PSV Eindhoven** will be playing against **{opponent}** in **Philips Stadion** today at **{match_time}**. Expect heavy traffic around the stadium.")
-
-        return
 
 
 async def setup(bot):
