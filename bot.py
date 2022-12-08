@@ -11,19 +11,27 @@ from util.util import *
 
 async def main():
     load_dotenv()
-    TOKEN = os.getenv('DISCORD_TOKEN')
-    STATUS = os.getenv('BOT_STATUS')
-    logging.basicConfig(filename='eindjeboss.log', format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO,
-                        datefmt='%Y-%m-%d %H:%M:%S')
+    TOKEN = os.getenv("DISCORD_TOKEN")
+    STATUS = os.getenv("BOT_STATUS")
+    logging.basicConfig(
+        filename="eindjeboss.log",
+        format="%(asctime)s %(levelname)-8s %(message)s",
+        level=logging.INFO,
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
     intents = discord.Intents.all()
-    activity = discord.Activity(type=discord.ActivityType.watching, detail="", name=STATUS)
+    activity = discord.Activity(
+        type=discord.ActivityType.watching, detail="", name=STATUS
+    )
     intents.members = True
-    client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents, activity=activity)
+    client = commands.Bot(
+        command_prefix="!", case_insensitive=True, intents=intents, activity=activity
+    )
 
     @client.event
     async def on_ready():
-        print(f'Eindjeboss is ready to serve.')
+        print(f"Eindjeboss is ready to serve.")
         crontab(RESET_DT, func=reset_limits, start=True)
 
     @client.event
@@ -32,8 +40,8 @@ async def main():
         await client.tree.sync()
 
     async def load_extensions():
-        for filename in os.listdir("./cogs"):
-            if not filename.endswith('py'):
+        for filename in os.listdir("cogs"):
+            if not filename.endswith("py"):
                 continue
             extension_name = f"cogs.{filename[:-3]}"
             logging.info(f"Loading extension: {extension_name}")

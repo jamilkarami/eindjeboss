@@ -45,24 +45,20 @@ class Reddit(commands.Cog):
         if matches:
             await self.handle_reddit_matches(matches, message)
 
-        return
-
-    @app_commands.command(name="randomcat", description="Sends a random cat picture off of reddit")
+    @app_commands.command(name="randomcat", description="Sends a random cat picture off of reddit.")
     async def send_random_cat(self, interaction: discord.Interaction):
         await interaction.response.send_message(await self.get_random_image_post(random.choice(CAT_SUBREDDITS), 50))
-        return
 
-    @app_commands.command(name="randomdog", description="Sends a random dog picture off of reddit")
+    @app_commands.command(name="randomdog", description="Sends a random dog picture off of reddit.")
     async def send_random_dog(self, interaction: discord.Interaction):
         await interaction.response.send_message(await self.get_random_image_post(random.choice(DOG_SUBREDDITS), 50))
-        return
 
-    @app_commands.command(name="car", description="Sends a random car picture off of reddit")
+    @app_commands.command(name="car", description="Sends a random car picture off of reddit."
+    )
     async def send_random_car(self, interaction: discord.Interaction):
         await interaction.response.send_message(await self.get_random_image_post(random.choice(CAR_SUBREDDITS), 50))
-        return
 
-    @app_commands.command(name="hotwheels", description="Sends a random hot wheels picture off of reddit")
+    @app_commands.command(name="hotwheels", description="Sends a random hot wheels picture off of reddit.")
     async def send_random_hot_wheel(self, interaction: discord.Interaction):
         await interaction.response.send_message(await self.get_random_image_post(HOT_WHEELS_SUBREDDIT, 100))
 
@@ -84,7 +80,6 @@ class Reddit(commands.Cog):
         payload = f"{title}\n{description}"
 
         await channel.send(payload)
-        return
 
     async def handle_reddit_matches(self, matches, message):
         match_count = len(matches)
@@ -98,7 +93,6 @@ class Reddit(commands.Cog):
             payload = payload + f"https://www.reddit.com{match}\n"
 
         await message.reply(payload)
-        return
 
     async def get_safe_matches(self, matches):
         safe_matches = []

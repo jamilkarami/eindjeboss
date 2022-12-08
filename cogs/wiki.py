@@ -7,7 +7,7 @@ from wikipedia_summary import WikipediaSummary
 
 class Wiki(commands.Cog):
 
-    wiki_summary : WikipediaSummary
+    wiki_summary: WikipediaSummary
 
     def __init__(self, client):
         self.client = client
@@ -17,13 +17,13 @@ class Wiki(commands.Cog):
     async def on_ready(self):
         logging.info(f"[{__name__}] Cog is ready")
 
-    @app_commands.command(name="wiki")
+    @app_commands.command(name="wiki", description="Search for a page on Wikipedia.")
     async def wiki(self, interaction: discord.Interaction, query: str):
         details = self.wiki_summary.get_summary(query)
         if not details:
             await interaction.response.send_message(f"Could not find page for query: {query}", ephemeral=True)
             return
-        try: 
+        try:
             embed = discord.Embed(title=details.title, url=details.url)
             if details.description:
                 embed.add_field(name="Description", value=details.description, inline=True)

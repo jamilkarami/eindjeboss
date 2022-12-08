@@ -25,7 +25,6 @@ class Roles(commands.Cog):
             role = discord.utils.get(guild.roles, name=role_name)
             await payload.member.add_roles(role)
             logging.info(f"Added {role_name} role for {payload.member.name}")
-            return
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -39,7 +38,6 @@ class Roles(commands.Cog):
             role = discord.utils.get(guild.roles, name=role_name)
             await member.remove_roles(role)
             logging.info(f"Removed {role_name} role for {payload.member.name}")
-            return
 
     @app_commands.command(name="focus", description="Limits your view to the conversation channels")
     async def focus(self, interaction: discord.Interaction):
@@ -54,7 +52,6 @@ class Roles(commands.Cog):
         await interaction.user.add_roles(role)
         await interaction.response.send_message("Focus mode on. Use /focus again to turn it off.", ephemeral=True)
         logging.info(f"Added focus role for {interaction.user.name}")
-        return
 
 
 async def setup(bot):
