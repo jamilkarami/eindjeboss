@@ -40,6 +40,13 @@ class Bonk(commands.Cog, name="Bonk"):
         current_time = time.time()
         time_diff = current_time - last_bonk_time if last_bonk_time else math.inf
 
+        bonk_timeout = (BONK_TIMEOUT_SLOW if bonk_timeout_role in bonker.roles else BONK_TIMEOUT)
+
+        if time_diff < bonk_timeout:
+            msg = self.get_timeout_str(bonk_timeout, bonk_timeout_role, bonker, current_time, last_bonk_time)
+            await ctx.message.reply(msg)
+            return
+
         if guild.get_member(bonkee.id) is None:
             await ctx.message.reply("This user is not currently on the server.")
             return
@@ -60,38 +67,35 @@ class Bonk(commands.Cog, name="Bonk"):
             await ctx.message.reply("No self-bonking.")
             return
 
-        bonk_timeout = (BONK_TIMEOUT_SLOW if bonk_timeout_role in bonker.roles else BONK_TIMEOUT)
-
-        if time_diff < bonk_timeout:
-            next_bonk_time = last_bonk_time + bonk_timeout
-            time_until_bonk = next_bonk_time - current_time
-            bonk_time_hm = datetime.fromtimestamp(next_bonk_time).strftime("%H:%M")
-
-            hours_until_bonk = int(time_until_bonk // 3600)
-            minutes_until_bonk = int((time_until_bonk % 3600) // 60)
-            seconds_until_bonk = int((time_until_bonk % 3600) % 60)
-
-            str_time_to_bonk = ""
-            if hours_until_bonk:
-                str_time_to_bonk = str_time_to_bonk + f" {hours_until_bonk} hours"
-            if minutes_until_bonk:
-                str_time_to_bonk = str_time_to_bonk + f" {minutes_until_bonk} minutes"
-            if seconds_until_bonk:
-                str_time_to_bonk = str_time_to_bonk + f" {seconds_until_bonk} seconds"
-
-            msg = ("You're on bonk timeout. " if bonk_timeout_role in bonker.roles else "You can only bonk once every 5 minutes. ")
-            msg = (msg + f"You can bonk again in{str_time_to_bonk} (at {bonk_time_hm}). Please wait.")
-            await ctx.message.reply(msg)
-            return
-
         self.add_to_leaderboard(bonkee)
         self.save_last_bonk(bonker)
         try:
             await ctx.message.reference.resolved.add_reaction(BONK_EMOJI)
         except Forbidden:
-            await ctx.channel.send(f"{bonkee.mention} has likely blocked Arnol and therefore the bonk reaction ({BONK_EMOJI}) cannot be added to their message. Shame.")
+            await ctx.channel.send(
+                f"{bonkee.mention} has likely blocked Arnol and therefore the bonk reaction ({BONK_EMOJI}) "
+                f"cannot be added to their message. Shame.")
             logging.info(f"Failed to add bonk reaction to {bonkee.name}'s message. They have likely blocked this bot.")
         logging.info(f"{bonker.name} bonked {bonkee.name}.")
+
+    def get_timeout_str(self, bonk_timeout, bonk_timeout_role, bonker, current_time, last_bonk_time):
+        next_bonk_time = last_bonk_time + bonk_timeout
+        time_until_bonk = next_bonk_time - current_time
+        bonk_time_hm = datetime.fromtimestamp(next_bonk_time).strftime("%H:%M")
+        hours_until_bonk = int(time_until_bonk // 3600)
+        minutes_until_bonk = int((time_until_bonk % 3600) // 60)
+        seconds_until_bonk = int((time_until_bonk % 3600) % 60)
+        str_time_to_bonk = ""
+        if hours_until_bonk:
+            str_time_to_bonk = str_time_to_bonk + f" {hours_until_bonk} hours"
+        if minutes_until_bonk:
+            str_time_to_bonk = str_time_to_bonk + f" {minutes_until_bonk} minutes"
+        if seconds_until_bonk:
+            str_time_to_bonk = str_time_to_bonk + f" {seconds_until_bonk} seconds"
+        msg = ("You're on bonk timeout. " if bonk_timeout_role in bonker.roles else
+               "You can only bonk once every 5 minutes. ")
+        msg = (msg + f"You can bonk again in{str_time_to_bonk} (at {bonk_time_hm}). Please wait.")
+        return msg
 
     @app_commands.command(name="mybonks", description="See how many times you've been bonked.")
     async def mybonks(self, interaction: discord.Interaction):
@@ -100,10 +104,11 @@ class Bonk(commands.Cog, name="Bonk"):
         if not score:
             await interaction.response.send_message("You have not been bonked yet.", ephemeral=True)
             return
-        await interaction.response.send_message(f"You have been bonked {score} time{'s'[:score^1]} so far.", ephemeral=True)
+        await interaction.response.send_message(f"You have been bonked {score} time{'s'[:score ^ 1]} so far.",
+                                                ephemeral=True)
 
     @app_commands.command(name="bonktimeout", description="Put a user on bonk timeout, increasing their wait time "
-                                                          "between bonks from 5 minutes to 4 hours.",)
+                                                          "between bonks from 5 minutes to 4 hours.", )
     async def bonk_timeout(self, interaction: discord.Interaction, member: discord.Member):
         guild = interaction.guild
         moderator_role = discord.utils.get(guild.roles, id=int(os.getenv("MODERATOR_ROLE_ID")))
@@ -122,32 +127,34 @@ class Bonk(commands.Cog, name="Bonk"):
             logging.info(f"Removed bonk timeout role from {member.name}")
             await interaction.response.send_message(f"{member.mention} is not on bonk timeout anymore.")
 
-
     @app_commands.command(name="hallofshame", description="Show the Bonk leaderboard/hall of shame.")
     async def bonk_leaderboard(self, interaction: discord.Interaction):
         names, scores, total = self.get_top_n(10)
 
-        #colors
-        colors = ['#BFDAFE','#DEEAE3','#E3DFD5','#E7CED4', '#DDC3D8', '#C5BDED', '#DAE795', '#FBFBCC', '#BCE0F0', '#ECE4D0']
-        
+        # colors
+        colors = ['#BFDAFE', '#DEEAE3', '#E3DFD5', '#E7CED4', '#DDC3D8', '#C5BDED', '#DAE795', '#FBFBCC', '#BCE0F0',
+                  '#ECE4D0']
+
         fig1, ax1 = plt.subplots()
         fig1.set_facecolor('#36393E')
 
         def make_autopct(values):
             def my_autopct(pct):
                 ttl = sum(values)
-                val = int(round(pct*ttl/100.0))
-                actual_pct = val/total*100
+                val = int(round(pct * ttl / 100.0))
+                actual_pct = val / total * 100
                 return f'{val:d}\n({actual_pct:.0f}%)'
+
             return my_autopct
 
-        patches, texts, autotexts = ax1.pie(scores, colors = colors, labels=names, autopct=make_autopct(scores), pctdistance=0.85, rotatelabels=True, shadow=True)
+        patches, texts, autotexts = ax1.pie(scores, colors=colors, labels=names, autopct=make_autopct(scores),
+                                            pctdistance=0.85, rotatelabels=True, shadow=True)
         for text in texts:
             text.set_color('white')
         for autotext in autotexts:
             autotext.set_color('grey')
 
-        centre_circle = plt.Circle((0,0),0.70,fc='#36393E')
+        centre_circle = plt.Circle((0, 0), 0.70, fc='#36393E')
         fig = plt.gcf()
         fig.gca().add_artist(centre_circle)
 
@@ -156,7 +163,7 @@ class Bonk(commands.Cog, name="Bonk"):
         legend.get_frame().set_facecolor('#36393E')
         plt.setp(legend.get_title(), color='white')
         plt.tight_layout()
-            
+
         plt.savefig(HALL_OF_SHAME_FILE, transparent=True)
 
         await interaction.response.send_message(file=discord.File(HALL_OF_SHAME_FILE))
