@@ -4,14 +4,14 @@ import os
 import requests
 import dateparser
 import random
+import json
+from util.util import load_json_file, get_file
 from discord.ext import commands
 from datetime import datetime, date
-from util.util import *
 from aiocron import crontab
-from util.vars.periodic_reminders import *
-from util.vars.eind_vars import *
+from util.vars.periodic_reminders import WEATHER_DT, PSV_DT, GRAGGY_DT
+from util.vars.eind_vars import PERIODIC_MESSAGES_FILE
 from table2ascii import table2ascii as t2a, PresetStyle
-
 
 # Weather
 CHANNEL_ID = int(os.getenv("ENGLISH_CHANNEL_ID"))
@@ -29,6 +29,7 @@ X_RAPID_API_HOST = os.getenv("X_RAPID_API_HOST")
 
 # Graggy
 GRAGGY_FILE = "graggy.json"
+
 
 class Periodics(commands.Cog):
 
@@ -51,8 +52,8 @@ class Periodics(commands.Cog):
         graggy_channel = os.getenv("GRAGGY_CHANNEL_ID")
 
         random.seed()
-        quote, date = random.choice(list(quotes.items()))
-        msg = f"\"{quote}\" -Graggy, {date}"
+        quote, q_date = random.choice(list(quotes.items()))
+        msg = f"\"{quote}\" -Graggy, {q_date}"
 
         await self.send_periodic_message(msg, graggy_channel, guild)
 
@@ -70,7 +71,6 @@ class Periodics(commands.Cog):
 
             crontab(msg_time, func=self.send_periodic_message,
                     args=(msg, msg_channel, guild), start=True)
-        count
         logging.info(
             f"[{__name__}] Scheduled {count} periodic message{'s'[:count ^ 1]}")
 
@@ -135,7 +135,8 @@ class Periodics(commands.Cog):
         opponent = content['response'][0]['teams']['away']['name']
 
         logging.info("PSV is playing in Philips Stadion today. Sending notice to English channel.")
-        await channel.send(f"**PSV Eindhoven** will be playing against **{opponent}** in **Philips Stadion** today at **{match_time}**. Expect heavy traffic around the stadium.")
+        await channel.send(f"**PSV Eindhoven** will be playing against **{opponent}** in **Philips Stadion** today at "
+                           f"**{match_time}**. Expect heavy traffic around the stadium.")
 
 
 async def setup(bot):
