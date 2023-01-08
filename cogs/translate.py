@@ -40,18 +40,18 @@ class Translate(commands.Cog):
         if payload.emoji.name != BOOK_EMOJI:
             return
         message = await self.client.get_channel(payload.channel_id).fetch_message(payload.message_id)
-        translated = TranslateUtil.translate_message(message.content, None)
+        translated = TranslateUtil.translate_text(message.content, None)
 
         lang = LANGUAGES[translated.src]
 
-        translate_msg = f"You asked me to translate the following message: {message.content}\n\nTranslated from ({lang.capitalize()}): ```{translated.text}```"
+        translate_msg = f"You asked me to translate the following message: ```{message.content}```\nTranslated from ({lang.capitalize()}): ```{translated.text}```"
 
         await payload.member.send(content=translate_msg)
         logging.info(
             f"Sent translation to {payload.member.name} for message \"{message.content}\" by {message.author.name}")
 
     async def translate_context(self, interaction: discord.Interaction, message: discord.Message):
-        translated = TranslateUtil.translate_message(message.content, None)
+        translated = TranslateUtil.translate_text(message.content, None)
 
         lang = LANGUAGES[translated.src]
 
@@ -66,7 +66,7 @@ class Translate(commands.Cog):
         src = None if not args else args[0]
 
         if ctx.message.reference:
-            translated = TranslateUtil.translate_message(ctx.message.reference.resolved.content, src)
+            translated = TranslateUtil.translate_text(ctx.message.reference.resolved.content, src)
             lang = LANGUAGES[translated.src].capitalize()
             payload = f"Translated from ({lang}): {translated.text}"
             await ctx.message.reference.resolved.reply(payload)
@@ -86,7 +86,7 @@ class Translate(commands.Cog):
                     await attachment.save(imgname)
                     imgs.append(imgname)
             for idx, img in enumerate(imgs, start=1):
-                translated = TranslateUtil.translate_message(TranslateUtil.cleanup(pytesseract.image_to_string(img)), src)
+                translated = TranslateUtil.translate_text(TranslateUtil.cleanup(pytesseract.image_to_string(img)), src)
                 lang = LANGUAGES[translated.src].capitalize()
                 payload = f"**Image {idx}**\n_Translated from ({lang}):_\n```{translated.text}```"
                 msg = msg + payload + "\n\n"
@@ -98,13 +98,13 @@ class Translate(commands.Cog):
     @app_commands.choices(src=TRANSLATE_LANGUAGES, dst=TRANSLATE_LANGUAGES)
     async def translate(self, interaction: discord.Interaction, text: str, src: app_commands.Choice[str],
                         dst: app_commands.Choice[str]):
-        translated = TranslateUtil.translate_message(text, src.value, dst.value)
+        translated = TranslateUtil.translate_text(text, src.value, dst.value)
         await interaction.response.send_message(f"Translation of _\"{text}\"_ from _{src.name}_ to _{dst.name}_: {translated.text}")
 
 
-class TranslateUtil():
+class TranslateUtil:
     @staticmethod
-    def translate_message(message, src, dst=None):
+    def translate_text(message, src, dst=None):
         if not dst:
             dst = 'english'
         translated = translator.translate(message) if not src else translator.translate(message, src=src, dest=dst)

@@ -148,7 +148,7 @@ class Bonk(commands.Cog, name="Bonk"):
             return my_autopct
 
         patches, texts, autotexts = ax1.pie(scores, colors=colors, labels=names, autopct=make_autopct(scores),
-                                            pctdistance=0.85, rotatelabels=True, shadow=True)
+                                            pctdistance=0.85, rotatelabels=True, shadow=False)
         for text in texts:
             text.set_color('white')
         for autotext in autotexts:

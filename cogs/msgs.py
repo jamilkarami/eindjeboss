@@ -12,7 +12,6 @@ from discord.threads import ThreadMember
 from util.util import *
 
 CANDY_CHANNEL_ID = os.getenv("CANDY_CHANNEL_ID")
-GRAGGY_FILE = "graggy.json"
 MSGTOTAL_URL = "https://discord.com/api/v9/guilds/{}/messages/search?author_id={}"
 
 
@@ -54,7 +53,7 @@ class Messages(commands.Cog, name="Messages"):
 
     @app_commands.command(name="spontaan")
     async def spontaan(self, interaction: discord.Interaction):
-        await interaction.response.send_message("SPONTAAN. REIZEN. DRANKJES MET DE MEIDEN. SHOPPEN. SPECIAALBIER. SUSHI. SARCASME.")
+        await interaction.response.send_message("SPONTAAN. REIZEN. DRANKJES MET DE MEIDEN. SHOPPEN. SPECIAALBIER. SUSHI. SARCASME. DANSJES.")
 
     @app_commands.command(name="misterstinkie")
     async def stinkie(self, interaction: discord.Interaction):
@@ -109,36 +108,6 @@ class Messages(commands.Cog, name="Messages"):
             if user.id != self.bot.user.id:
                 message = message + f"<@{user.id}> "
         await interaction.response.send_message(message)
-
-    @app_commands.command(name="addgraggy", description="Add a Graggy quote to the list of Graggy quotes :wicked:")
-    async def addgraggy(self, interaction: discord.Interaction, quote: str):
-        guild = interaction.guild
-        moderator_role = discord.utils.get(guild.roles, id=int(os.getenv("MODERATOR_ROLE_ID")))
-
-        if moderator_role not in interaction.user.roles:
-            await interaction.response.send_message("You are not allowed to use this command.", ephemeral=True)
-            return
-
-        quotes = load_json_file(get_file(GRAGGY_FILE))
-        if quote in quotes:
-            await interaction.response.send_message("This quote was already added. Please choose another one.", ephemeral=True)
-            return
-        quotes[quote] = time.strftime("%B %Y")
-        save_json_file(quotes, get_file(GRAGGY_FILE))
-        await interaction.response.send_message("Quote added.", ephemeral=True)
-
-    @app_commands.command(name="mygraggy", description="See currently added Graggy quotes")
-    async def mygraggy(self, interaction: discord.Interaction):
-        guild = interaction.guild
-        moderator_role = discord.utils.get(guild.roles, id=int(os.getenv("MODERATOR_ROLE_ID")))
-
-        if moderator_role not in interaction.user.roles:
-            await interaction.response.send_message("You are not allowed to use this command.", ephemeral=True)
-            return
-
-        quotes = load_json_file(get_file(GRAGGY_FILE))
-        msg = "\n".join([f"{k} ({v})" for k, v in quotes.items()])
-        await interaction.response.send_message(msg, ephemeral=True)
 
     @app_commands.command(name="mymsgtotal",description="Find out how many messages you (or someone else) have/has sent in total in this server.",)
     async def msgtotal(self, interaction: discord.Interaction, user: discord.Member = None):
