@@ -9,7 +9,7 @@ from util.util import load_json_file, get_file
 from discord.ext import commands
 from datetime import datetime, date
 from aiocron import crontab
-from util.vars.periodic_reminders import WEATHER_DT, PSV_DT, GRAGGY_DT
+from util.vars.periodic_reminders import WEATHER_DT, PSV_DT
 from util.vars.eind_vars import PERIODIC_MESSAGES_FILE
 from table2ascii import table2ascii as t2a, PresetStyle
 
@@ -27,9 +27,6 @@ FIXTURES_URL = os.getenv("FOOTBALL_API_FIXTURES_URL")
 FOOTBALL_API_KEY = os.getenv("FOOTBALL_API_KEY")
 X_RAPID_API_HOST = os.getenv("X_RAPID_API_HOST")
 
-# Graggy
-GRAGGY_FILE = "graggy.json"
-
 
 class Periodics(commands.Cog):
 
@@ -43,19 +40,6 @@ class Periodics(commands.Cog):
         logging.info("Scheduling periodic messages")
         crontab(WEATHER_DT, func=self.send_weather_forecast, start=True)
         crontab(PSV_DT, func=self.check_psv_game, start=True)
-        crontab(GRAGGY_DT, func=self.send_graggy_quote, start=True)
-
-    async def send_graggy_quote(self):
-        guild_id = os.getenv("GUILD_ID")
-        guild = await self.client.fetch_guild(guild_id)
-        quotes = load_json_file(get_file(GRAGGY_FILE))
-        graggy_channel = os.getenv("GRAGGY_CHANNEL_ID")
-
-        random.seed()
-        quote, q_date = random.choice(list(quotes.items()))
-        msg = f"\"{quote}\" -Graggy, {q_date}"
-
-        await self.send_periodic_message(msg, graggy_channel, guild)
 
     async def schedule_periodic_messages(self):
         guild_id = os.getenv("GUILD_ID")
