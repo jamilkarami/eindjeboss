@@ -1,0 +1,8 @@
+app = "eindjeboss"
+kill_signal = "SIGINT"
+kill_timeout = 5
+processes = []
+
+[[mounts]]
+  source = "eindjeboss_data"
+  destination = "/eindjeboss_files"

@@ -1,4 +1,5 @@
 import json
+import os
 
 
 def load_json_file(path):
@@ -16,7 +17,7 @@ def save_json_file(data, path):
 
 
 def get_file(path):
-    return f"files/{path}"
+    return f"{os.getenv('FILE_DIR')}/{path}"
 
 
 def check_limit(command: str):

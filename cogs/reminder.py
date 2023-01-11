@@ -14,6 +14,8 @@ from util.vars.eind_vars import REMINDER_FILE
 
 REMINDER_CHANNEL_ID = int(os.getenv("REMINDER_CHANNEL_ID"))
 DATE_PARSER_SETTINGS = {'PREFER_DATES_FROM': 'future',
+                        'DATE_ORDER': 'DMY'}
+DATE_PARSER_SETTINGS_AMS = {'PREFER_DATES_FROM': 'future',
                         'DATE_ORDER': 'DMY', 'TIMEZONE': 'Europe/Amsterdam'}
 
 reminder_file = get_file(REMINDER_FILE)
@@ -34,7 +36,7 @@ class Reminder(commands.Cog):
     @app_commands.command(name="remindme", description="Set a reminder.")
     async def remindme(self, interaction: discord.Interaction, reminder_time: str, message: str, repeat: bool):
         parsed_time = dateparser.parse(
-            reminder_time, settings=DATE_PARSER_SETTINGS)
+            reminder_time, settings=DATE_PARSER_SETTINGS_AMS)
         reminder_time_readable_day = parsed_time.strftime('%d/%m/%Y')
         reminder_time_readable_time = parsed_time.strftime('%H:%M')
         reminder_time_timestamp = parsed_time.timestamp()

@@ -2,6 +2,7 @@ import logging
 import discord
 import os
 import time
+import pytz
 import requests
 from util.vars.eind_vars import *
 from datetime import datetime
@@ -72,7 +73,7 @@ class Messages(commands.Cog, name="Messages"):
 
         message_content = message.content.lower()
 
-        current_time = datetime.now().strftime("%H:%M")
+        current_time = datetime.now(pytz.timezone('Europe/Amsterdam')).strftime("%H:%M")
         times = ["04:20", "4:20", "16:20"]
 
         if '420' in message_content and str(message.channel.id) == CANDY_CHANNEL_ID and current_time in times:
@@ -94,6 +95,11 @@ class Messages(commands.Cog, name="Messages"):
 
         if message_content == "ass":
             await message.add_reaction(ASS_EMOJI)
+
+    @app_commands.command(name="now")
+    async def now(self, interaction: discord.Interaction):
+        now = datetime.now(pytz.timezone('Europe/Amsterdam')).strftime("%H:%M on %A, %Y-%m-%d")
+        await interaction.response.send_message(f"It is {now}")
 
     @app_commands.command(name="tagall")
     async def tagall(self, interaction: discord.Interaction):
