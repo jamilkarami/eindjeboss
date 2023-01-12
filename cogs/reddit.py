@@ -1,20 +1,22 @@
+import asyncpraw
+import discord
 import logging
 import os
-import asyncpraw
-import re
 import random
-import discord
+import re
 from discord.ext import commands
 from discord import app_commands
 from util.vars.eind_vars import *
-from util.vars.periodic_reminders import TOP_REDDIT_CAT_DT
+from util.vars.periodic_reminders import TOP_REDDIT_DT
 from aiocron import crontab
 
 SUBREDDIT_REGEX = "(?<!reddit.com)\/r\/[a-zA-Z0-9]{3,}"
 I_REDDIT_REGEX = "https:\/\/i.redd.it\/[a-zA-Z0-9]*\.(png|jpg)"
 I_IMGUR_REGEX = "https:\/\/i.imgur.com/[a-zA-Z0-9]*\.(png|jpg)"
-CHANNEL_ID = int(os.getenv("ANIMALS_CHANNEL_ID"))
+ANIMALS_CHANNEL_ID = int(os.getenv("ANIMALS_CHANNEL_ID"))
+CARS_CHANNEL_ID = int(os.getenv("CARS_CHANNEL_ID"))
 CATS = "cats"
+CARS = "carporn"
 
 
 class Reddit(commands.Cog):
@@ -27,7 +29,8 @@ class Reddit(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         logging.info(f"[{__name__}] Cog is ready")
-        crontab(TOP_REDDIT_CAT_DT, func=self.schedule_cat_pic, start=True)
+        crontab(TOP_REDDIT_DT, func=self.schedule_pic(), args=(ANIMALS_CHANNEL_ID, CATS), start=True)
+        crontab(TOP_REDDIT_DT, func=self.schedule_pic(), args=(CARS_CHANNEL_ID, CARS), start=True)
 
     def __init__(self, bot: discord.Client):
         self.bot = bot
@@ -53,8 +56,7 @@ class Reddit(commands.Cog):
     async def send_random_dog(self, interaction: discord.Interaction):
         await interaction.response.send_message(await self.get_random_image_post(random.choice(DOG_SUBREDDITS), 50))
 
-    @app_commands.command(name="car", description="Sends a random car picture off of reddit."
-    )
+    @app_commands.command(name="car", description="Sends a random car picture off of reddit.")
     async def send_random_car(self, interaction: discord.Interaction):
         await interaction.response.send_message(await self.get_random_image_post(random.choice(CAR_SUBREDDITS), 50))
 
@@ -70,12 +72,14 @@ class Reddit(commands.Cog):
             chosen_post = random.choice(posts)
         return chosen_post.url
 
-    async def schedule_cat_pic(self):
-        channel = await self.bot.fetch_channel(CHANNEL_ID)
-        subreddit = await self.reddit.subreddit(CATS)
+    async def schedule_pic(self, channel_id, subreddit_name):
+        channel = await self.bot.fetch_channel(channel_id)
+        subreddit = await self.reddit.subreddit(subreddit_name)
+        
         async for submission in subreddit.top("day", limit=1):
             post = submission
-        title = f"**Top post on /r/cats today: {post.title}**"
+
+        title = f"**Top post on /r/{subreddit_name} today: {post.title}**"
         description = post.url
         payload = f"{title}\n{description}"
 

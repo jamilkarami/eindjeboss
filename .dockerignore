@@ -1,2 +1,5 @@
 fly.toml
 *.log
+files
+.git
+.cache
