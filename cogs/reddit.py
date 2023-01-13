@@ -29,8 +29,8 @@ class Reddit(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         logging.info(f"[{__name__}] Cog is ready")
-        crontab(TOP_REDDIT_DT, func=self.schedule_pic(), args=(ANIMALS_CHANNEL_ID, CATS), start=True)
-        crontab(TOP_REDDIT_DT, func=self.schedule_pic(), args=(CARS_CHANNEL_ID, CARS), start=True)
+        crontab(TOP_REDDIT_DT, func=self.schedule_pic, args=(ANIMALS_CHANNEL_ID, CATS), start=True)
+        crontab(TOP_REDDIT_DT, func=self.schedule_pic, args=(CARS_CHANNEL_ID, CARS), start=True)
 
     def __init__(self, bot: discord.Client):
         self.bot = bot

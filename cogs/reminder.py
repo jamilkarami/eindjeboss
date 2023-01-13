@@ -16,7 +16,7 @@ REMINDER_CHANNEL_ID = int(os.getenv("REMINDER_CHANNEL_ID"))
 DATE_PARSER_SETTINGS = {'PREFER_DATES_FROM': 'future',
                         'DATE_ORDER': 'DMY'}
 DATE_PARSER_SETTINGS_AMS = {'PREFER_DATES_FROM': 'future',
-                        'DATE_ORDER': 'DMY', 'TIMEZONE': 'Europe/Amsterdam'}
+                        'DATE_ORDER': 'DMY', 'TIMEZONE': 'Europe/Amsterdam', 'RETURN_AS_TIMEZONE_AWARE': True}
 
 reminder_file = get_file(REMINDER_FILE)
 
