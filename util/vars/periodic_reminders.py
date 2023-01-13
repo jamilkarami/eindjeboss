@@ -1,5 +1,4 @@
-WEATHER_DT = "0 8 * * *"
-PSV_DT = "0 9 * * *"
-TOP_REDDIT_CAT_DT = "0 10 * * *"
+WEATHER_DT = "0 7 * * *"
+PSV_DT = "0 8 * * *"
+TOP_REDDIT_DT = "0 9 * * *"
 RESET_DT = "0 0 * * *"
-GRAGGY_DT = "0 0,4,8,12,16,20 * * *"

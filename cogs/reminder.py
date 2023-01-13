@@ -152,12 +152,12 @@ class Reminder(commands.Cog):
         await asyncio.sleep(tm_to_remind - time.time())
         if reminder_id in load_json_file(reminder_file):
             guild = self.client.get_guild(guild_id)
-            await self.notify_user(reason, user, guild)
-            if not repeat:
+            if not repeat or guild.get_member(user.id) is None:
                 await self.delete_reminder(reminder_id)
             else:
-                self.loop.create_task(self.start_reminder(
-                    reminder_id, author, tm, reason, guild_id, repeat))
+                self.loop.create_task(self.start_reminder(reminder_id, author, tm, reason, guild_id, repeat))
+            await self.notify_user(reason, user, guild)
+            
 
     async def notify_user(self, reason, user: discord.user.User, guild: discord.Guild):
         channels = await guild.fetch_channels()
