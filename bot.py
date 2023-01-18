@@ -13,7 +13,7 @@ async def main():
     TOKEN = os.getenv("DISCORD_TOKEN")
     STATUS = os.getenv("BOT_STATUS")
     logging.basicConfig(
-        filename="eindjeboss.log",
+        filename=f"{os.getenv('FILE_DIR')}/logs/eindjeboss.log",
         format="%(asctime)s %(levelname)-8s %(message)s",
         level=logging.INFO,
         datefmt="%Y-%m-%d %H:%M:%S",
