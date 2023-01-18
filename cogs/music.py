@@ -30,12 +30,13 @@ class Music(commands.Cog):
             result = sp.search(f"{query}", type="track")
             if len(result['tracks']['items']) > 0:
                 await interaction.response.send_message(result['tracks']['items'][0]['external_urls']['spotify'])
-                logging.info(f"Sent song to {interaction.user.name} for query \"{query}\"")
             else:
                 await interaction.response.send_message('No results found for: ' + query)
         except SpotifyException as e:
             logging.error(f"Failed to send song to {interaction.user.name} for query \"{query}\"")
             logging.debug(e)
+        else:
+            logging.info(f"Sent song to {interaction.user.name} for query \"{query}\"")
 
     @app_commands.command(name="spc", description="Sends a link to the song you are currently listening to on Spotify")
     async def spotifycurrent(self, interaction: discord.Interaction):
@@ -55,10 +56,11 @@ class Music(commands.Cog):
 
         try:
             await interaction.response.send_message(spotify_act.track_url)
-            logging.info(f"Sent current song to {interaction.user.name}")
         except Exception as e:
             logging.error(f"Failed to send current song to {interaction.user.name}")
             logging.debug(e)
+        else:
+            logging.info(f"Sent current song to {interaction.user.name}")
 
     @app_commands.command(name="lyrics", description="Sends the lyrics of a song matching your query, if they exist.")
     async def lyrics(self, interaction: discord.Interaction, query: str):
@@ -87,6 +89,8 @@ class Music(commands.Cog):
         except Exception as e:
             logging.error(f"Failed to send lyrics to {interaction.user.name} for query \"{query}\"")
             logging.debug(e)
+        else:
+            logging.info(f"Sent lyrics to {interaction.user.name} for query \"{query}\"")
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
