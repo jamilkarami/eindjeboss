@@ -118,14 +118,18 @@ class Bonk(commands.Cog, name="Bonk"):
             await interaction.response.send_message("You are not allowed to use this command.", ephemeral=True)
             return
 
-        if bonk_timeout_role not in member.roles:
-            await member.add_roles(bonk_timeout_role)
-            logging.info(f"Added bonk timeout role to {member.name}")
-            await interaction.response.send_message(f"{member.mention} is now on bonk timeout.")
-        else:
-            await member.remove_roles(bonk_timeout_role)
-            logging.info(f"Removed bonk timeout role from {member.name}")
-            await interaction.response.send_message(f"{member.mention} is not on bonk timeout anymore.")
+        try:
+            if bonk_timeout_role not in member.roles:
+                await member.add_roles(bonk_timeout_role)
+                logging.info(f"Added bonk timeout role to {member.name}")
+                await interaction.response.send_message(f"{member.mention} is now on bonk timeout.")
+            else:
+                await member.remove_roles(bonk_timeout_role)
+                logging.info(f"Removed bonk timeout role from {member.name}")
+                await interaction.response.send_message(f"{member.mention} is not on bonk timeout anymore.")
+        except Exception as e:
+            logging.error(f"Failed to add/remove bonk timeout role for user {member.name} (attempted by {interaction.user.name})")
+            logging.debug(e)
 
     @app_commands.command(name="hallofshame", description="Show the Bonk leaderboard/hall of shame.")
     async def bonk_leaderboard(self, interaction: discord.Interaction):
