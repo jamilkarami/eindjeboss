@@ -4,6 +4,7 @@ import asyncio
 import logging
 from discord.ext import commands
 from dotenv import load_dotenv
+from pathlib import Path
 from util.vars.periodic_reminders import *
 from util.util import *
 
@@ -12,8 +13,17 @@ async def main():
     load_dotenv()
     TOKEN = os.getenv("DISCORD_TOKEN")
     STATUS = os.getenv("BOT_STATUS")
+
+    logging_file_name = f"{os.getenv('FILE_DIR')}/logs/eindjeboss.log"
+
+    if not Path(logging_file_name).is_file():
+        logging_file_name = "./eindjeboss.log"
+        if not Path(logging_file_name).is_file():
+            with open(logging_file_name) as f:
+                pass
+
     logging.basicConfig(
-        filename=f"{os.getenv('FILE_DIR')}/logs/eindjeboss.log",
+        filename=logging_file_name,
         format="%(asctime)s %(levelname)-8s %(message)s",
         level=logging.INFO,
         datefmt="%Y-%m-%d %H:%M:%S",
