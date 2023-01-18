@@ -19,8 +19,7 @@ async def main():
     if not Path(logging_file_name).is_file():
         logging_file_name = "./eindjeboss.log"
         if not Path(logging_file_name).is_file():
-            with open(logging_file_name) as f:
-                pass
+            open(logging_file_name, 'a').close()
 
     logging.basicConfig(
         filename=logging_file_name,
