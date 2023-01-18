@@ -142,7 +142,7 @@ class Reminder(commands.Cog):
     async def start_reminder(self, reminder_id, author, tm, reason, guild_id, repeat):
         if repeat:
             tm_to_remind = dateparser.parse(
-                tm, settings=DATE_PARSER_SETTINGS).timestamp()
+                tm, settings=DATE_PARSER_SETTINGS_AMS).timestamp()
             if tm_to_remind < time.time():
                 tm_to_remind = tm_to_remind + 86400
         else:

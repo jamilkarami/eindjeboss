@@ -75,13 +75,13 @@ class Periodics(commands.Cog):
 
         for itm in lst:
             dt = itm['dt_txt'][-8:-3]
-            temperature = round(int(itm['main']['temp']))
+            temperature = f"{round(int(itm['main']['temp']))} °C"
             condition = itm['weather'][0]['description'].capitalize()
 
             body.append([dt, temperature, condition])
 
         output = t2a(
-            header=["Time", "Temp.", "Cond."],
+            header=["Time", "Temp.", "Condition"],
             body=body,
             style=PresetStyle.ascii_borderless
         )

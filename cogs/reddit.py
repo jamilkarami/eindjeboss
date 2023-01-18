@@ -15,8 +15,10 @@ I_REDDIT_REGEX = "https:\/\/i.redd.it\/[a-zA-Z0-9]*\.(png|jpg)"
 I_IMGUR_REGEX = "https:\/\/i.imgur.com/[a-zA-Z0-9]*\.(png|jpg)"
 ANIMALS_CHANNEL_ID = int(os.getenv("ANIMALS_CHANNEL_ID"))
 CARS_CHANNEL_ID = int(os.getenv("CARS_CHANNEL_ID"))
+FOOD_CHANNEL_ID = int(os.getenv("FOOD_CHANNEL_ID"))
 CATS = "cats"
 CARS = "carporn"
+FOOD = "foodporn"
 
 
 class Reddit(commands.Cog):
@@ -31,6 +33,7 @@ class Reddit(commands.Cog):
         logging.info(f"[{__name__}] Cog is ready")
         crontab(TOP_REDDIT_DT, func=self.schedule_pic, args=(ANIMALS_CHANNEL_ID, CATS), start=True)
         crontab(TOP_REDDIT_DT, func=self.schedule_pic, args=(CARS_CHANNEL_ID, CARS), start=True)
+        crontab(TOP_REDDIT_DT, func=self.schedule_pic, args=(FOOD_CHANNEL_ID, FOOD), start=True)
 
     def __init__(self, bot: discord.Client):
         self.bot = bot
