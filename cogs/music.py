@@ -30,9 +30,11 @@ class Music(commands.Cog):
             result = sp.search(f"{query}", type="track")
             if len(result['tracks']['items']) > 0:
                 await interaction.response.send_message(result['tracks']['items'][0]['external_urls']['spotify'])
+                logging.info(f"Sent song to {interaction.user.name} for query \"{query}\"")
             else:
                 await interaction.response.send_message('No results found for: ' + query)
         except SpotifyException as e:
+            logging.error(f"Failed to send song to {interaction.user.name} for query \"{query}\"")
             logging.debug(e)
 
     @app_commands.command(name="spc", description="Sends a link to the song you are currently listening to on Spotify")
@@ -53,36 +55,38 @@ class Music(commands.Cog):
 
         try:
             await interaction.response.send_message(spotify_act.track_url)
+            logging.info(f"Sent current song to {interaction.user.name}")
         except Exception as e:
-            print(e)
+            logging.error(f"Failed to send current song to {interaction.user.name}")
+            logging.debug(e)
 
     @app_commands.command(name="lyrics", description="Sends the lyrics of a song matching your query, if they exist.")
     async def lyrics(self, interaction: discord.Interaction, query: str):
-        base_url = 'https://www.musixmatch.com'
-        url = f'{base_url}/search/{query.lower().replace(" ", "%20")}/tracks'
+        try:
+            base_url = 'https://www.musixmatch.com'
+            url = f'{base_url}/search/{query.lower().replace(" ", "%20")}/tracks'
 
-        headers = {'Host': 'www.musixmatch.com',
-                   'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'}
+            headers = {'Host': 'www.musixmatch.com',
+                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'}
 
-        content = requests.get(url, headers=headers).content
+            content = requests.get(url, headers=headers).content
 
-        soup = BeautifulSoup(content.decode('utf-8'), 'html.parser')
-        lyrics_url = base_url + soup.find('a', {'class': 'title'}).get('href')
+            soup = BeautifulSoup(content.decode('utf-8'), 'html.parser')
+            lyrics_url = base_url + soup.find('a', {'class': 'title'}).get('href')
 
-        lyrics_page = requests.get(lyrics_url, headers=headers).content
-        soup = BeautifulSoup(lyrics_page.decode('utf-8'), 'html.parser')
+            lyrics_page = requests.get(lyrics_url, headers=headers).content
+            soup = BeautifulSoup(lyrics_page.decode('utf-8'), 'html.parser')
 
-        title = soup.title.string.replace(' Lyrics | Musixmatch', '')
+            title = soup.title.string.replace(' Lyrics | Musixmatch', '')
 
-        lyrics_els = soup.select('span[class^="lyrics__content__"]')
-        lyrics = '\n'.join(el.get_text() for el in lyrics_els) if lyrics_els else '*This song has no available lyrics*'
+            lyrics_els = soup.select('span[class^="lyrics__content__"]')
+            lyrics = '\n'.join(el.get_text() for el in lyrics_els) if lyrics_els else '*This song has no available lyrics*'
 
-        embed = discord.Embed(title=title, description=lyrics)
-        await interaction.response.send_message(embed=embed)
-
-    @app_commands.command(name="lyricsts", description="Sends the lyrics of a song matching your query, if they exist.")
-    async def lyrics_ts(self, interaction: discord.Interaction, query: str):
-        pass
+            embed = discord.Embed(title=title, description=lyrics)
+            await interaction.response.send_message(embed=embed)
+        except Exception as e:
+            logging.error(f"Failed to send lyrics to {interaction.user.name} for query \"{query}\"")
+            logging.debug(e)
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
