@@ -18,8 +18,8 @@ gis = GoogleImagesSearch(GOOGLE_SEARCH_API_KEY, GOOGLE_SEARCH_CUSTOM_ENGINE_CX)
 
 
 class Images(commands.Cog, name="Images"):
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, client):
+        self.client = client
 
     @commands.Cog.listener()
     async def on_ready(self):

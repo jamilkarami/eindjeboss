@@ -18,8 +18,8 @@ HALL_OF_SHAME_FILE = "hallofshame.png"
 
 
 class Bonk(commands.Cog, name="Bonk"):
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, client):
+        self.client = client
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -55,7 +55,7 @@ class Bonk(commands.Cog, name="Bonk"):
             await ctx.message.reply("This is a bonk-free zone.")
             return
 
-        if bonkee == self.bot.user:
+        if bonkee == self.client.user:
             await ctx.message.reply(f"No u {BONK_EMOJI}")
             await ctx.message.add_reaction(BONK_EMOJI)
             self.add_to_leaderboard(bonker)
