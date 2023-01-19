@@ -35,12 +35,12 @@ class Reddit(commands.Cog):
         crontab(TOP_REDDIT_DT, func=self.schedule_pic, args=(CARS_CHANNEL_ID, CARS), start=True)
         crontab(TOP_REDDIT_DT, func=self.schedule_pic, args=(FOOD_CHANNEL_ID, FOOD), start=True)
 
-    def __init__(self, bot: discord.Client):
-        self.bot = bot
+    def __init__(self, client: discord.Client):
+        self.client = client
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author == self.bot.user:
+        if message.author == self.client.user:
             return
         if message.channel.name in CHANNEL_IGNORE_LIST:
             return
@@ -76,7 +76,7 @@ class Reddit(commands.Cog):
         return chosen_post.url
 
     async def schedule_pic(self, channel_id, subreddit_name):
-        channel = await self.bot.fetch_channel(channel_id)
+        channel = await self.client.fetch_channel(channel_id)
         subreddit = await self.reddit.subreddit(subreddit_name)
         
         async for submission in subreddit.top("day", limit=1):

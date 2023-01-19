@@ -18,8 +18,8 @@ MSGTOTAL_URL = "https://discord.com/api/v9/guilds/{}/messages/search?author_id={
 
 class Messages(commands.Cog, name="Messages"):
 
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, client):
+        self.client = client
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -66,7 +66,7 @@ class Messages(commands.Cog, name="Messages"):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author == self.bot.user:
+        if message.author == self.client.user:
             return
         if message.channel.id in CHANNEL_IGNORE_LIST:
             return
@@ -111,7 +111,7 @@ class Messages(commands.Cog, name="Messages"):
         message = ""
         user: ThreadMember
         for user in users:
-            if user.id != self.bot.user.id:
+            if user.id != self.client.user.id:
                 message = message + f"<@{user.id}> "
         await interaction.response.send_message(message)
 
