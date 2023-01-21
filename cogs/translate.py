@@ -1,7 +1,8 @@
 import discord
 import logging
-import pytesseract
 import os
+import pytesseract
+import re
 from discord.ext import commands
 from discord import app_commands
 from googletrans import Translator
@@ -20,6 +21,8 @@ TRANSLATE_LANGUAGES = [
     app_commands.Choice(name="Esperanto", value="esperanto"),
 ]
 
+TRANSLATE_PROMPT_REGEX = r"(?:tr|translate) (.+) to (.+)"
+
 
 class Translate(commands.Cog):
 
@@ -34,6 +37,31 @@ class Translate(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         logging.info(f"[{__name__}] Cog is ready")
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        if message.author == self.client.user:
+            return
+        if message.channel.id in CHANNEL_IGNORE_LIST:
+            return
+
+        message_content = message.content.lower()
+
+        calc_pattern = re.compile(TRANSLATE_PROMPT_REGEX)
+        matches = calc_pattern.match(message_content)
+
+        if(matches):
+            try:
+                req = matches.group(1)
+                lang = matches.group(2)
+                translated = TranslateUtil.translate_text(req, src='auto', dst=lang)
+            except ValueError as e:
+                logging.error(f'Failed to translate \"{req}\" to {lang} for {message.author.name}')
+                logging.debug(e)
+                await message.reply('Destination language invalid. Please check for typos.')
+            else:
+                await message.reply(f"{translated.text}")
+
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -83,6 +111,7 @@ class Translate(commands.Cog):
             for attachment in ctx.message.reference.resolved.attachments:
                 if "image" in attachment.content_type:
                     imgname = f"temp/{attachment.filename}"
+                    os.makedirs(os.path.dirname(imgname), exist_ok=True)
                     await attachment.save(imgname)
                     imgs.append(imgname)
             for idx, img in enumerate(imgs, start=1):
