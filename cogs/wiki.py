@@ -24,18 +24,20 @@ class Wiki(commands.Cog):
             await interaction.response.send_message(f"Could not find page for query: {query}", ephemeral=True)
             return
         try:
-            embed = discord.Embed(title=details.title, url=details.url)
-            if details.description:
-                embed.add_field(name="Description", value=details.description, inline=True)
-            embed.add_field(name="Summary", value=details.summary, inline=False)
-            embed.set_image(url=details.thumbnail_url)
-            await interaction.response.send_message(embed=embed)
+            await interaction.response.send_message(embed=self.get_embed_from_wiki_page(details))
             logging.info(f"Sent Wiki page to {interaction.user.name} for query {query}")
             return
         except Exception as e:
             logging.info(f"Failed to send Wiki page to {interaction.user.name} for query {query}")
-            print(e)
+            logging.error(e)
 
+    def get_embed_from_wiki_page(self, page_details):
+        embed = discord.Embed(title=page_details.title, url=page_details.url)
+        if page_details.description:
+            embed.add_field(name="Description", value=page_details.description, inline=True)
+        embed.add_field(name="Summary", value=page_details.summary, inline=False)
+        embed.set_image(url=page_details.thumbnail_url)
+        return embed
 
 async def setup(bot):
     await bot.add_cog(Wiki(bot))
