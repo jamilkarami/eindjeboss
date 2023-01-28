@@ -108,8 +108,12 @@ class Messages(commands.Cog, name="Messages"):
             return
 
         users = await interaction.channel.fetch_members()
+        if len(users) > 25:
+            await interaction.response.send_message("This thread has too many members. (The maximum is 25)", ephemeral=True)
+            return
+            
         message = ""
-        user: ThreadMember
+
         for user in users:
             if user.id != self.client.user.id:
                 message = message + f"<@{user.id}> "
@@ -123,22 +127,6 @@ class Messages(commands.Cog, name="Messages"):
         total_messages = self.get_total_messages(guild_id, user.id)
 
         await interaction.response.send_message(f"{user.mention} has sent a total of around {total_messages} messages in this server.")
-
-    @app_commands.command(name="bonkpercentage",description="Find out how many times you (or someoone else) have/has been bonked per message.",)
-    async def bonkpercentage(self, interaction: discord.Interaction, user: discord.Member = None):
-        guild_id = interaction.guild_id
-        if not user:
-            user = interaction.user
-
-        total_messages = self.get_total_messages(guild_id, user.id)
-        bonks = (load_json_file(get_file("bonk_leaderboard.json")).get("bonks").get(str(user.id)))
-
-        if not bonks:
-            await interaction.response.send_message(f"{user.mention} has not been bonked yet.")
-            return
-
-        percentage = f"{bonks['score']*100/total_messages:.3f}%"
-        await interaction.response.send_message(f"{user.mention}'s bonk percentage is {percentage}.")
 
     def get_total_messages(self, guild_id, user_id):
         url = MSGTOTAL_URL.format(guild_id, user_id)
