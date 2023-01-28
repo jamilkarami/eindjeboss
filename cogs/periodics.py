@@ -3,15 +3,17 @@ import logging
 import os
 import requests
 import dateparser
-import random
 import json
-from util.util import load_json_file, get_file
-from discord.ext import commands
-from datetime import datetime, date
 from aiocron import crontab
+from datetime import datetime, date
+from discord.ext import commands
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from table2ascii import table2ascii as t2a, PresetStyle
+from util.util import load_json_file, get_file
 from util.vars.periodic_reminders import WEATHER_DT, PSV_DT
 from util.vars.eind_vars import PERIODIC_MESSAGES_FILE
-from table2ascii import table2ascii as t2a, PresetStyle
+
+FILE_DIR = os.getenv('FILE_DIR')
 
 # Weather
 CHANNEL_ID = int(os.getenv("ENGLISH_CHANNEL_ID"))
@@ -20,6 +22,29 @@ CITY_QUERY = "EINDHOVEN, NL"
 CITY_NAME = "Eindhoven"
 BASE_URL = "http://api.openweathermap.org/data/2.5/forecast?"
 UNIT = "metric"
+
+WEATHER_FILES_DIR = FILE_DIR + "/weather_images/"
+
+BASE_FILE = "base.png"
+MASK_FILE = "mask.png"
+CLOUD_FILE = "cloud.png"
+RAINY_FILE = "rainy.png"
+SNOWY_FILE = "snowy.png"
+STORM_FILE = "storm.png"
+CLEAR_FILE = "clear.png"
+
+WEATHER_IMGS = {'Fog': CLOUD_FILE, 'Clouds': CLOUD_FILE, 'Rain': RAINY_FILE, 'Drizzle': RAINY_FILE, 'Snow': SNOWY_FILE, 'Thunderstorm': STORM_FILE, 'Clear': CLEAR_FILE}
+WEATHER_OUTPUT_FILE = "weather.png"
+
+FONT = FILE_DIR + "/fonts/coolvetica_rg.otf"
+FONT_ITALIC = FILE_DIR + "fonts/coolvetica_rg_it.otf"
+SEPARATOR = 160
+IMG_SIZE = (960,400)
+
+SIZE_TITLE = 32
+SIZE_SUBTITLE = 16
+SIZE_SMALL_TITLE = 14
+SIZE_VALUE = 28
 
 # PSV games
 PSV_TEAM_ID = os.getenv("PSV_TEAM_ID")
@@ -64,30 +89,96 @@ class Periodics(commands.Cog):
 
     async def send_weather_forecast(self):
         today = datetime.today().strftime('%d-%m-%Y')
-        embed_title = f"Weather in {CITY_NAME} Today ({today})"
+        title = f"Weather in {CITY_NAME} Today ({today})"
         channel = await self.client.fetch_channel(CHANNEL_ID)
         weather_url = f"{BASE_URL}q={CITY_QUERY}&appid={OPENWEATHER_API_KEY}&cnt=6&units={UNIT}"
         response = requests.get(weather_url)
-        data = response.json()
-        lst = data['list']
+        weather_info = response.json()
+        
+        img = Image.new('RGBA', IMG_SIZE, (0,0,0,0))
 
-        body = []
+        weather_details = []
 
-        for itm in lst:
-            dt = itm['dt_txt'][-8:-3]
-            temperature = f"{round(int(itm['main']['temp']))} °C"
-            condition = itm['weather'][0]['description'].capitalize()
+        for itm in weather_info['list']:
+            cond = itm['weather'][0]['main']
+            desc = itm['weather'][0]['description'].capitalize()
+            temp = str(round(itm['main']['temp'])) + "°"
+            feel = str(round(itm['main']['feels_like'])) + "°"
+            wind = str(round(itm['wind']['speed'])) + " km/h"
+            time = itm['dt_txt'][-8:-3]
 
-            body.append([dt, temperature, condition])
+            weather_details.append([cond,desc,temp,feel,wind,time])
 
-        output = t2a(
-            header=["Time", "Temp.", "Condition"],
-            body=body,
-            style=PresetStyle.ascii_borderless
-        )
+        last_cond = ""
+        offset = 0
 
-        embed = discord.Embed(title=embed_title, description=f"```{output}```")
-        await channel.send(embed=embed)
+        for idx, data in enumerate(weather_details):
+
+            if data[0] != last_cond:
+                last_cond = data[0]
+                img_file_name = WEATHER_FILES_DIR + WEATHER_IMGS.get(data[0])
+
+                with Image.open(img_file_name, 'r').convert('RGBA') as im:
+                        img.paste(im, (offset,0))
+
+                if offset:
+                    box = (offset-15, 0, offset+15, 400)
+                    to_blur = img.crop(box)
+                    for i in range(8):
+                        to_blur = to_blur.filter(ImageFilter.BLUR)
+                    img.paste(to_blur, box)
+
+            info_img = self.make_hour_info(data, True)
+            img.paste(info_img, (offset,0), info_img)
+            offset = offset + SEPARATOR
+
+        trs = Image.new('RGBA', IMG_SIZE, (0,0,0,0))
+        mask = Image.open(WEATHER_FILES_DIR + MASK_FILE, 'r').convert('L')
+        img.putalpha(mask)
+        trs.paste(img, (0,0), img)
+        trs.save(WEATHER_OUTPUT_FILE)
+
+        await channel.send(title, file=discord.File(WEATHER_OUTPUT_FILE))
+        os.remove(WEATHER_OUTPUT_FILE)
+
+    def draw_text(self, draw: ImageDraw, text, position, fill, font_name, text_size):
+        font = ImageFont.truetype(font_name, text_size)
+        draw.text((position), text=text, anchor="mm", fill=fill, font=font)
+
+    def make_hour_info(self, info, blurred) -> Image:
+        txt_img = Image.new('RGBA', (160,400), (0,0,0,0))
+
+        x = 80 if blurred else 80
+        y = 50 if blurred else 50
+        color = "black" if blurred else "white"
+
+
+        draw = ImageDraw.Draw(txt_img)
+
+        self.draw_text(draw, info[5], (x,y), color, FONT, SIZE_TITLE)
+        y = y + 30
+        self.draw_text(draw, info[1].title(), (x,y), color, FONT, SIZE_SUBTITLE)
+        y = y + 70
+        self.draw_text(draw, "Temperature", (x,y), color, FONT_ITALIC, SIZE_SMALL_TITLE)
+        y = y + 25
+        self.draw_text(draw, info[2], (x,y), color, FONT, SIZE_VALUE)
+        y = y + 45
+        self.draw_text(draw, "Feels Like", (x,y), color, FONT_ITALIC, SIZE_SMALL_TITLE)
+        y = y + 25
+        self.draw_text(draw, info[3], (x,y), color, FONT, SIZE_VALUE)
+        y = y + 45
+        self.draw_text(draw, "Wind Speed", (x,y), color, FONT_ITALIC, SIZE_SMALL_TITLE)
+        y = y + 25
+        self.draw_text(draw, info[4], (x,y), color, FONT, SIZE_VALUE)
+
+        if blurred:
+            for i in range(3):
+                txt_img = txt_img.filter(ImageFilter.BLUR)
+            txt_img_mrg = self.make_hour_info(info, False)
+            txt_img.paste(txt_img_mrg, (0,0), txt_img_mrg)
+            return txt_img
+
+        return txt_img
 
     async def check_psv_game(self):
         today = date.today().strftime('%Y-%m-%d')

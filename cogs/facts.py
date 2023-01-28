@@ -19,7 +19,7 @@ class Facts(commands.Cog):
     async def on_ready(self):
         logging.info(f"[{__name__}] Cog is ready")
 
-    @app_commands.command(name="fact")
+    @app_commands.command(name="fact", description="Get a random fact")
     async def fact(self, interaction: discord.Interaction):
         try:
             resp = requests.get(FACTS_API_URL, headers=HEADERS).json()
