@@ -37,7 +37,7 @@ WEATHER_IMGS = {'Fog': CLOUD_FILE, 'Clouds': CLOUD_FILE, 'Rain': RAINY_FILE, 'Dr
 WEATHER_OUTPUT_FILE = "weather.png"
 
 FONT = FILE_DIR + "/fonts/coolvetica_rg.otf"
-FONT_ITALIC = FILE_DIR + "fonts/coolvetica_rg_it.otf"
+FONT_ITALIC = FILE_DIR + "/fonts/coolvetica_rg_it.otf"
 SEPARATOR = 160
 IMG_SIZE = (960,400)
 
