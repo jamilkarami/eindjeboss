@@ -148,8 +148,8 @@ class Periodics(commands.Cog):
     def make_hour_info(self, info, blurred) -> Image:
         txt_img = Image.new('RGBA', (160,400), (0,0,0,0))
 
-        x = 80 if blurred else 80
-        y = 50 if blurred else 50
+        x = 80
+        y = 50
         color = "black" if blurred else "white"
 
 
