@@ -62,22 +62,6 @@ class Translate(commands.Cog):
             else:
                 await message.reply(f"{translated.text}")
 
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
-        if payload.emoji.name != BOOK_EMOJI:
-            return
-        message = await self.client.get_channel(payload.channel_id).fetch_message(payload.message_id)
-        translated = TranslateUtil.translate_text(message.content, None)
-
-        lang = LANGUAGES[translated.src]
-
-        translate_msg = f"You asked me to translate the following message: ```{message.content}```\nTranslated from ({lang.capitalize()}): ```{translated.text}```"
-
-        await payload.member.send(content=translate_msg)
-        logging.info(
-            f"Sent translation to {payload.member.name} for message \"{message.content}\" by {message.author.name}")
-
     async def translate_context(self, interaction: discord.Interaction, message: discord.Message):
         translated = TranslateUtil.translate_text(message.content, None)
 
