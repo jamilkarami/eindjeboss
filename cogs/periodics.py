@@ -205,12 +205,13 @@ class Periodics(commands.Cog):
             return
 
         dt = content['response'][0]['fixture']['date']
+        competition = dt['response'][0]['league']['name']
 
         match_time = dateparser.parse(dt).strftime("%H:%M")
         opponent = content['response'][0]['teams']['away']['name']
 
         logging.info("PSV is playing in Philips Stadion today. Sending notice to English channel.")
-        await channel.send(f"**PSV Eindhoven** will be playing against **{opponent}** in **Philips Stadion** today at "
+        await channel.send(f"**PSV Eindhoven** will be playing in **{competition}** against **{opponent}** at **Philips Stadion** today at "
                            f"**{match_time}**. Expect heavy traffic around the stadium.")
 
 
