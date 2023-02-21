@@ -1,7 +1,10 @@
 import ast
+import discord
 import logging
 import operator as op
+import os
 import re
+from discord import app_commands
 from discord.ext import commands
 from util.vars.eind_vars import *
 
@@ -43,6 +46,21 @@ class Utilities(commands.Cog):
             else:
                 await message.reply(f"{result}")
 
+    @app_commands.command(name='logs')
+    async def logs(self, interaction: discord.Interaction, ln: int = 20):
+        moderator_role = discord.utils.get(interaction.guild.roles, id=int(os.getenv("MODERATOR_ROLE_ID")))
+
+        if moderator_role not in interaction.user.roles:
+            await interaction.response.send_message("You are not allowed to use this command.", ephemeral=True)
+            return
+
+        log_file = open("%s/logs/eindjeboss.log" % os.getenv('FILE_DIR'))
+        lines = log_file.readlines()
+        log = ''.join(lines[-min(len(lines), ln):])
+        await interaction.user.send('```%s```' % log)
+        await interaction.response.send_message(":yes:", ephemeral=True)
+        
+
 def calculate(expression: str):
     node = ast.parse(expression, mode='eval').body
     return eval_(node)
@@ -60,3 +78,4 @@ def eval_(node):
 
 async def setup(bot):
     await bot.add_cog(Utilities(bot))
+    
