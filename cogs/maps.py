@@ -49,7 +49,7 @@ class Maps(commands.Cog, name="maps"):
             'Phone Number': place_details.get('international_phone_number'),
             'Rating': '%s (%s ratings)' % (place_details.get('rating'), place_details.get('user_ratings_total')),
             'Opening Hours': opening_hours,
-            'Website': self.get_hyperlink(place_details.get('website')),
+            'Website': place_details.get('website'),
         }
 
         embed = self.make_embed(title, url, "attachment://image.png", details)
