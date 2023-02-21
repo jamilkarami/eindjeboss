@@ -30,14 +30,6 @@ class Maps(commands.Cog, name="maps"):
         place_id = search_results['results'][0]['place_id']
         place_details = requests.get(PLACE_URL, params = {'key': api_key, 'place_id': place_id}).json()['result']
 
-        photo_reference = place_details['photos'][0]['photo_reference']
-        place_photo = requests.get(PHOTOS_URL, params = {'key': api_key, 'photo_reference': photo_reference, 'maxwidth': 4000, 'maxheight': 4000}, stream=True)
-        photo_name = 'temp_%s.jpg' % uuid.uuid4()
-        with open(photo_name, 'wb') as img:
-            img.write(place_photo.content)
-
-        embed = discord.Embed(title="Title", description="Desc", color=0xff5500) #creates embed
-        file = discord.File(photo_name, filename="image.png")
 
         open_now = place_details.get('opening_hours').get('open_now')
         title = place_details.get('name') + (' (Open)' if open_now else ' (Closed)')
@@ -52,15 +44,27 @@ class Maps(commands.Cog, name="maps"):
             'Website': place_details.get('website'),
         }
 
-        embed = self.make_embed(title, url, "attachment://image.png", details)
+        embed = self.make_embed(title, url, details)
 
-        await interaction.response.send_message(file=file, embed=embed)
-        file.close()
-        os.remove(photo_name)
+        photos = place_details.get('photos')
+        if photos:
+            photo_reference = photos[0].get('photo_reference')
+            place_photo = requests.get(PHOTOS_URL, params = {'key': api_key, 'photo_reference': photo_reference, 'maxwidth': 4000, 'maxheight': 4000}, stream=True)
+            photo_name = 'temp_%s.jpg' % uuid.uuid4()
+            with open(photo_name, 'wb') as img:
+                img.write(place_photo.content)
 
-    def make_embed(self, title, url, image, details):
+            file = discord.File(photo_name, filename="image.png")
+            embed.set_image(url="attachment://image.png")
+            await interaction.response.send_message(file=file, embed=embed)
+            file.close()
+            os.remove(photo_name)
+            return
+        
+        await interaction.response.send_message(embed=embed)
+
+    def make_embed(self, title, url, details) -> discord.Embed:
         embed = discord.Embed(title=title, url=url)
-        embed.set_image(url=image)
         for k,v in details.items():
             if v:
                 embed.add_field(name=k, value=v, inline=k not in ['Opening Hours', 'Address'])
