@@ -59,9 +59,9 @@ class Maps(commands.Cog, name="maps"):
             await interaction.response.send_message(file=file, embed=embed)
             file.close()
             os.remove(photo_name)
-            return
-        
-        await interaction.response.send_message(embed=embed)
+        else:
+            await interaction.response.send_message(embed=embed)
+        logging.info('Sent place to %s' % interaction.user.name)
 
     def make_embed(self, title, url, details) -> discord.Embed:
         embed = discord.Embed(title=title, url=url)
