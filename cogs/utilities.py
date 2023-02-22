@@ -48,16 +48,21 @@ class Utilities(commands.Cog):
 
     @app_commands.command(name='logs')
     async def logs(self, interaction: discord.Interaction, ln: int = 20):
-        moderator_role = discord.utils.get(interaction.guild.roles, id=int(os.getenv("MODERATOR_ROLE_ID")))
-
-        if moderator_role not in interaction.user.roles:
-            await interaction.response.send_message("You are not allowed to use this command.", ephemeral=True)
-            return
+        if interaction.user.id != int(os.getenv('RAGDOLL_ID')):
+            await interaction.response.send_message('You\'re not allowed to use this command.', ephemeral=True)
+            logging.info('%s tried to use the /logs command' % interaction.user.name)
 
         log_file = open("%s/logs/eindjeboss.log" % os.getenv('FILE_DIR'))
         lines = log_file.readlines()
-        log = ''.join(lines[-min(len(lines), ln):])
-        await interaction.user.send('```%s```' % log)
+        log_lines = lines[-min(len(lines), ln):]
+
+        log_msg = ""
+        for line in log_lines:
+            if len(log_msg) + len(line) > 2000:
+                await interaction.user.send('```%s```' % log_msg)
+                log_msg = ""
+            log_msg = log_msg + line
+        await interaction.user.send('```%s```' % log_msg)
         await interaction.response.send_message(":yes:", ephemeral=True)
         
 
