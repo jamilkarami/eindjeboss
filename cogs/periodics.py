@@ -205,7 +205,7 @@ class Periodics(commands.Cog):
             return
 
         dt = content['response'][0]['fixture']['date']
-        competition = dt['response'][0]['league']['name']
+        competition = content['response'][0]['league']['name']
 
         match_time = dateparser.parse(dt).strftime("%H:%M")
         opponent = content['response'][0]['teams']['away']['name']
