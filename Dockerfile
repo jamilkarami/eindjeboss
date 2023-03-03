@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.11
 
 # UPDATE INDICES AND INSTALL REQUIRED PACKAGES
 RUN apt-get -y update
