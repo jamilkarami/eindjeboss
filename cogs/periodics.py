@@ -8,7 +8,6 @@ from aiocron import crontab
 from datetime import datetime, date
 from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
-from table2ascii import table2ascii as t2a, PresetStyle
 from util.util import load_json_file, get_file
 from util.vars.periodic_reminders import WEATHER_DT, PSV_DT
 from util.vars.eind_vars import PERIODIC_MESSAGES_FILE

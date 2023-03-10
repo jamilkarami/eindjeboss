@@ -49,7 +49,7 @@ class Reminder(commands.Cog):
                 return
 
             await interaction.response.send_message(
-                f"I will remind you of **{message}** on **{reminder_time_readable_day} :timer:")
+                f"I will remind you of **{message}** on **{reminder_time_readable_day}** :timer:")
             await self.add_reminder(interaction.user, reminder_time_timestamp, message, interaction.guild_id, repeat)
 
         else:
