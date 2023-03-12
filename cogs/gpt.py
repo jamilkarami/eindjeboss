@@ -83,8 +83,11 @@ class GPT(commands.Cog, name="gpt"):
 
     @app_commands.command(name='gptsettings', description="Set your preferences for GPT Prompts")
     @app_commands.choices(model=model_engines_choices)
-    @app_commands.describe(model="The GPT model to use, sorted from least effective and cheapest to most effective and priciest", max_tokens="The maximum number of tokens/words for GPT responses. Lower this to save on usage (default 256, max 1024)")
+    @app_commands.describe(model="The GPT model to use, sorted from least effective and cheapest to most effective and priciest", max_tokens="The maximum number of tokens/words for GPT responses. Lower this to save on usage (default 256, min 128, max 1024)")
     async def gptsettings(self, interaction: discord.Interaction, model: app_commands.Choice[str], max_tokens: int = 256):
+        if max_tokens > 1024 or max_tokens < 128:
+            await interaction.response.send_message("Max tokens can only be between 128 and 1024. Please try again")
+            return
         user_settings = {"model": model.value, "max_tokens": max_tokens}
         save_gpt_settings(interaction.user.id, user_settings)
         await interaction.response.send_message("GPT Settings saved.", ephemeral=True)
