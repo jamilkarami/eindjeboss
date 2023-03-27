@@ -1,7 +1,8 @@
-import os
-import discord
 import asyncio
+import discord
 import logging
+import os
+import time
 from discord.ext import commands
 from dotenv import load_dotenv
 from pathlib import Path
@@ -44,6 +45,9 @@ async def main():
     @client.event
     async def on_connect():
         print(f"{client.user.name} has connected to discord!")
+        if hasattr(time, 'tzset'):
+            os.environ['TZ'] = 'Europe/Amsterdam'
+            time.tzset()
         await client.tree.sync()
 
     async def load_extensions():
