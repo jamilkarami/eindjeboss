@@ -1,5 +1,6 @@
 import discord
 import logging
+import textwrap
 from discord import app_commands
 from discord.ext import commands
 from wikipedia_summary import WikipediaSummary
@@ -35,7 +36,7 @@ class Wiki(commands.Cog):
         embed = discord.Embed(title=page_details.title, url=page_details.url)
         if page_details.description:
             embed.add_field(name="Description", value=page_details.description, inline=True)
-        embed.add_field(name="Summary", value=page_details.summary, inline=False)
+        embed.add_field(name="Summary", value=textwrap.shorten(page_details.summary, width=1024), inline=False)
         embed.set_image(url=page_details.thumbnail_url)
         return embed
 
