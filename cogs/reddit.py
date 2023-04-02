@@ -53,19 +53,23 @@ class Reddit(commands.Cog):
 
     @app_commands.command(name="randomcat", description="Sends a random cat picture off of reddit.")
     async def send_random_cat(self, interaction: discord.Interaction):
-        await interaction.response.send_message(await self.get_random_image_post(random.choice(CAT_SUBREDDITS), 50))
+        await interaction.response.defer()
+        await interaction.followup.send(await self.get_random_image_post(random.choice(CAT_SUBREDDITS), 50))
 
     @app_commands.command(name="randomdog", description="Sends a random dog picture off of reddit.")
     async def send_random_dog(self, interaction: discord.Interaction):
-        await interaction.response.send_message(await self.get_random_image_post(random.choice(DOG_SUBREDDITS), 50))
+        await interaction.response.defer()
+        await interaction.followup.send(await self.get_random_image_post(random.choice(DOG_SUBREDDITS), 50))
 
     @app_commands.command(name="car", description="Sends a random car picture off of reddit.")
     async def send_random_car(self, interaction: discord.Interaction):
-        await interaction.response.send_message(await self.get_random_image_post(random.choice(CAR_SUBREDDITS), 50))
+        await interaction.response.defer()
+        await interaction.followup.send(await self.get_random_image_post(random.choice(CAR_SUBREDDITS), 50))
 
     @app_commands.command(name="hotwheels", description="Sends a random hot wheels picture off of reddit.")
     async def send_random_hot_wheel(self, interaction: discord.Interaction):
-        await interaction.response.send_message(await self.get_random_image_post(HOT_WHEELS_SUBREDDIT, 100))
+        await interaction.response.defer()
+        await interaction.followup.send(await self.get_random_image_post(HOT_WHEELS_SUBREDDIT, 100))
 
     async def get_random_image_post(self, subreddit, limit):
         sub = await self.reddit.subreddit(subreddit)
