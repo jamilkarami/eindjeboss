@@ -27,7 +27,7 @@ class F1(commands.Cog):
         title = "%s %s" % (next_race['season'], next_race['raceName'])
         times = self.get_session_times(next_race)
 
-        embed = discord.Embed(title=title, url=next_race['url'])
+        embed = discord.Embed(title=title, url=next_race['url'], color=discord.Color.red())
         for time in times:
             embed.add_field(name=times[time], value=time.strftime('%d/%m at %H:%M'), inline=False)
 

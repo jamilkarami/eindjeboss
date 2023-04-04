@@ -55,7 +55,7 @@ class GPT(commands.Cog, name="gpt"):
             model_engine = settings['model']
             max_tokens = settings['max_tokens']
 
-        embed = discord.Embed(title=query, description="Asking ChatGPT...")
+        embed = discord.Embed(title=query, description="Asking ChatGPT...", color=discord.Color.yellow())
         try:
             await interaction.response.send_message(embed=embed)
             
@@ -71,12 +71,14 @@ class GPT(commands.Cog, name="gpt"):
             response=completion.choices[0].text.strip()
 
             embed.description = response
+            embed.color=discord.Color.green()
             await interaction.edit_original_response(embed=embed)
             total_tokens = max(int(completion.usage.total_tokens * multipliers.get(model_engine)), 1)
             add_usage(interaction.user.id, total_tokens)
             logging.info(f"GPT used by {interaction.user.name}. ({total_tokens} tokens)")
         except RateLimitError as e:
             embed.description = "_Server-wide rate limit reached. Please wait until next month._"
+            embed.color = discord.Color.red()
             await interaction.edit_original_response(embed=embed)
             logging.debug(e)
 

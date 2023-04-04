@@ -44,7 +44,7 @@ class Maps(commands.Cog, name="maps"):
             'Website': place_details.get('website'),
         }
 
-        embed = self.make_embed(title, url, details)
+        embed = self.make_embed(title, url, details, discord.Color.blue())
 
         photos = place_details.get('photos')
         if photos:
@@ -63,8 +63,8 @@ class Maps(commands.Cog, name="maps"):
             await interaction.response.send_message(embed=embed)
         logging.info('Sent place to %s' % interaction.user.name)
 
-    def make_embed(self, title, url, details) -> discord.Embed:
-        embed = discord.Embed(title=title, url=url)
+    def make_embed(self, title, url, details, color) -> discord.Embed:
+        embed = discord.Embed(title=title, url=url, color=color)
         for k,v in details.items():
             if v:
                 embed.add_field(name=k, value=v, inline=k not in ['Opening Hours', 'Address'])
