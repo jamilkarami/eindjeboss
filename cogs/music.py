@@ -84,7 +84,7 @@ class Music(commands.Cog):
             lyrics_els = soup.select('span[class^="lyrics__content__"]')
             lyrics = '\n'.join(el.get_text() for el in lyrics_els) if lyrics_els else '*This song has no available lyrics*'
 
-            embed = discord.Embed(title=title, description=lyrics)
+            embed = discord.Embed(title=title, description=lyrics, color=discord.Color.green())
             await interaction.response.send_message(embed=embed)
         except Exception as e:
             logging.error(f"Failed to send lyrics to {interaction.user.name} for query \"{query}\"")

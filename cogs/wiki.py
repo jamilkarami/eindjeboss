@@ -33,7 +33,7 @@ class Wiki(commands.Cog):
             logging.error(e)
 
     def get_embed_from_wiki_page(self, page_details):
-        embed = discord.Embed(title=page_details.title, url=page_details.url)
+        embed = discord.Embed(title=page_details.title, url=page_details.url, color=discord.Color.teal())
         if page_details.description:
             embed.add_field(name="Description", value=page_details.description, inline=True)
         embed.add_field(name="Summary", value=textwrap.shorten(page_details.summary, width=1024), inline=False)
