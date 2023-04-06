@@ -1,6 +1,5 @@
 CHANNEL_IGNORE_LIST = [994901918155542538]
 BOOK_EMOJI = "📖"
-BONK_EMOJI = "<a:bonk:995996313650999387>"
 HARAM_EMOJI = "<a:420:1009446471420096553>"
 WICKED_EMOJI = "<:wicked:1012026151218188288>"
 QUESTION_EMOJI = "❓"
@@ -34,8 +33,6 @@ WEATHER_EMOJI_CLOUDS = "☁"
 WEATHER_EMOJI_CLOUDS_RAIN = "🌧"
 WEATHER_EMOJI_STORM = "⛈"
 WEATHER_EMOJI_SNOW = "❄"
-BONK_LEADERBOARD_FILE = "bonk_leaderboard.json"
-LAST_BONK_FILE = "last_bonk.json"
 PERIODIC_MESSAGES_FILE = "periodic_messages.json"
 REMINDER_FILE = "reminders.json"
 GAME_FILE = "games.json"
@@ -113,7 +110,5 @@ CAR_SUBREDDITS = [
     "rallyporn",
 ]
 HOT_WHEELS_SUBREDDIT = "HotWheels"
-BONK_TIMEOUT = 300
-BONK_TIMEOUT_SLOW = 14400
 TABLE_FLIP = "(╯°□°）╯︵ ┻━┻"
 TABLE_FIX = "┬─┬ ノ( ゜-゜ノ)"
