@@ -1,20 +1,17 @@
-import logging
 import discord
+import logging
 import os
 import pytesseract
+import shutil
+import uuid
+from bing_image_downloader import downloader
 from discord import app_commands
 from discord.ext import commands
-from google_images_search import GoogleImagesSearch
 from util.util import *
 
-GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY")
-GOOGLE_SEARCH_CUSTOM_ENGINE_CX = os.getenv("GOOGLE_SEARCH_CUSTOM_ENGINE_CX")
 N_CHANNEL_ID = os.getenv("N_CHANNEL_ID")
 CANDY_CHANNEL_ID = os.getenv("CANDY_CHANNEL_ID")
 UNSAFE_CHANNELS = [N_CHANNEL_ID, CANDY_CHANNEL_ID]
-GOOGLE_SEARCH_LIMIT_ENTRY = "GoogleSearch"
-
-gis = GoogleImagesSearch(GOOGLE_SEARCH_API_KEY, GOOGLE_SEARCH_CUSTOM_ENGINE_CX)
 
 
 class Images(commands.Cog, name="Images"):
@@ -27,27 +24,15 @@ class Images(commands.Cog, name="Images"):
 
     @app_commands.command()
     async def img(self, interaction: discord.Interaction, query: str):
-        if not check_limit(GOOGLE_SEARCH_LIMIT_ENTRY):
-            await interaction.response.send_message("This command has reached its daily usage limit. You can use it "
-                                                    "again tomorrow.", ephemeral=True)
-            return
-        search_params = self.get_search_params(query, interaction.channel_id)
-        gis.search(search_params=search_params)
-        if not gis.results():
-            await interaction.response.send_message(f"No images found for search query: {query}. Try something else.", ephemeral=True)
-            return
-        await interaction.response.send_message(gis.results()[0].url)
+        await interaction.response.defer()
+        temp_folder = "temp/%s" % (uuid.uuid4())
+        output_folder = "%s/%s" % (temp_folder, query)
+        downloader.download(query, limit=1,  output_dir=temp_folder, adult_filter_off=False, force_replace=False, timeout=60, verbose=False)
+        img_file = discord.File(os.path.join(output_folder, os.listdir(output_folder)[0]))
 
-    def get_search_params(self, query: str, channel: int):
-        safety = 'off' if channel in UNSAFE_CHANNELS else 'high'
-        search_params = {
-            'q': query,
-            'num': 1,
-            'fileType': 'jpg',
-            'rights': 'cc_publicdomain',
-            'safe': safety
-        }
-        return search_params
+        await interaction.followup.send(file=img_file)
+        img_file.close()
+        shutil.rmtree(temp_folder)
 
     @commands.command(aliases=[])
     async def transcribe(self, ctx):
