@@ -12,8 +12,9 @@ from discord import app_commands
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageEnhance, ImageOps
 from typing import List
 
-EVENT_ANNOUNCEMENT_CHANNEL_ID = int(os.getenv("EVENT_ANNOUNCEMENT_CHANNEL_ID"))
-EVENTS_FORUM_ID = int(os.getenv("EVENTS_FORUM_ID"))
+EVENT_ANNOUNCEMENT_CHANNEL_ID = int(os.getenv('EVENT_ANNOUNCEMENT_CHANNEL_ID'))
+EVENTS_FORUM_ID = int(os.getenv('EVENTS_FORUM_ID'))
+EVENTS_ROLE_ID = int(os.getenv('EVENTS_ROLE_ID'))
 
 FILE_DIR = os.getenv('FILE_DIR')
 
@@ -54,11 +55,12 @@ class Events(commands.Cog):
             return
 
         alert_channel = await thread.guild.fetch_channel(EVENT_ANNOUNCEMENT_CHANNEL_ID)
+        events_role = await thread.guild.get_role(EVENTS_ROLE_ID)
         time.sleep(3)
 
         img = get_img(thread)
 
-        alert_msg = "New event added in %s! Check it out here: %s" % (forum_channel.mention, thread.mention)
+        alert_msg = f"{events_role.mention} New event added in {forum_channel.mention}! Check it out here: {thread.mention}"
         output_img = make_ev_img(img, thread.name, thread.applied_tags)
         await alert_channel.send(alert_msg, file=discord.File(output_img))
 
