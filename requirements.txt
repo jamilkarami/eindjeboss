@@ -2,6 +2,7 @@ aiocron==1.8
 asyncpraw==7.7.0
 beautifulsoup4==4.11.1
 bing-image-downloader==1.1.2
+colorthief==0.2.1
 dateparser==1.1.5
 discord.py==2.1.0
 cinemagoer
