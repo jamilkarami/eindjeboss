@@ -25,7 +25,7 @@ class Wiki(commands.Cog):
             await interaction.response.send_message(f"Could not find page for query: {query}", ephemeral=True)
             return
         try:
-            await interaction.response.send_message(embed=self.get_embed_from_wiki_page(details))
+            await interaction.response.send_message(embed=self.get_embed_from_wiki_page(details), view=WikiView(details.url))
             logging.info(f"Sent Wiki page to {interaction.user.name} for query {query}")
             return
         except Exception as e:
@@ -39,6 +39,13 @@ class Wiki(commands.Cog):
         embed.add_field(name="Summary", value=textwrap.shorten(page_details.summary, width=1024), inline=False)
         embed.set_image(url=page_details.thumbnail_url)
         return embed
+
+class WikiView(discord.ui.View):
+    
+    def __init__(self, url: str):
+        super().__init__()
+        self.url = url
+        self.add_item(discord.ui.Button(label="Wikipedia", url=self.url, style=discord.ButtonStyle.url))
 
 async def setup(bot):
     await bot.add_cog(Wiki(bot))

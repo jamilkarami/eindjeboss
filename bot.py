@@ -31,7 +31,7 @@ async def main():
 
     intents = discord.Intents.all()
     activity = discord.Activity(
-        type=discord.ActivityType.watching, detail="", name=STATUS
+        type=discord.ActivityType.listening, detail="", name=STATUS
     )
     intents.members = True
     client = commands.Bot(
