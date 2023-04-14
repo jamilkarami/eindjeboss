@@ -55,7 +55,7 @@ class Events(commands.Cog):
             return
 
         alert_channel = await thread.guild.fetch_channel(EVENT_ANNOUNCEMENT_CHANNEL_ID)
-        events_role = await thread.guild.get_role(EVENTS_ROLE_ID)
+        events_role = discord.utils.get(thread.guild.roles, id=EVENTS_ROLE_ID)
         time.sleep(3)
 
         img = get_img(thread)
