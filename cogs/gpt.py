@@ -42,14 +42,14 @@ class GPT(commands.Cog, name="gpt"):
         lg.info(f"[{__name__}] Cog is ready")
 
     @app_commands.command(name='gpt', description="Prompt the OpenAI GPT chat")
-    async def gpt(self, int: discord.Interaction, query: str):
+    async def gpt(self, intr: discord.Interaction, query: str):
         gpt_usage_limit = int(os.getenv('GPT_USAGE_LIMIT'))
 
-        settings = get_gpt_settings(int.user.id)
-        usage = get_gpt_usage(int.user.id)
+        settings = get_gpt_settings(intr.user.id)
+        usage = get_gpt_usage(intr.user.id)
 
         if usage and usage >= gpt_usage_limit:
-            await int.response.send_message(LIMIT, ephemeral=True)
+            await intr.response.send_message(LIMIT, ephemeral=True)
             return
 
         if not settings:
@@ -62,7 +62,7 @@ class GPT(commands.Cog, name="gpt"):
         em = discord.Embed(title=query, description="Asking ChatGPT...",
                            color=discord.Color.yellow())
         try:
-            await int.response.send_message(embed=em)
+            await intr.response.send_message(embed=em)
 
             completion = openai.Completion.create(
                 engine=model_engine,
@@ -77,16 +77,16 @@ class GPT(commands.Cog, name="gpt"):
 
             em.description = response
             em.color = discord.Color.green()
-            await int.edit_original_response(embed=em)
+            await intr.edit_original_response(embed=em)
             ttl_tok = max(int(completion.usage.total_tokens *
                           multipliers.get(model_engine)), 1)
-            add_usage(int.user.id, ttl_tok)
+            add_usage(intr.user.id, ttl_tok)
             lg.info(
-                f"GPT used by {int.user.name}. ({ttl_tok} tokens)")
+                f"GPT used by {intr.user.name}. ({ttl_tok} tokens)")
         except RateLimitError as e:
             em.description = "_Server-wide rate limit reached._"
             em.color = discord.Color.red()
-            await int.edit_original_response(embed=em)
+            await intr.edit_original_response(embed=em)
             lg.debug(e)
 
     @app_commands.command(name='gptsettings',
