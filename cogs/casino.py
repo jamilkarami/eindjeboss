@@ -53,39 +53,38 @@ class Casino(commands.Cog):
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
 
-    @app_commands.command(description="Roll a dice of your choice.")
-    async def roll(self,
-                   int: discord.Interaction, maximum: int = None):
+    @app_commands.command(name="roll", description="Roll a die.")
+    async def roll(self, intr: discord.Interaction, maximum: int = None):
         if not maximum:
             maximum = DEFAULT_ROLL
         if maximum < 2:
-            await int.response.send_message(
+            await intr.response.send_message(
                 "The maximum can only be 2 and above.", ephemeral=True)
             return
 
         random.seed()
         num = random.randint(1, maximum)
 
-        await int.response.send_message(
+        await intr.response.send_message(
             f"You roll a D{str(maximum)}. You get: {str(num)}.")
 
     @app_commands.command(name="8ball",
                           description=EIGHT_BALL_DESCRIPTION)
-    async def ball(self, interaction: discord.Interaction):
+    async def ball(self, intr: discord.Interaction):
         random.seed()
         message = f"Magic 8 ball says: {random.choice(EIGHT_BALL_OPTIONS)}"
-        await interaction.response.send_message(message)
+        await intr.response.send_message(message)
 
     @app_commands.command(description="Flip a coin.")
-    async def coin(self, interaction: discord.Interaction):
+    async def coin(self, intr: discord.Interaction):
         options = ["Heads", "Tails"]
         random.seed()
         message = f"You flip a coin. It lands on: {random.choice(options)}"
-        await interaction.response.send_message(message)
+        await intr.response.send_message(message)
 
     @app_commands.command(name="chooseforme",
                           description=CH_DESC)
-    async def choose(self, interaction: discord.Interaction, options: str):
+    async def choose(self, intr: discord.Interaction, options: str):
         split_options = [x.strip().capitalize() for x in options.split(",")]
         resp_o = ", ".join([f"**{x}**" for x in split_options])
         random.seed()
@@ -93,7 +92,7 @@ class Casino(commands.Cog):
               not in (opt.lower() for opt in split_options) else "Takumi")
         resp = (f"You asked me to choose from {resp_o}.\n\nI choose: **{ch}**")
 
-        await interaction.response.send_message(resp)
+        await intr.response.send_message(resp)
 
 
 async def setup(bot):
