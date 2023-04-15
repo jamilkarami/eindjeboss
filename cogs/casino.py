@@ -1,7 +1,7 @@
 import discord
 import random
-import logging
-from util.vars.eind_vars import *
+import logging as lg
+from util.vars.eind_vars import CHANNEL_IGNORE_LIST
 from discord import app_commands
 from discord.ext import commands
 
@@ -19,50 +19,58 @@ EIGHT_BALL_OPTIONS = [
     "My sources say nope ❌",
 ]
 
+EIGHT_BALL_DESCRIPTION = "Shake the magic 8 ball and get the answer you seek."
+CH_DESC = "Let Arnol choose! Handy for when you don't know what to pick."
+
 
 class Casino(commands.Cog):
     def __init__(self, client):
         self.client = client
 
     @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author == self.client.user:
+    async def on_message(self, msg):
+        if msg.author == self.client.user:
             return
-        if message.channel.name in CHANNEL_IGNORE_LIST:
+        if msg.channel.name in CHANNEL_IGNORE_LIST:
             return
 
-        message_content: str = message.content.lower()
+        msg_cont: str = msg.content.lower()
 
-        if message_content.startswith(ROLL_FOR_TEXT):
-            reason_for_roll = message_content[len(ROLL_FOR_TEXT):]
+        if msg_cont.startswith(ROLL_FOR_TEXT):
+            reason_for_roll = msg_cont[len(ROLL_FOR_TEXT):]
             random.seed()
             num = random.randint(1, DEFAULT_ROLL)
-            await message.reply(f"You roll a D20 for _\"{reason_for_roll}\"_. You get a {num}.")
+            await msg.reply(
+                f"You roll a D20 for _\"{reason_for_roll}\"_. You get: {num}.")
             return
 
-        if message_content.startswith(HEY_ARNOL_TEXT) and message_content.endswith("?"):
+        if msg_cont.startswith(HEY_ARNOL_TEXT) and msg_cont.endswith("?"):
             random.seed()
             answer = random.choice(EIGHT_BALL_OPTIONS)
-            await message.reply(answer)
+            await msg.reply(answer)
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"[{__name__}] Cog is ready")
+        lg.info(f"[{__name__}] Cog is ready")
 
     @app_commands.command(description="Roll a dice of your choice.")
-    async def roll(self, interaction: discord.Interaction, maximum: int = None):
+    async def roll(self,
+                   int: discord.Interaction, maximum: int = None):
         if not maximum:
             maximum = DEFAULT_ROLL
         if maximum < 2:
-            await interaction.response.send_message("The maximum can only be 2 and above. Please try again.", ephemeral=True)
+            await int.response.send_message(
+                "The maximum can only be 2 and above.", ephemeral=True)
             return
 
         random.seed()
         num = random.randint(1, maximum)
 
-        await interaction.response.send_message("You roll a D{max}. You get: {num}.".format(max=str(maximum), num=str(num)))
+        await int.response.send_message(
+            f"You roll a D{str(maximum)}. You get: {str(num)}.")
 
-    @app_commands.command(name="8ball", description="Shake the magic 8 ball and get the answer you seek.")
+    @app_commands.command(name="8ball",
+                          description=EIGHT_BALL_DESCRIPTION)
     async def ball(self, interaction: discord.Interaction):
         random.seed()
         message = f"Magic 8 ball says: {random.choice(EIGHT_BALL_OPTIONS)}"
@@ -75,15 +83,17 @@ class Casino(commands.Cog):
         message = f"You flip a coin. It lands on: {random.choice(options)}"
         await interaction.response.send_message(message)
 
-    @app_commands.command(name="chooseforme", description="Let Arnol choose from a list of options. Handy for when you don't know what to pick.",)
+    @app_commands.command(name="chooseforme",
+                          description=CH_DESC)
     async def choose(self, interaction: discord.Interaction, options: str):
         split_options = [x.strip().capitalize() for x in options.split(",")]
-        response_options = ", ".join([f"**{x}**" for x in split_options])
+        resp_o = ", ".join([f"**{x}**" for x in split_options])
         random.seed()
-        choice = (random.choice(split_options) if "takumi" not in (opt.lower() for opt in split_options) else "Takumi")
-        response_text = (f"You asked me to choose from {response_options}.\n\nI choose: **{choice}**")
+        ch = (random.choice(split_options) if "takumi"
+              not in (opt.lower() for opt in split_options) else "Takumi")
+        resp = (f"You asked me to choose from {resp_o}.\n\nI choose: **{ch}**")
 
-        await interaction.response.send_message(response_text)
+        await interaction.response.send_message(resp)
 
 
 async def setup(bot):

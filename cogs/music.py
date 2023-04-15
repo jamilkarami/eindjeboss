@@ -1,10 +1,7 @@
-import json
-
 import discord
-import logging
-import spotipy
+import logging as lg
 import requests
-import re
+import spotipy
 from bs4 import BeautifulSoup
 from discord.ext import commands
 from discord import app_commands
@@ -14,6 +11,9 @@ from spotipy.exceptions import SpotifyException
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials())
 sp_scope = "user-library-read"
 
+S_DESC = "Sends a link to the song that matches your query the most on Spotify"
+SC_DESC = "Sends a link to the song you are currently listening to on Spotify"
+
 
 class Music(commands.Cog):
 
@@ -22,75 +22,88 @@ class Music(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"[{__name__}] Cog is ready")
+        lg.info(f"[{__name__}] Cog is ready")
 
-    @app_commands.command(name="sp", description="Sends a link to the song that matches your query the most on Spotify")
-    async def sp(self, interaction: discord.Interaction, query: str):
+    @app_commands.command(name="sp",
+                          description=S_DESC)
+    async def sp(self, intr: discord.Interaction, qr: str):
         try:
-            result = sp.search(f"{query}", type="track")
+            user = intr.user
+            result = sp.search(f"{qr}", type="track")
             if len(result['tracks']['items']) > 0:
-                await interaction.response.send_message(result['tracks']['items'][0]['external_urls']['spotify'])
+                await intr.response.send_message(
+                    result['tracks']['items'][0]['external_urls']['spotify'])
             else:
-                await interaction.response.send_message('No results found for: ' + query)
+                await intr.response.send_message(
+                    'No results found for: ' + qr)
         except SpotifyException as e:
-            logging.error(f"Failed to send song to {interaction.user.name} for query \"{query}\"")
-            logging.debug(e)
+            lg.error(f"Failed to send song to {user.name} for query \"{qr}\"")
+            lg.debug(e)
         else:
-            logging.info(f"Sent song to {interaction.user.name} for query \"{query}\"")
+            lg.info(f"Sent song to {user.name} for query \"{qr}\"")
 
-    @app_commands.command(name="spc", description="Sends a link to the song you are currently listening to on Spotify")
-    async def spc(self, interaction: discord.Interaction):
+    @app_commands.command(name="spc",
+                          description=SC_DESC)
+    async def spc(self, intr: discord.Interaction):
         spotify_act = None
 
-        user = interaction.user
-        activities = interaction.guild.get_member(user.id).activities
+        user = intr.user
+        activities = intr.guild.get_member(user.id).activities
         for activity in activities:
             if isinstance(activity, discord.Spotify):
                 spotify_act = activity
 
         if spotify_act is None:
-            await interaction.response.send_message("You are not currently listening to anything on Spotify or you "
-                                                    "haven't connected Discord to your Spotify account.",
-                                                    ephemeral=True) 
+            await intr.response.send_message(
+                "You are not currently listening to anything on Spotify or you"
+                " haven't connected Discord to your Spotify account.",
+                ephemeral=True)
             return
 
         try:
-            await interaction.response.send_message(spotify_act.track_url)
+            await intr.response.send_message(spotify_act.track_url)
         except Exception as e:
-            logging.error(f"Failed to send current song to {interaction.user.name}")
-            logging.debug(e)
+            lg.error(f"Failed to send current song to {intr.user.name}")
+            lg.debug(e)
         else:
-            logging.info(f"Sent current song to {interaction.user.name}")
+            lg.info(f"Sent current song to {intr.user.name}")
 
-    @app_commands.command(name="lyrics", description="Sends the lyrics of a song matching your query, if they exist.")
-    async def lyrics(self, interaction: discord.Interaction, query: str):
+    @app_commands.command(name="lyrics",
+                          description="Sends the lyrics of a song matching"
+                          " your query, if they exist.")
+    async def lyrics(self, intr: discord.Interaction, qr: str):
         try:
-            base_url = 'https://www.musixmatch.com'
-            url = f'{base_url}/search/{query.lower().replace(" ", "%20")}/tracks'
+            user = intr.user
+            b_url = 'https://www.musixmatch.com'
+            url = f'{b_url}/search/{qr.lower().replace(" ", "%20")}/tracks'
 
             headers = {'Host': 'www.musixmatch.com',
-                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'}
+                       'user-agent': 'Mozilla/5.0'}
 
             content = requests.get(url, headers=headers).content
 
             soup = BeautifulSoup(content.decode('utf-8'), 'html.parser')
-            lyrics_url = base_url + soup.find('a', {'class': 'title'}).get('href')
+            lyrics_url = b_url + soup.find('a', {'class': 'title'}).get('href')
 
             lyrics_page = requests.get(lyrics_url, headers=headers).content
             soup = BeautifulSoup(lyrics_page.decode('utf-8'), 'html.parser')
 
             title = soup.title.string.replace(' Lyrics | Musixmatch', '')
 
-            lyrics_els = soup.select('span[class^="lyrics__content__"]')
-            lyrics = '\n'.join(el.get_text() for el in lyrics_els) if lyrics_els else '*This song has no available lyrics*'
+            l_els = soup.select('span[class^="lyrics__content__"]')
+            lyr = '\n'.join(el.get_text() for el in l_els) if l_els else \
+                '*This song has no available lyrics*'
 
-            embed = discord.Embed(title=title, description=lyrics, color=discord.Color.green())
-            await interaction.response.send_message(embed=embed)
+            embed = discord.Embed(title=title,
+                                  description=lyr,
+                                  color=discord.Color.green())
+            await intr.response.send_message(embed=embed)
         except Exception as e:
-            logging.error(f"Failed to send lyrics to {interaction.user.name} for query \"{query}\"")
-            logging.debug(e)
+            lg.error(f"Failed to send lyrics to {user.name} for query: {qr}")
+            lg.debug(e)
         else:
-            logging.info(f"Sent lyrics to {interaction.user.name} for query \"{query}\"")
+            lg.info(f"Sent lyrics to {user.name} for query: {qr}")
+
 
 async def setup(bot):
     await bot.add_cog(Music(bot))

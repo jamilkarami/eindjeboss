@@ -1,18 +1,19 @@
 import ast
 import discord
-import logging
+import logging as lg
 import operator as op
 import os
 import re
 from discord import app_commands
 from discord.ext import commands
-from util.vars.eind_vars import *
+from util.vars.eind_vars import CHANNEL_IGNORE_LIST
 
 CALC_REGEX = r"(?:calc|calculate) (.{3,})"
 
 operators = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
              ast.Div: op.truediv, ast.Pow: op.pow, ast.BitXor: op.xor,
              ast.USub: op.neg}
+
 
 class Utilities(commands.Cog):
 
@@ -21,7 +22,7 @@ class Utilities(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"[{__name__}] Cog is ready")
+        lg.info(f"[{__name__}] Cog is ready")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -35,22 +36,26 @@ class Utilities(commands.Cog):
         calc_pattern = re.compile(CALC_REGEX)
         matches = calc_pattern.match(message_content)
 
-        if(matches):
+        if (matches):
             try:
                 expression = matches.group(1)
                 result = '{0:.2f}'.format(calculate(expression))
             except TypeError as te:
-                logging.error(f'Failed to calculate expression \"{expression}\" for {message.author.name}')
-                logging.debug(te)
-                await message.reply('Your expression could not be calculated. Please check your formatting.')
+                lg.error(f"Failed to calculate expression \"{expression}\""
+                         f" for {message.author.name}")
+                lg.debug(te)
+                await message.reply(
+                    'Your expression could not be calculated.'
+                    ' Please check your formatting.')
             else:
                 await message.reply(f"{result}")
 
     @app_commands.command(name='logs')
-    async def logs(self, interaction: discord.Interaction, ln: int = 20):
-        if interaction.user.id != int(os.getenv('RAGDOLL_ID')):
-            await interaction.response.send_message('You\'re not allowed to use this command.', ephemeral=True)
-            logging.info('%s tried to use the /logs command' % interaction.user.name)
+    async def logs(self, intr: discord.Interaction, ln: int = 20):
+        if intr.user.id != int(os.getenv('RAGDOLL_ID')):
+            await intr.response.send_message(
+                'You\'re not allowed to use this command.', ephemeral=True)
+            lg.info('%s tried to use the /logs command' % intr.user.name)
 
         log_file = open("%s/logs/eindjeboss.log" % os.getenv('FILE_DIR'))
         lines = log_file.readlines()
@@ -59,19 +64,20 @@ class Utilities(commands.Cog):
         log_msg = ""
         for line in log_lines:
             if len(log_msg) + len(line) > 2000:
-                await interaction.user.send('```%s```' % log_msg)
+                await intr.user.send('```%s```' % log_msg)
                 log_msg = ""
             log_msg = log_msg + line
-        await interaction.user.send('```%s```' % log_msg)
-        await interaction.response.send_message(":yes:", ephemeral=True)
-        
+        await intr.user.send('```%s```' % log_msg)
+        await intr.response.send_message(":yes:", ephemeral=True)
+
 
 def calculate(expression: str):
     node = ast.parse(expression, mode='eval').body
     return eval_(node)
 
+
 def eval_(node):
-    if isinstance(node, ast.Num): # <number>
+    if isinstance(node, ast.Num):
         return node.n
     elif isinstance(node, ast.BinOp):
         return operators[type(node.op)](eval_(node.left), eval_(node.right))
@@ -83,4 +89,3 @@ def eval_(node):
 
 async def setup(bot):
     await bot.add_cog(Utilities(bot))
-    

@@ -6,8 +6,6 @@ import time
 from discord.ext import commands
 from dotenv import load_dotenv
 from pathlib import Path
-from util.vars.periodic_reminders import *
-from util.util import *
 
 
 async def main():
@@ -35,12 +33,13 @@ async def main():
     )
     intents.members = True
     client = commands.Bot(
-        command_prefix="!", case_insensitive=True, intents=intents, activity=activity
+        command_prefix="!", case_insensitive=True,
+        intents=intents, activity=activity
     )
 
     @client.event
     async def on_ready():
-        print(f"Eindjeboss is ready to serve.")
+        print(f"{client.user.name} is ready to serve.")
 
     @client.event
     async def on_connect():

@@ -1,13 +1,12 @@
 import discord
-import logging
+import logging as lg
 import os
-import pytesseract
+import pytesseract as pyt
 import shutil
 import uuid
 from bing_image_downloader import downloader
 from discord import app_commands
 from discord.ext import commands
-from util.util import *
 
 N_CHANNEL_ID = os.getenv("N_CHANNEL_ID")
 CANDY_CHANNEL_ID = os.getenv("CANDY_CHANNEL_ID")
@@ -20,15 +19,18 @@ class Images(commands.Cog, name="Images"):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"[{__name__}] Cog is ready")
+        lg.info(f"[{__name__}] Cog is ready")
 
     @app_commands.command()
     async def img(self, interaction: discord.Interaction, query: str):
         await interaction.response.defer()
         temp_folder = "temp/%s" % (uuid.uuid4())
         output_folder = "%s/%s" % (temp_folder, query)
-        downloader.download(query, limit=1,  output_dir=temp_folder, adult_filter_off=False, force_replace=False, timeout=60, verbose=False)
-        img_file = discord.File(os.path.join(output_folder, os.listdir(output_folder)[0]))
+        downloader.download(query, limit=1,  output_dir=temp_folder,
+                            adult_filter_off=False, force_replace=False,
+                            timeout=60, verbose=False)
+        img_file = discord.File(os.path.join(output_folder,
+                                             os.listdir(output_folder)[0]))
 
         await interaction.followup.send(file=img_file)
         img_file.close()
@@ -47,11 +49,11 @@ class Images(commands.Cog, name="Images"):
             try:
                 for idx, img in enumerate(imgs, start=1):
                     payload = (
-                        f"**Image {idx}**\n```{pytesseract.image_to_string(img)}```"
+                        f"**Image {idx}**\n```{pyt.image_to_string(img)}```"
                     )
                     msg = msg + payload + "\n\n"
-            except pytesseract.TesseractError:
-                logging.error("Failed to transcribe text from image")
+            except pyt.TesseractError:
+                lg.error("Failed to transcribe text from image")
             finally:
                 os.remove(img)
 

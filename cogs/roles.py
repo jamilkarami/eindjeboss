@@ -1,8 +1,10 @@
 import discord
-import logging
+import logging as lg
 from discord.ext import commands
 from discord import app_commands
 from util.vars.role_vars import ROLE_VARS
+
+FOCUS_DESC = "Limits your view to the conversation channels"
 
 
 class Roles(commands.Cog):
@@ -12,7 +14,7 @@ class Roles(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"[{__name__}] Cog is ready")
+        lg.info(f"[{__name__}] Cog is ready")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -24,7 +26,7 @@ class Roles(commands.Cog):
             role_name = ROLE_VARS[payload.message_id][1]
             role = discord.utils.get(guild.roles, name=role_name)
             await payload.member.add_roles(role)
-            logging.info(f"Added {role_name} role for {payload.member.name}")
+            lg.info(f"Added {role_name} role for {payload.member.name}")
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -37,21 +39,26 @@ class Roles(commands.Cog):
             role_name = ROLE_VARS[payload.message_id][1]
             role = discord.utils.get(guild.roles, name=role_name)
             await member.remove_roles(role)
-            logging.info(f"Removed {role_name} role for {payload.member.name}")
+            lg.info(f"Removed {role_name} role for {payload.member.name}")
 
-    @app_commands.command(name="focus", description="Limits your view to the conversation channels")
+    @app_commands.command(name="focus",
+                          description=FOCUS_DESC)
     async def focus(self, interaction: discord.Interaction):
         role = discord.utils.get(interaction.guild.roles, name="Focus")
 
         if role in interaction.user.roles:
             await interaction.user.remove_roles(role)
-            await interaction.response.send_message("Focus mode off. Use /focus again to turn it on.", ephemeral=True)
-            logging.info(f"Removed focus role for {interaction.user.name}")
+            await interaction.response.send_message(
+                "Focus mode off. Use /focus again to turn it on.",
+                ephemeral=True)
+            lg.info(f"Removed focus role for {interaction.user.name}")
             return
 
         await interaction.user.add_roles(role)
-        await interaction.response.send_message("Focus mode on. Use /focus again to turn it off.", ephemeral=True)
-        logging.info(f"Added focus role for {interaction.user.name}")
+        await interaction.response.send_message(
+            "Focus mode on. Use /focus again to turn it off.",
+            ephemeral=True)
+        lg.info(f"Added focus role for {interaction.user.name}")
 
 
 async def setup(bot):

@@ -6,7 +6,7 @@ def load_json_file(path):
     with open(path, "rb") as f:
         try:
             return json.loads(f.read())
-        except:
+        except Exception:
             return dict()
 
 
