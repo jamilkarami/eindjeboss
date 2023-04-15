@@ -294,7 +294,8 @@ class TranslateView(HelpView):
     async def help_tr(self, interaction: discord.Interaction, button: discord.ui.Button):
         desc = "Translates the message that you reply to."
         expl = "```Reply to a message with !tr [src] and Arnol will translate it for you.```"
-        more = "[src] is an optional parameter you can pass to choose the source language.\nSometimes the language detection picks up the wrong language."
+        more = '\n'.join(["[src] is an optional parameter you can pass to choose the source language.\nSometimes the language detection picks up the wrong language.",
+                "", "**You can also call this by right clicking (or holding if you're on mobile) the message, apps -> Translate Message.**"])
         embed = make_embed("!tr", {"Description": desc, "Example": expl, 'Details': more}, False)
         await interaction.response.edit_message(embed=embed)
 
