@@ -1,24 +1,32 @@
 import asyncpraw
 import discord
-import logging
+import logging as lg
 import os
 import random
 import re
 from discord.ext import commands
 from discord import app_commands
-from util.vars.eind_vars import *
+from util.vars.eind_vars import (
+    REDDIT_USER_AGENT,
+    CHANNEL_IGNORE_LIST,
+    CAT_SUBS,
+    DOG_SUBS,
+    CAR_SUBS,
+    HOT_WHEELS_SUB
+)
 from util.vars.periodic_reminders import TOP_REDDIT_DT
 from aiocron import crontab
 
-SUBREDDIT_REGEX = "(?<!reddit.com)\/r\/[a-zA-Z0-9]{3,}"
-I_REDDIT_REGEX = "https:\/\/i.redd.it\/[a-zA-Z0-9]*\.(png|jpg)"
-I_IMGUR_REGEX = "https:\/\/i.imgur.com/[a-zA-Z0-9]*\.(png|jpg)"
+SUBREDDIT_REGEX = "(?<!reddit.com)/r/[a-zA-Z0-9]{3,}"
+I_REDDIT_REGEX = "https://i.redd.it/[a-zA-Z0-9]*.(png|jpg)"
+I_IMGUR_REGEX = "https://i.imgur.com/[a-zA-Z0-9]*.(png|jpg)"
 ANIMALS_CHANNEL_ID = int(os.getenv("ANIMALS_CHANNEL_ID"))
 CARS_CHANNEL_ID = int(os.getenv("CARS_CHANNEL_ID"))
 FOOD_CHANNEL_ID = int(os.getenv("FOOD_CHANNEL_ID"))
 CATS = "cats"
 CARS = "carporn"
 FOOD = "foodporn"
+RANDOM_STR = "Sends a random %s picture off of reddit."
 
 
 class Reddit(commands.Cog):
@@ -30,10 +38,13 @@ class Reddit(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"[{__name__}] Cog is ready")
-        crontab(TOP_REDDIT_DT, func=self.schedule_pic, args=(ANIMALS_CHANNEL_ID, CATS), start=True)
-        crontab(TOP_REDDIT_DT, func=self.schedule_pic, args=(CARS_CHANNEL_ID, CARS), start=True)
-        crontab(TOP_REDDIT_DT, func=self.schedule_pic, args=(FOOD_CHANNEL_ID, FOOD), start=True)
+        lg.info(f"[{__name__}] Cog is ready")
+        crontab(TOP_REDDIT_DT, func=self.schedule_pic,
+                args=(ANIMALS_CHANNEL_ID, CATS), start=True)
+        crontab(TOP_REDDIT_DT, func=self.schedule_pic,
+                args=(CARS_CHANNEL_ID, CARS), start=True)
+        crontab(TOP_REDDIT_DT, func=self.schedule_pic,
+                args=(FOOD_CHANNEL_ID, FOOD), start=True)
 
     def __init__(self, client: discord.Client):
         self.client = client
@@ -51,38 +62,47 @@ class Reddit(commands.Cog):
         if matches:
             await self.handle_reddit_matches(matches, message)
 
-    @app_commands.command(name="randomcat", description="Sends a random cat picture off of reddit.")
-    async def send_random_cat(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        await interaction.followup.send(await self.get_random_image_post(random.choice(CAT_SUBREDDITS), 50))
+    @app_commands.command(name="randomcat",
+                          description=RANDOM_STR % "cat")
+    async def send_random_cat(self, intr: discord.Interaction):
+        await intr.response.defer()
+        await intr.followup.send(
+            await self.get_red_post(random.choice(CAT_SUBS), 50))
 
-    @app_commands.command(name="randomdog", description="Sends a random dog picture off of reddit.")
-    async def send_random_dog(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        await interaction.followup.send(await self.get_random_image_post(random.choice(DOG_SUBREDDITS), 50))
+    @app_commands.command(name="randomdog",
+                          description=RANDOM_STR % "dog")
+    async def send_random_dog(self, intr: discord.Interaction):
+        await intr.response.defer()
+        await intr.followup.send(
+            await self.get_red_post(random.choice(DOG_SUBS), 50))
 
-    @app_commands.command(name="car", description="Sends a random car picture off of reddit.")
-    async def send_random_car(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        await interaction.followup.send(await self.get_random_image_post(random.choice(CAR_SUBREDDITS), 50))
+    @app_commands.command(name="car",
+                          description=RANDOM_STR % "car")
+    async def send_random_car(self, intr: discord.Interaction):
+        await intr.response.defer()
+        await intr.followup.send(
+            await self.get_red_post(random.choice(CAR_SUBS), 50))
 
-    @app_commands.command(name="hotwheels", description="Sends a random hot wheels picture off of reddit.")
-    async def send_random_hot_wheel(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        await interaction.followup.send(await self.get_random_image_post(HOT_WHEELS_SUBREDDIT, 100))
+    @app_commands.command(name="hotwheels",
+                          description=RANDOM_STR % "hot wheels")
+    async def send_random_hot_wheel(self, intr: discord.Interaction):
+        await intr.response.defer()
+        await intr.followup.send(
+            await self.get_red_post(HOT_WHEELS_SUB, 100))
 
-    async def get_random_image_post(self, subreddit, limit):
+    async def get_red_post(self, subreddit, limit):
         sub = await self.reddit.subreddit(subreddit)
         posts = [post async for post in sub.hot(limit=limit)]
         chosen_post = posts[random.randint(0, len(posts) - 1)]
-        while not re.match(I_REDDIT_REGEX, chosen_post.url) and not re.match(I_IMGUR_REGEX, chosen_post.url):
+        while not re.match(I_REDDIT_REGEX, chosen_post.url) \
+                and not re.match(I_IMGUR_REGEX, chosen_post.url):
             chosen_post = random.choice(posts)
         return chosen_post.url
 
     async def schedule_pic(self, channel_id, subreddit_name):
         channel = await self.client.fetch_channel(channel_id)
         subreddit = await self.reddit.subreddit(subreddit_name)
-        
+
         async for submission in subreddit.top("day", limit=1):
             post = submission
 
@@ -93,8 +113,9 @@ class Reddit(commands.Cog):
         await channel.send(payload)
 
     async def handle_reddit_matches(self, matches, message):
-        match_count = len(matches)
-        payload = f"Found {match_count} subreddit link{'s'[:match_count^1]} in your message:\n"
+        m_cnt = len(matches)
+        ext = 's'[:m_cnt ^ 1]
+        payload = f"Found {m_cnt} subreddit link{ext} in your message:\n"
         safe_matches = await self.get_safe_matches(matches)
 
         if not safe_matches:

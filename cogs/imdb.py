@@ -1,5 +1,5 @@
 import discord
-import logging
+import logging as lg
 from imdb import Cinemagoer
 from discord import app_commands
 from discord.ext import commands
@@ -14,16 +14,20 @@ class IMDB(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"[{__name__}] Cog is ready")
+        lg.info(f"[{__name__}] Cog is ready")
 
-    @app_commands.command(name="imdb", description="Search for a movie/series on IMDb.")
+    @app_commands.command(name="imdb",
+                          description="Search for a movie/series on IMDb.")
     async def imdb(self, interaction: discord.Interaction, query: str):
         movies = ia.search_movie(query)
         if not movies:
-            await interaction.response.send_message('No results found for "' + query + '" on IMDB.', ephemeral=True)
+            await interaction.response.send_message('No results found for "' +
+                                                    query + '" on IMDB.',
+                                                    ephemeral=True)
             return
         movie_id = movies[0].movieID
-        await interaction.response.send_message("https://www.imdb.com/title/tt{id}/".format(id=movie_id))
+        await interaction.response.send_message(
+            "https://www.imdb.com/title/tt{id}/".format(id=movie_id))
 
 
 async def setup(bot):

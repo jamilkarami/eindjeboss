@@ -1,5 +1,5 @@
 import discord
-import logging
+import logging as lg
 import os
 import pytesseract
 import re
@@ -7,7 +7,7 @@ from discord.ext import commands
 from discord import app_commands
 from googletrans import Translator
 from googletrans.constants import LANGUAGES
-from util.vars.eind_vars import *
+from util.vars.eind_vars import CHANNEL_IGNORE_LIST
 
 translator = Translator()
 
@@ -36,54 +36,61 @@ class Translate(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logging.info(f"[{__name__}] Cog is ready")
+        lg.info(f"[{__name__}] Cog is ready")
 
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
-        if message.author == self.client.user:
+    async def on_message(self, msg: discord.Message):
+        if msg.author == self.client.user:
             return
-        if message.channel.id in CHANNEL_IGNORE_LIST:
+        if msg.channel.id in CHANNEL_IGNORE_LIST:
             return
 
-        message_content = message.content.lower()
+        message_content = msg.content.lower()
 
         calc_pattern = re.compile(TRANSLATE_PROMPT_REGEX)
         matches = calc_pattern.match(message_content)
 
-        if(matches):
+        if (matches):
             try:
                 req = matches.group(1)
                 lang = matches.group(2)
-                translated = TranslateUtil.translate_text(req, src='auto', dst=lang)
+                translated = TranslateUtil.translate_text(req, src='auto',
+                                                          dst=lang)
             except ValueError as e:
-                logging.error(f'Failed to translate \"{req}\" to {lang} for {message.author.name}')
-                logging.debug(e)
-                await message.reply('Destination language invalid. Please check for typos.')
+                name = msg.author.name
+                lg.error(f'Failed to translate \"{req}\" to {lang} for {name}')
+                lg.debug(e)
+                await msg.reply('Destination language invalid. Check typos.')
             else:
-                await message.reply(f"{translated.text}")
+                await msg.reply(f"{translated.text}")
 
-    async def translate_context(self, interaction: discord.Interaction, message: discord.Message):
-        translated = TranslateUtil.translate_text(message.content, None)
+    async def translate_context(self, intr: discord.Interaction,
+                                msg: discord.Message):
+        tr = TranslateUtil.translate_text(msg.content, None)
 
-        lang = LANGUAGES[translated.src]
+        lang = LANGUAGES[tr.src]
 
-        translate_msg = f"Translation for \"{message.content}\" from ({lang.capitalize()}):\n\n{translated.text}"
+        translate_msg = "Translation for \"%s\" from (%s):\n\n%s"
+        log_msg = "Sent translation to %s for message \"%s\" by %s"
 
-        await interaction.response.send_message(content=translate_msg, ephemeral=True)
-        logging.info(
-            f"Sent translation to {interaction.user.name} for message \"{message.content}\" by {message.author.name}")
+        await intr.response.send_message(
+            content=translate_msg % (msg.content, lang.capitalize, tr.text),
+            ephemeral=True)
+        lg.info(log_msg % (intr.user.name, msg.content, msg.author.name))
 
     @commands.command(aliases=[])
     async def tr(self, ctx, *args):
         src = None if not args else args[0]
 
         if ctx.message.reference:
-            translated = TranslateUtil.translate_text(ctx.message.reference.resolved.content, src)
+            translated = TranslateUtil.translate_text(
+                ctx.message.reference.resolved.content, src)
             lang = LANGUAGES[translated.src].capitalize()
             payload = f"Translated from ({lang}): {translated.text}"
             await ctx.message.reference.resolved.reply(payload)
             return
-        await ctx.message.reply("\"!tr\" can only be used as a reply to another message")
+        await ctx.message.reply(
+            "\"!tr\" can only be used as a reply to another message")
 
     @commands.command(aliases=[])
     async def trimg(self, ctx, *args):
@@ -99,20 +106,28 @@ class Translate(commands.Cog):
                     await attachment.save(imgname)
                     imgs.append(imgname)
             for idx, img in enumerate(imgs, start=1):
-                translated = TranslateUtil.translate_text(TranslateUtil.cleanup(pytesseract.image_to_string(img)), src)
+                translated = TranslateUtil.translate_text(
+                    TranslateUtil.cleanup(pytesseract.image_to_string(img)),
+                    src)
                 lang = LANGUAGES[translated.src].capitalize()
-                payload = f"**Image {idx}**\n_Translated from ({lang}):_\n```{translated.text}```"
+                payload = f"**Image {idx}**\n_Translated from"
+                f" ({lang}):_\n```{translated.text}```"
                 msg = msg + payload + "\n\n"
                 os.remove(img)
-            
+
             await ctx.message.reference.resolved.reply(msg)
 
-    @app_commands.command(name="translate", description="Translate a text from one language to another.")
+    @app_commands.command(name="translate",
+                          description="Translate a specific text.")
     @app_commands.choices(src=TRANSLATE_LANGUAGES, dst=TRANSLATE_LANGUAGES)
-    async def translate(self, interaction: discord.Interaction, text: str, src: app_commands.Choice[str],
+    async def translate(self, intr: discord.Interaction,
+                        text: str,
+                        src: app_commands.Choice[str],
                         dst: app_commands.Choice[str]):
-        translated = TranslateUtil.translate_text(text, src.value, dst.value)
-        await interaction.response.send_message(f"Translation of _\"{text}\"_ from _{src.name}_ to _{dst.name}_: {translated.text}")
+        tr = TranslateUtil.translate_text(text, src.value, dst.value)
+        await intr.response.send_message(
+            f"Translation of _\"{text}\"_ from"
+            f" _{src.name}_ to _{dst.name}_: {tr.text}")
 
 
 class TranslateUtil:
@@ -120,7 +135,8 @@ class TranslateUtil:
     def translate_text(message, src, dst=None):
         if not dst:
             dst = 'english'
-        translated = translator.translate(message) if not src else translator.translate(message, src=src, dest=dst)
+        translated = translator.translate(message) if not src \
+            else translator.translate(message, src=src, dest=dst)
 
         return translated
 
@@ -130,6 +146,7 @@ class TranslateUtil:
         text = text.replace("\n", " ")
         text = text.replace("---", "\n---\n")
         return text
+
 
 async def setup(bot):
     await bot.add_cog(Translate(bot))

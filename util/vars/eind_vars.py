@@ -36,7 +36,7 @@ WEATHER_EMOJI_SNOW = "❄"
 PERIODIC_MESSAGES_FILE = "periodic_messages.json"
 REMINDER_FILE = "reminders.json"
 GAME_FILE = "games.json"
-CAT_SUBREDDITS = [
+CAT_SUBS = [
     "Cats",
     "Kitten",
     "CatSpotting",
@@ -72,7 +72,7 @@ CAT_SUBREDDITS = [
     "AliveNamedCats",
     "Medieval_Cats",
 ]
-DOG_SUBREDDITS = [
+DOG_SUBS = [
     "rarepuppers",
     "goldenretrievers",
     "shiba",
@@ -87,7 +87,7 @@ DOG_SUBREDDITS = [
     "PuppySmiles",
     "WhatsWrongWithYourDog",
 ]
-CAR_SUBREDDITS = [
+CAR_SUBS = [
     "Porsche",
     "ferrari",
     "carporn",
@@ -109,6 +109,6 @@ CAR_SUBREDDITS = [
     "rally",
     "rallyporn",
 ]
-HOT_WHEELS_SUBREDDIT = "HotWheels"
+HOT_WHEELS_SUB = "HotWheels"
 TABLE_FLIP = "(╯°□°）╯︵ ┻━┻"
 TABLE_FIX = "┬─┬ ノ( ゜-゜ノ)"
