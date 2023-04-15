@@ -26,21 +26,21 @@ class Music(commands.Cog):
 
     @app_commands.command(name="sp",
                           description=S_DESC)
-    async def sp(self, intr: discord.Interaction, qr: str):
+    async def sp(self, intr: discord.Interaction, query: str):
         try:
-            user = intr.user
-            result = sp.search(f"{qr}", type="track")
+            name = intr.user.name
+            result = sp.search(f"{query}", type="track")
             if len(result['tracks']['items']) > 0:
                 await intr.response.send_message(
                     result['tracks']['items'][0]['external_urls']['spotify'])
             else:
                 await intr.response.send_message(
-                    'No results found for: ' + qr)
+                    'No results found for: ' + query)
         except SpotifyException as e:
-            lg.error(f"Failed to send song to {user.name} for query \"{qr}\"")
+            lg.error(f"Failed to send song to {name} for query \"{query}\"")
             lg.debug(e)
         else:
-            lg.info(f"Sent song to {user.name} for query \"{qr}\"")
+            lg.info(f"Sent song to {name} for query \"{query}\"")
 
     @app_commands.command(name="spc",
                           description=SC_DESC)
@@ -71,11 +71,11 @@ class Music(commands.Cog):
     @app_commands.command(name="lyrics",
                           description="Sends the lyrics of a song matching"
                           " your query, if they exist.")
-    async def lyrics(self, intr: discord.Interaction, qr: str):
+    async def lyrics(self, intr: discord.Interaction, query: str):
         try:
-            user = intr.user
+            name = intr.user.name
             b_url = 'https://www.musixmatch.com'
-            url = f'{b_url}/search/{qr.lower().replace(" ", "%20")}/tracks'
+            url = f'{b_url}/search/{query.lower().replace(" ", "%20")}/tracks'
 
             headers = {'Host': 'www.musixmatch.com',
                        'user-agent': 'Mozilla/5.0'}
@@ -99,10 +99,10 @@ class Music(commands.Cog):
                                   color=discord.Color.green())
             await intr.response.send_message(embed=embed)
         except Exception as e:
-            lg.error(f"Failed to send lyrics to {user.name} for query: {qr}")
+            lg.error(f"Failed to send lyrics to {name} for query: {query}")
             lg.debug(e)
         else:
-            lg.info(f"Sent lyrics to {user.name} for query: {qr}")
+            lg.info(f"Sent lyrics to {name} for query: {query}")
 
 
 async def setup(bot):

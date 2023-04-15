@@ -35,32 +35,34 @@ class Reminder(commands.Cog):
 
     @app_commands.command(name="remindme", description="Set a reminder.")
     async def remindme(self, intr: discord.Interaction,
-                       rem_time: str, m: str, rep: bool):
+                       time: str, msg: str, daily: bool):
         parsed_time = dateparser.parse(
-            rem_time, settings=DATE_PARSER_SETTINGS_AMS)
-        r_day = parsed_time.strftime('%A %d/%m/%Y at %H:%M')
-        r_time = parsed_time.strftime('%H:%M')
-        r_tstamp = parsed_time.timestamp()
+            time, settings=DATE_PARSER_SETTINGS_AMS)
+        r_d = parsed_time.strftime('%A %d/%m/%Y at %H:%M')
+        r_t = parsed_time.strftime('%H:%M')
+        r_ts = parsed_time.timestamp()
 
         if not parsed_time:
             await intr.response.send_message(
                 "Could not parse the time. Please try again!")
             return
 
-        if not rep:
-            if r_tstamp < time.time():
+        if not daily:
+            if r_ts < time.time():
                 await intr.response.send_message(
                     "Stop living in the past, child. Look to the future.")
                 return
 
             await intr.response.send_message(
-                f"I will remind you of **{m}** on **{r_day}** :timer:")
-            await self.add_reminder(intr.user, r_tstamp, m, intr.guild_id, rep)
+                f"I will remind you of **{msg}** on **{r_d}** :timer:")
+            await self.add_reminder(intr.user, r_ts, msg,
+                                    intr.guild_id, daily)
 
         else:
             await intr.response.send_message(
-                f"I will remind you of **{m}** daily at **{r_time}** :timer:")
-            await self.add_reminder(intr.user, r_time, m, intr.guild_id, rep)
+                f"I will remind you of **{msg}** daily at **{r_t}** :timer:")
+            await self.add_reminder(intr.user, r_t, msg,
+                                    intr.guild_id, daily)
 
     @app_commands.command(name="myreminders",
                           description="Get a list of your active reminders.")
@@ -98,14 +100,14 @@ class Reminder(commands.Cog):
 
     @app_commands.command(name="deletereminder",
                           description="Delete one of your set reminders.")
-    async def deletereminder(self, intr: discord.Interaction, rem_id: str):
+    async def deletereminder(self, intr: discord.Interaction, id: str):
         user_reminders = self.get_user_reminders(intr.user)
 
         for reminder, val in user_reminders.items():
-            if reminder == rem_id:
-                await self.delete_reminder(rem_id)
+            if reminder == id:
+                await self.delete_reminder(id)
                 await intr.response.send_message(
-                    f"Reminder {rem_id} deleted. ✅", ephemeral=True)
+                    f"Reminder {id} deleted. ✅", ephemeral=True)
                 return
 
         await intr.response.send_message("ID not found. Please check again.",
