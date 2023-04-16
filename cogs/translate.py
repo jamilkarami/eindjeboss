@@ -74,7 +74,7 @@ class Translate(commands.Cog):
         log_msg = "Sent translation to %s for message \"%s\" by %s"
 
         await intr.response.send_message(
-            content=translate_msg % (msg.content, lang.capitalize, tr.text),
+            content=translate_msg % (msg.content, lang.capitalize(), tr.text),
             ephemeral=True)
         lg.info(log_msg % (intr.user.name, msg.content, msg.author.name))
 
