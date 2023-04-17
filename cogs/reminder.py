@@ -35,9 +35,9 @@ class Reminder(commands.Cog):
 
     @app_commands.command(name="remindme", description="Set a reminder.")
     async def remindme(self, intr: discord.Interaction,
-                       time: str, msg: str, daily: bool):
+                       r_time: str, msg: str, daily: bool):
         parsed_time = dateparser.parse(
-            time, settings=DATE_PARSER_SETTINGS_AMS)
+            r_time, settings=DATE_PARSER_SETTINGS_AMS)
         r_d = parsed_time.strftime('%A %d/%m/%Y at %H:%M')
         r_t = parsed_time.strftime('%H:%M')
         r_ts = parsed_time.timestamp()
