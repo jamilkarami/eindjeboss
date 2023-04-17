@@ -84,6 +84,7 @@ class Casino(commands.Cog):
 
     @app_commands.command(name="chooseforme",
                           description=CH_DESC)
+    @app_commands.describe(options="Comma-separated list of options")
     async def choose(self, intr: discord.Interaction, options: str):
         split_options = [x.strip().capitalize() for x in options.split(",")]
         resp_o = ", ".join([f"**{x}**" for x in split_options])

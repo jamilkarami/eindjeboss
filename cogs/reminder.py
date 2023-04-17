@@ -34,6 +34,7 @@ class Reminder(commands.Cog):
         await self.startup_reminders()
 
     @app_commands.command(name="remindme", description="Set a reminder.")
+    @app_commands.rename(r_time="reminder-time", msg="message")
     async def remindme(self, intr: discord.Interaction,
                        r_time: str, msg: str, daily: bool):
         parsed_time = dateparser.parse(
