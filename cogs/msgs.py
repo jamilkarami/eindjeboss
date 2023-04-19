@@ -7,6 +7,7 @@ import requests
 from util.vars.eind_vars import (
     ASS_EMOJI,
     CHANNEL_IGNORE_LIST,
+    EXCLAMATION_EMOJI,
     HARAM_EMOJI,
     QUESTION_EMOJI,
     TABLE_FIX,
@@ -105,6 +106,11 @@ class Messages(commands.Cog, name="Messages"):
         if msg_cont == "ok?":
             await msg.add_reaction(WICKED_EMOJI)
             await msg.add_reaction(QUESTION_EMOJI)
+            return
+        
+        if msg_cont == "ok!":
+            await msg.add_reaction(WICKED_EMOJI)
+            await msg.add_reaction(EXCLAMATION_EMOJI)
             return
 
         if msg_cont == "ass":
