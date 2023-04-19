@@ -22,7 +22,7 @@ C_CH_ID = os.getenv("CANDY_CHANNEL_ID")
 MSG_URL = "https://discord.com/api/v9/guilds/{}/messages/search?author_id={}"
 
 SPONTAAN_STR = "SPONTAAN. REIZEN. DRANKJES MET DE MEIDEN. SHOPPEN. \
-SPECIAALBIER. SUSHI. SARCASME. DANSJES. BOULDEREN."
+SPECIAALBIER. SUSHI. SARCASME. DANSJES. BOULDEREN. TATOEAGES. UITGAAN."
 OPINION = "The Eindhoven Community Discord's collectively humble opinion on %s"
 TZ = "Europe/Amsterdam"
 MAX_MEMBERS_TAG = 25
@@ -107,7 +107,7 @@ class Messages(commands.Cog, name="Messages"):
             await msg.add_reaction(WICKED_EMOJI)
             await msg.add_reaction(QUESTION_EMOJI)
             return
-        
+
         if msg_cont == "ok!":
             await msg.add_reaction(WICKED_EMOJI)
             await msg.add_reaction(EXCLAMATION_EMOJI)
