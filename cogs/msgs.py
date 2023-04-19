@@ -22,7 +22,7 @@ C_CH_ID = os.getenv("CANDY_CHANNEL_ID")
 MSG_URL = "https://discord.com/api/v9/guilds/{}/messages/search?author_id={}"
 
 SPONTAAN_STR = "SPONTAAN. REIZEN. DRANKJES MET DE MEIDEN. SHOPPEN. \
-SPECIAALBIER. SUSHI. SARCASME. DANSJES. BOULDERING."
+SPECIAALBIER. SUSHI. SARCASME. DANSJES. BOULDEREN."
 OPINION = "The Eindhoven Community Discord's collectively humble opinion on %s"
 TZ = "Europe/Amsterdam"
 MAX_MEMBERS_TAG = 25
