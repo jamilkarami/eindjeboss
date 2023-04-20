@@ -25,7 +25,7 @@ class Reminder(commands.Cog):
     loop = asyncio.get_running_loop()
 
     def __init__(self, client):
-        self.client = client
+        self.client: discord.Client = client
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -37,6 +37,8 @@ class Reminder(commands.Cog):
     @app_commands.rename(r_time="reminder-time", msg="message")
     async def remindme(self, intr: discord.Interaction,
                        r_time: str, msg: str, daily: bool):
+        rem_id = str(uuid.uuid1())[:5]
+        await intr.response.defer()
         parsed_time = dateparser.parse(
             r_time, settings=DATE_PARSER_SETTINGS_AMS)
         r_d = parsed_time.strftime('%A %d/%m/%Y at %H:%M')
@@ -44,32 +46,35 @@ class Reminder(commands.Cog):
         r_ts = parsed_time.timestamp()
 
         if not parsed_time:
-            await intr.response.send_message(
-                "Could not parse the time. Please try again!")
+            await intr.followup.send(
+                "Could not parse the time. Please try again!",
+                ephemeral=True)
             return
 
         if not daily:
             if r_ts < time.time():
-                await intr.response.send_message(
-                    "Stop living in the past, child. Look to the future.")
+                await intr.followup.send(
+                    "Stop living in the past, child. Look to the future.",
+                    ephemeral=True)
                 return
 
-            await intr.response.send_message(
-                f"I will remind you of **{msg}** on **{r_d}** :timer:")
-            await self.add_reminder(intr.user, r_ts, msg,
-                                    intr.guild_id, daily)
+            self.loop.create_task(self.add_rem(rem_id, intr.user, r_ts, msg,
+                                  intr.guild_id, daily))
+            await intr.followup.send(
+                f"I will remind you of **{msg}** on **{r_d}** :timer:",
+                view=ReminderView(rem_id))
 
         else:
-            await intr.response.send_message(
+            self.loop.create_task(self.add_rem(rem_id, intr.user, r_t, msg,
+                                  intr.guild_id, daily))
+            await intr.followup.send(
                 f"I will remind you of **{msg}** daily at **{r_t}** :timer:")
-            await self.add_reminder(intr.user, r_t, msg,
-                                    intr.guild_id, daily)
 
     @app_commands.command(name="myreminders",
                           description="Get a list of your active reminders.")
     async def myreminders(self, intr: discord.Interaction):
-        reminders = load_json_file(reminder_file)
-        user_reminders = self.get_user_reminders(intr.user)
+        reminders = get_reminders()
+        user_reminders = get_user_reminders(intr.user.id)
 
         if not user_reminders:
             await intr.response.send_message(
@@ -102,20 +107,25 @@ class Reminder(commands.Cog):
     @app_commands.command(name="deletereminder",
                           description="Delete one of your set reminders.")
     async def deletereminder(self, intr: discord.Interaction, id: str):
-        user_reminders = self.get_user_reminders(intr.user)
+        rem = get_reminder(id)
 
-        for reminder, val in user_reminders.items():
-            if reminder == id:
-                await self.delete_reminder(id)
-                await intr.response.send_message(
-                    f"Reminder {id} deleted. ✅", ephemeral=True)
+        if rem:
+            users = rem['users']
+            if intr.user.id in users:
+                users.remove(intr.user.id)
+                if not users:
+                    delete_reminder(id)
+                else:
+                    rem['users'] = users
+                    save_reminder(id, rem)
+                await intr.response.send_message("Done. ✅", ephemeral=True)
                 return
 
-        await intr.response.send_message("ID not found. Please check again.",
+        await intr.response.send_message("Invalid ID. Please check again.",
                                          ephemeral=True)
 
     async def startup_reminders(self):
-        reminders = load_json_file(reminder_file)
+        reminders = get_reminders()
 
         to_remove = []
 
@@ -124,38 +134,30 @@ class Reminder(commands.Cog):
                 to_remove.append(reminder)
             else:
                 self.loop.create_task(self.start_reminder(
-                    reminder,
-                    vals['author'],
-                    vals['time'],
-                    vals['reason'],
-                    vals['guild'],
-                    vals['repeat']))
+                    reminder))
 
         for id in to_remove:
             reminders.pop(id)
 
         lg.info(
             f"[{__name__}] {len(reminders)} reminders found.")
-        save_json_file(reminders, reminder_file)
+        save_reminders(reminders)
 
-    async def add_reminder(self, author, time, reason, guild, repeat):
-        rem_id = str(uuid.uuid1())[:5]
-        reminders = load_json_file(reminder_file)
-        reminders[rem_id] = {'author': author.id,
-                             'time': time,
+    async def add_rem(self, rem_id, author, time, reason, guild, repeat):
+        reminders = get_reminders()
+        reminders[rem_id] = {'time': time,
                              'reason': reason,
                              'guild': guild,
-                             'repeat': repeat}
-        save_json_file(reminders, reminder_file)
-        await self.start_reminder(rem_id, author.id, time,
-                                  reason, guild, repeat)
+                             'repeat': repeat,
+                             'users': [author.id]}
+        save_reminders(reminders)
+        await self.start_reminder(rem_id)
 
-    async def delete_reminder(self, id):
-        reminders = load_json_file(reminder_file)
-        del (reminders[id])
-        save_json_file(reminders, reminder_file)
+    async def start_reminder(self, rem_id):
+        rem = get_reminder(rem_id)
+        tm = rem['time']
+        repeat = rem['repeat']
 
-    async def start_reminder(self, rem_id, author, tm, reason, g_id, repeat):
         if repeat:
             tm_to_remind = dateparser.parse(
                 tm, settings=DATE_PARSER_SETTINGS_AMS).timestamp()
@@ -163,34 +165,81 @@ class Reminder(commands.Cog):
                 tm_to_remind = tm_to_remind + 86400
         else:
             tm_to_remind = tm
-        user = self.client.get_user(author)
 
         await asyncio.sleep(tm_to_remind - time.time())
-        if rem_id in load_json_file(reminder_file):
-            guild = self.client.get_guild(g_id)
-            if not repeat or user is None or guild.get_member(user.id) is None:
-                await self.delete_reminder(rem_id)
-            else:
-                self.loop.create_task(self.start_reminder(
-                    rem_id, author, tm, reason, g_id, repeat))
-            await self.notify_user(reason, user, guild)
 
-    async def notify_user(self, msg, u: discord.user.User, g: discord.Guild):
-        channels = await g.fetch_channels()
-        reminder_channel = None
+        await self.notify_users(rem_id)
+        if not repeat:
+            delete_reminder(rem_id)
+        else:
+            self.start_reminder(rem_id)
 
-        for channel in channels:
-            if channel.id == int(REMINDER_CHANNEL_ID):
-                reminder_channel = channel
+    async def notify_users(self, rem_id):
+        rem = get_reminder(rem_id)
+        guild = await self.client.fetch_guild(rem['guild'])
+        reminder_channel = await guild.fetch_channel(REMINDER_CHANNEL_ID)
 
-        message = "%s You asked to be reminded of **%s**. It is time! :timer:"
-        await reminder_channel.send(message % (u.mention, msg))
+        users = [await guild.fetch_member(user_id) for user_id in rem['users']]
+        msg = rem['reason']
 
-    def get_user_reminders(self, user):
-        reminders = load_json_file(reminder_file)
-        user_reminders = {k: v for k,
-                          v in reminders.items() if v['author'] == user.id}
-        return user_reminders
+        resp = "%s\n You asked to be reminded of **%s**. It is time! :timer:"
+        resp = resp % (' '.join([u.mention for u in users]), msg)
+        await reminder_channel.send(resp)
+
+
+class ReminderView(discord.ui.View):
+
+    def __init__(self, rem_id: str):
+        super().__init__()
+        self.rem_id = rem_id
+
+    @discord.ui.button(label="Remind me too",
+                       style=discord.ButtonStyle.blurple)
+    async def handle_add_user_reminder(self,
+                                       interaction: discord.Interaction,
+                                       btn: discord.ui.Button):
+        add_user_to_reminder(interaction.user.id, self.rem_id)
+        await interaction.response.send_message("Done. ✅", ephemeral=True)
+
+
+def add_user_to_reminder(user_id, reminder_id):
+    reminder = get_reminder(reminder_id)
+    users = reminder.get('users')
+    if user_id not in users:
+        users.append(user_id)
+    reminder['users'] = users
+    save_reminder(reminder_id, reminder)
+
+
+def get_user_reminders(user):
+    reminders = get_reminders()
+    user_reminders = {k: v for k, v
+                      in reminders.items() if user in v['users']}
+    return user_reminders
+
+
+def get_reminders():
+    return load_json_file(reminder_file)
+
+
+def get_reminder(id):
+    return get_reminders().get(id)
+
+
+def save_reminders(reminders):
+    save_json_file(reminders, reminder_file)
+
+
+def save_reminder(id, reminder):
+    reminders = get_reminders()
+    reminders[id] = reminder
+    save_reminders(reminders)
+
+
+def delete_reminder(id):
+    reminders = get_reminders()
+    del (reminders[id])
+    save_reminders(reminders)
 
 
 async def setup(bot):
