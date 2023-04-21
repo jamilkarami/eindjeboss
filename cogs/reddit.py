@@ -102,7 +102,7 @@ class Reddit(commands.Cog):
 
     async def schedule_pic(self, channel_id, subs, include_title):
         channel = await self.client.fetch_channel(channel_id)
-        sub_name = subs if str==type(subs) else random.choice(subs)
+        sub_name = subs if str == type(subs) else random.choice(subs)
         subreddit = await self.reddit.subreddit(sub_name)
 
         async for submission in subreddit.top("day", limit=1):
