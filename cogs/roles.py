@@ -2,7 +2,6 @@ import discord
 import logging as lg
 from discord.ext import commands
 from discord import app_commands
-from util.vars.role_vars import ROLE_VARS
 
 FOCUS_DESC = "Limits your view to the conversation channels"
 
@@ -15,31 +14,6 @@ class Roles(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
-        if payload.message_id not in ROLE_VARS.keys():
-            return
-
-        guild = self.client.get_guild(payload.guild_id)
-        if payload.emoji.name == ROLE_VARS[payload.message_id][0]:
-            role_name = ROLE_VARS[payload.message_id][1]
-            role = discord.utils.get(guild.roles, name=role_name)
-            await payload.member.add_roles(role)
-            lg.info(f"Added {role_name} role for {payload.member.name}")
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_remove(self, payload):
-        if payload.message_id not in ROLE_VARS.keys():
-            return
-
-        guild = self.client.get_guild(payload.guild_id)
-        member = discord.utils.get(guild.members, id=payload.user_id)
-        if payload.emoji.name == ROLE_VARS[payload.message_id][0]:
-            role_name = ROLE_VARS[payload.message_id][1]
-            role = discord.utils.get(guild.roles, name=role_name)
-            await member.remove_roles(role)
-            lg.info(f"Removed {role_name} role for {payload.member.name}")
 
     @app_commands.command(name="focus",
                           description=FOCUS_DESC)

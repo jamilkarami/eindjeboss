@@ -50,7 +50,7 @@ class Reminder(commands.Cog):
                 "Could not parse the time. Please try again!",
                 ephemeral=True)
             return
-        
+
         if r_ts < time.time():
             await intr.followup.send(
                 "Stop living in the past, child. Look to the future.",
@@ -180,7 +180,7 @@ class Reminder(commands.Cog):
         users = [await guild.fetch_member(user_id) for user_id in rem['users']]
         msg = rem['reason']
 
-        resp = "%s\n You asked to be reminded of **%s**. It is time! :timer:"
+        resp = "%s\nYou asked to be reminded of **%s**. It is time! :timer:"
         resp = resp % (' '.join([u.mention for u in users]), msg)
         await reminder_channel.send(resp)
 
