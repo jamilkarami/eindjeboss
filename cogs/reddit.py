@@ -24,6 +24,7 @@ ANIMALS_CHANNEL_ID = int(os.getenv("ANIMALS_CHANNEL_ID"))
 CARS_CHANNEL_ID = int(os.getenv("CARS_CHANNEL_ID"))
 FOOD_CHANNEL_ID = int(os.getenv("FOOD_CHANNEL_ID"))
 CATS = "cats"
+DOGS = "dogs"
 CARS = "carporn"
 FOOD = "foodporn"
 RANDOM_STR = "Sends a random %s picture off of reddit."
@@ -40,11 +41,11 @@ class Reddit(commands.Cog):
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
         crontab(TOP_REDDIT_DT, func=self.schedule_pic,
-                args=(ANIMALS_CHANNEL_ID, CATS), start=True)
+                args=(ANIMALS_CHANNEL_ID, [CATS, DOGS], False), start=True)
         crontab(TOP_REDDIT_DT, func=self.schedule_pic,
-                args=(CARS_CHANNEL_ID, CARS), start=True)
+                args=(CARS_CHANNEL_ID, CARS, True), start=True)
         crontab(TOP_REDDIT_DT, func=self.schedule_pic,
-                args=(FOOD_CHANNEL_ID, FOOD), start=True)
+                args=(FOOD_CHANNEL_ID, FOOD, True), start=True)
 
     def __init__(self, client: discord.Client):
         self.client = client
@@ -99,14 +100,18 @@ class Reddit(commands.Cog):
             chosen_post = random.choice(posts)
         return chosen_post.url
 
-    async def schedule_pic(self, channel_id, subreddit_name):
+    async def schedule_pic(self, channel_id, subs, include_title):
         channel = await self.client.fetch_channel(channel_id)
-        subreddit = await self.reddit.subreddit(subreddit_name)
+        sub_name = subs if str==type(subs) else random.choice(subs)
+        subreddit = await self.reddit.subreddit(sub_name)
 
         async for submission in subreddit.top("day", limit=1):
             post = submission
 
-        title = f"**Top post on /r/{subreddit_name} today: {post.title}**"
+        title = f"**Top post on /r/{sub_name} today: **"
+
+        if include_title:
+            title = title + post.title
         description = post.url
         payload = f"{title}\n{description}"
 
