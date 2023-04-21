@@ -50,23 +50,25 @@ class Reminder(commands.Cog):
                 "Could not parse the time. Please try again!",
                 ephemeral=True)
             return
+        
+        if r_ts < time.time():
+            await intr.followup.send(
+                "Stop living in the past, child. Look to the future.",
+                ephemeral=True)
+            return
 
         if not daily:
-            if r_ts < time.time():
-                await intr.followup.send(
-                    "Stop living in the past, child. Look to the future.",
-                    ephemeral=True)
-                return
-
-            self.loop.create_task(self.add_rem(rem_id, intr.user, r_ts, msg,
-                                  intr.guild_id, daily))
+            reminder = mk_reminder(r_ts, msg, intr.guild_id,
+                                   daily, intr.user.id)
+            self.loop.create_task(self.add_rem(rem_id, reminder))
             await intr.followup.send(
                 f"I will remind you of **{msg}** on **{r_d}** :timer:",
-                view=ReminderView(rem_id))
+                view=ReminderView(rem_id, reminder))
 
         else:
-            self.loop.create_task(self.add_rem(rem_id, intr.user, r_t, msg,
-                                  intr.guild_id, daily))
+            reminder = mk_reminder(r_t, msg, intr.guild_id,
+                                   daily, intr.user.id)
+            self.loop.create_task(self.add_rem(rem_id, reminder))
             await intr.followup.send(
                 f"I will remind you of **{msg}** daily at **{r_t}** :timer:")
 
@@ -143,13 +145,9 @@ class Reminder(commands.Cog):
             f"[{__name__}] {len(reminders)} reminders found.")
         save_reminders(reminders)
 
-    async def add_rem(self, rem_id, author, time, reason, guild, repeat):
+    async def add_rem(self, rem_id, reminder):
         reminders = get_reminders()
-        reminders[rem_id] = {'time': time,
-                             'reason': reason,
-                             'guild': guild,
-                             'repeat': repeat,
-                             'users': [author.id]}
+        reminders[rem_id] = reminder
         save_reminders(reminders)
         await self.start_reminder(rem_id)
 
@@ -189,21 +187,24 @@ class Reminder(commands.Cog):
 
 class ReminderView(discord.ui.View):
 
-    def __init__(self, rem_id: str):
+    def __init__(self, rem_id, reminder):
         super().__init__()
         self.rem_id = rem_id
+        self.reminder = reminder
 
     @discord.ui.button(label="Remind me too",
                        style=discord.ButtonStyle.blurple)
     async def handle_add_user_reminder(self,
                                        interaction: discord.Interaction,
                                        btn: discord.ui.Button):
-        add_user_to_reminder(interaction.user.id, self.rem_id)
+        add_user_to_reminder(interaction.user.id, self.rem_id, self.reminder)
         await interaction.response.send_message("Done. ✅", ephemeral=True)
 
 
-def add_user_to_reminder(user_id, reminder_id):
+def add_user_to_reminder(user_id, reminder_id, rem):
     reminder = get_reminder(reminder_id)
+    if not reminder:
+        reminder = rem
     users = reminder.get('users')
     if user_id not in users:
         users.append(user_id)
@@ -224,6 +225,16 @@ def get_reminders():
 
 def get_reminder(id):
     return get_reminders().get(id)
+
+
+def mk_reminder(timestamp, msg, guild_id, daily, user):
+    return {
+        'time': timestamp,
+        'reason': msg,
+        'guild': guild_id,
+        'repeat': daily,
+        'users': [user]
+    }
 
 
 def save_reminders(reminders):
