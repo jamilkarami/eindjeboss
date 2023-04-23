@@ -188,7 +188,7 @@ class Reminder(commands.Cog):
 class ReminderView(discord.ui.View):
 
     def __init__(self, rem_id, reminder):
-        super().__init__()
+        super().__init__(timeout=None)
         self.rem_id = rem_id
         self.reminder = reminder
 
