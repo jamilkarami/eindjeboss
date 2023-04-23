@@ -44,9 +44,9 @@ There are countless resources online to show you how to add/modify/delete enviro
 
 ***Note:** This might require restarting the Discord app if you're on mobile.*
 
-- Go to Discord settings (the gear icon)
-- Click on 'Advanced'
-- Toggle 'Developer Mode' on
+1. Go to Discord settings (the gear icon)
+2. Click on 'Advanced'
+3. Toggle 'Developer Mode' on
 
 ### **Cogs**
 
