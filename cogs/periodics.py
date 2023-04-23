@@ -56,9 +56,9 @@ PSV_TEAM_ID = os.getenv("PSV_TEAM_ID")
 FIXTURES_URL = os.getenv("FOOTBALL_API_FIXTURES_URL")
 FOOTBALL_API_KEY = os.getenv("FOOTBALL_API_KEY")
 X_RAPID_API_HOST = os.getenv("X_RAPID_API_HOST")
-MATCH_STR = """**PSV Eindhoven** will be playing in **%s** against **%s**
- at **Philips Stadion** today at **%s**. Expect heavy traffic around the
- stadium."""
+MATCH_STR = "**PSV Eindhoven** will be playing in **%s** against **%s**\
+ at **Philips Stadion** today at **%s**. Expect heavy traffic around the\
+ stadium."
 
 
 class Periodics(commands.Cog):
