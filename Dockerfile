@@ -5,6 +5,10 @@ RUN apt-get -y update
 RUN apt-get -y upgrade
 RUN apt-get -y install tesseract-ocr
 
+# PREPARE DEFAULT FILES
+WORKDIR /bot
+COPY default_files/* /eindjeboss_files
+
 # INITIALIZE EINDJEBOSS
 WORKDIR /bot
 COPY requirements.txt /bot/
