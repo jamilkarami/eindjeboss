@@ -7,7 +7,7 @@ RUN apt-get -y install tesseract-ocr
 
 # PREPARE DEFAULT FILES
 WORKDIR /home/eindjeboss
-COPY default_files/* /eindjeboss_files
+COPY default_files/ /eindjeboss_files
 
 # INITIALIZE EINDJEBOSS
 WORKDIR /home/eindjeboss
