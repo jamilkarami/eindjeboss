@@ -1,4 +1,3 @@
-fly.toml
 *.log
 files
 .git
