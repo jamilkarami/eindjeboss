@@ -1,0 +1,169 @@
+{
+    "general": {
+        "modules": {
+            "GPT": "/gpt, /gptsettings",
+            "Images": "/img, !transcribe",
+            "Misc": "/focus, /imdb, /nextf1race, /place, /wiki",
+            "Music": "/sp, /spc",
+            "Polls": "/poll, /yesno",
+            "Reddit": "/randomcat, /randomdog, /car, /hotwheels",
+            "Reminders": "/remindme, /myreminders, /deletereminder",
+            "RNG": "/8ball, /chooseforme, /coin, /roll",
+            "Translate": "!tr, !trimg, /translate"
+        },
+        "desc": [
+            "Keep in mind that maybe not everything related to Arnol is explained here.",
+            "If you're looking for something related to Arnol that you don't find here, feel free to reach out to the mods/admins."
+        ]
+    },
+    "GPT": {
+        "/gptsettings": {
+            "Description": "Modify your ChatGPT settings",
+            "Example": "```/gptsettings [model] [max tokens]```",
+            "Details": [
+                "- Models are ordered from dumbest to smartest. Better answers come from smarter models but they count more towards your personal limit.",
+                "- Use the dumber models if you're just messing around. But if you want more serious answers stick to the smarter ones.",
+                "- Max tokens is a way to limit your usage. By default it's 256 but you can set it up to 1024. Tokens are basically the number of words in your query, as well as the responses you get.",
+                "- Depending on the model you choose, tokens count differently. (A token in Ada counts for much less than a token in Davinci)",
+                "",
+                "**Please don't spam this command otherwise you might get _extra_ limited.**"
+            ]
+        },
+        "/gpt": {
+            "Description": "Ask something from ChatGPT",
+            "Example": "```/gpt [query]```",
+            "Details": [
+                "By default, this relies on a low-intelligence model. You can choose a smarter model using /gptsettings.",
+                "Also keep in mind usage is limited on a per-user and a server-wide basis."
+            ]
+        }
+    },
+    "Images": {
+        "/img": {
+            "Description": "Finds an image matching your query. (off of Bing, for reasons)",
+            "Example": "```/img [query]```"
+        },
+        "!transcribe": {
+            "Description": "_Attempts_ to transcribe images from the message you reply to.",
+            "Example": "```Reply to a message (containing images) with !transcribe```"
+        }
+    },
+    "Music": {
+        "/spc": {
+            "Description": "Sends a link to the song you're currently listening to on Spotify.",
+            "Example": "```/spc\n\nResponse: https://open.spotify.com/track/3tsD0AXz90ghHzJAvXPHcW?si=fb110d4abd37479d```",
+            "Details": "This will not work if your Spotify is not linked to Discord, or if you're offline (away/busy works fine)"
+        },
+        "/sp": {
+            "Description": "Sends a link to a song on Spotify that matches your query the most.",
+            "Example": "```/sp Perturbator - Eclipse\n\nResponse: https://open.spotify.com/track/3tsD0AXz90ghHzJAvXPHcW?si=fb110d4abd37479d```"
+        }
+    },
+    "Polls": {
+        "/poll": {
+            "Description": "Create a poll with up to 4 options. The poll is in the form of a message with nubmered reactions.",
+            "Example": "```/poll\n\nResponse: A window pops up where you fill in the information you want.```"
+        },
+        "/yesno": {
+            "Description": "A shortcut to /poll with yes/no options.",
+            "Example": "```/poll\n\nResponse: A poll with a title and yes/no reactions.```"
+        }
+    },
+    "Reddit": {
+        "/randomcat": {
+            "Description": "Sends a random cat image off of reddit."
+        },
+        "/randomdog": {
+            "Description": "Sends a random dog image off of reddit."
+        },
+        "/car": {
+            "Description": "Sends a random car image off of reddit."
+        },
+        "/hotwheels": {
+            "Description": "Sends a random hot wheels image off of reddit."
+        }
+    },
+    "Reminders": {
+        "/remindme": {
+            "Description": "Creates a reminder for a specific time. Arnol will mention you in the reminders channel when the time comes.",
+            "Example": "```/remindme [time] [message] [repeat yes/no]\nExample: /remindme [in 3 hours] [Drink water] [no]```",
+            "Details": [
+                "The time can be relative to the current time (in X minutes/hours/days) or a specific time (Tuesday at 13:00). Timezone is Amsterdam.",
+                "Setting 'repeat' to true will make Arnol remind you every day at the specific time you set."
+            ]
+        },
+        "/myreminders": {
+            "Description": "Shows you a list of your reminders.",
+            "Example": "```/myreminders```",
+            "Details": "The response is a table that has reminder ids (you can use those in /deletereminder), the time, and the message you submitted."
+        },
+        "/deletereminder": {
+            "Description": "Deletes one of your reminders.",
+            "Example": "```/deletereminder [id]```",
+            "Details": "You can get the reminder ID by using /myreminders. This feature is not complete and I'll write a better way to do this Soon:tm:"
+        }
+    },
+    "RNG": {
+        "/8ball": {
+            "Description": "Shake the magic 8 ball.",
+            "Example": "```/8ball\n\nResponse: Magic 8 ball says: I don't think so ❌```",
+            "Details": "Can also be triggered by sending a message starting with 'Hey Arnol, ' (space included) and ending with a question mark (?)"
+        },
+        "/chooseforme": {
+            "Description": "Have Arnol choose from a comma-separated list of options.",
+            "Example": "```/chooseforme yes, no, maybe, I don't know\n\nResponse: Maybe```"
+        },
+        "/coin": {
+            "Description": "Flip a coin.",
+            "Example": "```/coin\n\nResponse: You flip a coin. It lands on: Tails.```"
+        },
+        "/roll": {
+            "Description": "Roll a die. (basically a glorified random number generator with a max)",
+            "Example": "```/roll [max] (default is 20)\n\nResponse: You roll a D20. You get: 5.```"
+        }
+    },
+    "Translate": {
+        "!tr": {
+            "Description": "Translates the message that you reply to.",
+            "Example": "```Reply to a message with !tr [src] and Arnol will translate it for you.```",
+            "Details": [
+                "[src] is an optional parameter you can pass to choose the source language.\nSometimes the language detection picks up the wrong language.",
+                "",
+                "**You can also call this by right clicking (or holding if you're on mobile) the message, apps -> Translate Message.**"
+            ]
+        },
+        "!trimg": {
+            "Description": "Translates the message (containing image(s)) that you reply to.",
+            "Example": "```Reply to a message with !trimg and Arnol will translate it for you.```"
+        },
+        "/translate": {
+            "Description": "Translate a text from one language to another.",
+            "Example": "```/translate [text] [source language] [destination language]\n\nResponse: translated text.```",
+            "Details": "Can also be called by sending a message with the following format: _translate [text] to [language]_\nExample: translate hello to Japanese"
+        }
+    },
+    "Misc": {
+        "/focus": {
+            "Description": "Enables focus mode which hides most channels from your view. Use it if you need to focus.",
+            "Example": "```/focus```",
+            "Details": "To disable it, just use /focus again"
+        },
+        "/imdb": {
+            "Description": "Sends a link to a movie/series (off of IMDb) that matches your query the most.",
+            "Example": "```/imdb [query]```"
+        },
+        "/nextf1race": {
+            "Description": "Gives you time/date details for the next F1 race",
+            "Example": "```/nextf1race```"
+        },
+        "/place": {
+            "Description": "Finds a place on Google maps matching your query",
+            "Example": "```/place [query]```",
+            "Details": "By default, this looks for places around Eindhoven. You can change that by including the city/country name in the query."
+        },
+        "/wiki": {
+            "Description": "Finds an article on Wikipedia matching your query",
+            "Example": "```/wiki [query]```"
+        }
+    }
+}
