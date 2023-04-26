@@ -6,12 +6,12 @@ RUN apt-get -y upgrade
 RUN apt-get -y install tesseract-ocr
 
 # PREPARE DEFAULT FILES
-WORKDIR /bot
+WORKDIR /home/eindjeboss
 COPY default_files/* /eindjeboss_files
 
 # INITIALIZE EINDJEBOSS
-WORKDIR /bot
-COPY requirements.txt /bot/
+WORKDIR /home/eindjeboss
+COPY requirements.txt /home/eindjeboss/
 RUN pip install -r requirements.txt
-COPY . /bot
+COPY . /home/eindjeboss
 CMD python bot.py
