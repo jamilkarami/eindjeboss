@@ -2,6 +2,7 @@ import asyncio
 import discord
 import logging
 import os
+import shutil
 import time
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -12,8 +13,9 @@ async def main():
     load_dotenv()
     TOKEN = os.getenv("DISCORD_TOKEN")
     STATUS = os.getenv("BOT_STATUS")
+    FILE_DIR = os.getenv("FILE_DIR")
 
-    logging_file_name = f"{os.getenv('FILE_DIR')}/logs/eindjeboss.log"
+    logging_file_name = f"{FILE_DIR}/logs/eindjeboss.log"
 
     if not Path(logging_file_name).is_file():
         logging_file_name = "./eindjeboss.log"
@@ -57,7 +59,11 @@ async def main():
             logging.info(f"Loading extension: {extension_name}")
             await client.load_extension(extension_name)
 
+    def prepare_default_files():
+        shutil.copytree("default_files", FILE_DIR, dirs_exist_ok=True)
+
     async with client:
+        prepare_default_files()
         await load_extensions()
         await client.start(TOKEN)
 
