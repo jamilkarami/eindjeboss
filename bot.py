@@ -59,11 +59,12 @@ async def main():
             logging.info(f"Loading extension: {extension_name}")
             await client.load_extension(extension_name)
 
-    def prepare_default_files():
+    def prepare_files():
+        shutil.rmtree("temp")
         shutil.copytree("default_files", FILE_DIR, dirs_exist_ok=True)
 
     async with client:
-        prepare_default_files()
+        prepare_files()
         await load_extensions()
         await client.start(TOKEN)
 
