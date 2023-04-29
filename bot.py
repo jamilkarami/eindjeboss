@@ -8,6 +8,8 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from pathlib import Path
 
+TEMP = "temp"
+
 
 async def main():
     load_dotenv()
@@ -60,7 +62,8 @@ async def main():
             await client.load_extension(extension_name)
 
     def prepare_files():
-        shutil.rmtree("temp")
+        if os.path.exists(TEMP) and os.path.isdir(TEMP):
+            shutil.rmtree(TEMP)
         shutil.copytree("default_files", FILE_DIR, dirs_exist_ok=True)
 
     async with client:
