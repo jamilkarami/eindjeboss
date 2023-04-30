@@ -56,6 +56,7 @@ class Utilities(commands.Cog):
             await intr.response.send_message(
                 'You\'re not allowed to use this command.', ephemeral=True)
             lg.info('%s tried to use the /logs command' % intr.user.name)
+            return
 
         log_file = open("%s/logs/eindjeboss.log" % os.getenv('FILE_DIR'))
         lines = log_file.readlines()
