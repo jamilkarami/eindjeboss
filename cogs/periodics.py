@@ -66,6 +66,7 @@ WARNING_SIREN_LINK = ("https://www.government.nl/topics/counterterrorism-and-"
                       "irens")
 WARNING_SIREN_BUTTON_LABEL = "Click here for more information"
 
+
 class Periodics(commands.Cog):
 
     def __init__(self, client):
@@ -106,7 +107,6 @@ class Periodics(commands.Cog):
                                             url=WARNING_SIREN_LINK))
             await channel.send(WARNING_SIREN_MSG, view=view)
 
-
     async def send_periodic_message(self, message, channel_id, guild):
         channel = await guild.fetch_channel(channel_id)
         await channel.send(message)
@@ -136,7 +136,7 @@ class Periodics(commands.Cog):
         last_cond = ""
         offset = 0
 
-        for idx, data in enumerate(weather_details):
+        for _, data in enumerate(weather_details):
 
             if data[0] != last_cond:
                 last_cond = data[0]
@@ -240,5 +240,5 @@ class Periodics(commands.Cog):
         await channel.send(warning_msg)
 
 
-async def setup(bot):
-    await bot.add_cog(Periodics(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Periodics(client))

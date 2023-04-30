@@ -83,5 +83,5 @@ class Maps(commands.Cog, name="maps"):
         return embed
 
 
-async def setup(bot: commands.Bot):
-    await bot.add_cog(Maps(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Maps(client))

@@ -35,5 +35,5 @@ class Roles(commands.Cog):
         lg.info(f"Added focus role for {interaction.user.name}")
 
 
-async def setup(bot):
-    await bot.add_cog(Roles(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Roles(client))

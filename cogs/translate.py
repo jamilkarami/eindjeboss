@@ -148,5 +148,5 @@ class TranslateUtil:
         return text
 
 
-async def setup(bot):
-    await bot.add_cog(Translate(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Translate(client))

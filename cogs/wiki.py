@@ -62,5 +62,5 @@ class WikiView(discord.ui.View):
                                         style=discord.ButtonStyle.url))
 
 
-async def setup(bot):
-    await bot.add_cog(Wiki(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Wiki(client))

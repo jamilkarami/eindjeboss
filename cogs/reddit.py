@@ -141,5 +141,5 @@ class Reddit(commands.Cog):
         return safe_matches
 
 
-async def setup(bot):
-    await bot.add_cog(Reddit(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Reddit(client))

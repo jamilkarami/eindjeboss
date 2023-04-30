@@ -68,5 +68,5 @@ class Polls(commands.Cog):
         await resp.add_reaction(NO_EMOJI)
 
 
-async def setup(bot):
-    await bot.add_cog(Polls(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Polls(client))
