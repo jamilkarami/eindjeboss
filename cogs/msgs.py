@@ -66,6 +66,11 @@ class Messages(commands.Cog, name="Messages"):
     async def f_fontys(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FuckFontys")
 
+    @app_commands.command(name="solutio365",
+                          description=OPINION % "Solutio365")
+    async def solutio365(self, interaction: discord.Interaction):
+        await interaction.response.send_message("#FuckSolutio365")
+
     @app_commands.command(name="spontaan")
     async def spontaan(self, interaction: discord.Interaction):
         await interaction.response.send_message(SPONTAAN_STR)
