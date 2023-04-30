@@ -9,7 +9,7 @@ from datetime import datetime, date
 from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from util.util import load_json_file, get_file
-from util.vars.periodic_reminders import WEATHER_DT, PSV_DT
+from util.vars.periodic_reminders import WEATHER_DT, PSV_DT, ALERT_DT
 from util.vars.eind_vars import PERIODIC_MESSAGES_FILE
 
 FILE_DIR = os.getenv('FILE_DIR')
@@ -60,6 +60,11 @@ MATCH_STR = "**PSV Eindhoven** will be playing in **%s** against **%s**\
  at **Philips Stadion** today at **%s**. Expect heavy traffic around the\
  stadium."
 
+WARNING_SIREN_MSG = "The public warning sirens will be tested today at 12:00."
+WARNING_SIREN_LINK = ("https://www.government.nl/topics/counterterrorism-and-"
+                      "national-security/question-and-answer/public-warning-s"
+                      "irens")
+WARNING_SIREN_BUTTON_LABEL = "Click here for more information"
 
 class Periodics(commands.Cog):
 
@@ -73,6 +78,7 @@ class Periodics(commands.Cog):
         lg.info("Scheduling periodic messages")
         crontab(WEATHER_DT, func=self.send_weather_forecast, start=True)
         crontab(PSV_DT, func=self.check_psv_game, start=True)
+        crontab(ALERT_DT, func=self.send_siren_alert, start=True)
 
     async def schedule_periodic_messages(self):
         guild_id = os.getenv("GUILD_ID")
@@ -90,6 +96,16 @@ class Periodics(commands.Cog):
                     args=(msg, msg_channel, guild), start=True)
         lg.info(
             f"[{__name__}] Scheduled {cnt} periodic message{'s'[:cnt ^ 1]}")
+
+    async def send_siren_alert(self):
+        channel = await self.client.fetch_channel(CHANNEL_ID)
+        if datetime.today().weekday() == 0:
+            view = discord.ui.View()
+            view.add_item(discord.ui.Button(label=WARNING_SIREN_BUTTON_LABEL,
+                                            style=discord.ButtonStyle.url,
+                                            url=WARNING_SIREN_LINK))
+            await channel.send(WARNING_SIREN_MSG, view=view)
+
 
     async def send_periodic_message(self, message, channel_id, guild):
         channel = await guild.fetch_channel(channel_id)
