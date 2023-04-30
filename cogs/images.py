@@ -60,5 +60,5 @@ class Images(commands.Cog, name="Images"):
             await ctx.message.reference.resolved.reply(msg)
 
 
-async def setup(bot: commands.Bot):
-    await bot.add_cog(Images(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Images(client))

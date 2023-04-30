@@ -135,5 +135,5 @@ def get_gpt_usage(id):
     return usage.get(str(id))
 
 
-async def setup(bot: commands.Bot):
-    await bot.add_cog(GPT(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(GPT(client))

@@ -32,5 +32,5 @@ class Facts(commands.Cog):
             lg.error(e)
 
 
-async def setup(bot):
-    await bot.add_cog(Facts(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Facts(client))

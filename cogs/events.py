@@ -72,7 +72,8 @@ def make_ev_img(img_path: str, title: str, tags: List[str]):
 
     output_img_filename = 'temp/output_%s.png' % uuid.uuid4()
 
-    base_img = Image.new('RGBA', size=(DESIRED_W, DESIRED_H), color=(0,0,0,0))
+    base_img = Image.new('RGBA', size=(DESIRED_W, DESIRED_H),
+                         color=(0, 0, 0, 0))
     badge_img = Image.open(BADGE_FILE)
 
     colorthief = ColorThief(img_path)
@@ -115,12 +116,12 @@ def make_ev_img(img_path: str, title: str, tags: List[str]):
     base_img.paste(img, (60, 95), mask=mask_rect)
     base_img.paste(border_rect, (60, 95), mask=border_rect)
     base_img = Image.composite(badge_img, base_img, badge_img)
-    
+
     draw_title_text(base_img, title.upper(), 0, 200, DESIRED_W - 20,
                     main_color)
     draw_tag_bubbles(base_img, sorted([tag.name.lower() for tag in tags]),
                      bubbles_color, main_color, FONT_TAGS)
-    
+
     base_img.save(output_img_filename)
     img.close()
     base_img.close()
@@ -216,9 +217,9 @@ def draw_tag_bubbles(img, tags, fill, text_color, font):
         y2 = low_point
 
         draw.rounded_rectangle((x1, high_point, x2, low_point), fill=fill,
-                                width=2, radius=45)
+                               width=2, radius=45)
         draw_bubble_text(img, tag, ((x1+x2)/2, (y1+y2)/2),
-                  text_color, FONT_TAGS, 2, fill)
+                         text_color, FONT_TAGS, 2, fill)
         start = start + text_width + 90  # higher value -> tags further apart
 
 
@@ -269,11 +270,11 @@ def draw_title_text(img, text, y, min_x, max_x, fill):
 def crop_img(img):
     width, height = img.size
 
-    if width==height:
+    if width == height:
         return img
     offset = abs(width-height)//2
 
-    if width>height:
+    if width > height:
         left = offset
         top = 0
         right = width - offset
@@ -287,5 +288,5 @@ def crop_img(img):
     return img.crop((left, top, right, bottom))
 
 
-async def setup(bot: commands.Bot):
-    await bot.add_cog(Events(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Events(client))

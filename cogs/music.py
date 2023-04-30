@@ -105,5 +105,5 @@ class Music(commands.Cog):
             lg.info(f"Sent lyrics to {name} for query: {query}")
 
 
-async def setup(bot):
-    await bot.add_cog(Music(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Music(client))

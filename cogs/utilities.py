@@ -88,5 +88,5 @@ def eval_(node):
         raise TypeError(node)
 
 
-async def setup(bot):
-    await bot.add_cog(Utilities(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Utilities(client))

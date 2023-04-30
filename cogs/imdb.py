@@ -30,5 +30,5 @@ class IMDB(commands.Cog):
             "https://www.imdb.com/title/tt{id}/".format(id=movie_id))
 
 
-async def setup(bot):
-    await bot.add_cog(IMDB(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(IMDB(client))

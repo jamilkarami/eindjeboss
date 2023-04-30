@@ -96,5 +96,5 @@ class Casino(commands.Cog):
         await intr.response.send_message(resp)
 
 
-async def setup(bot):
-    await bot.add_cog(Casino(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Casino(client))

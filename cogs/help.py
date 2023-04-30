@@ -335,8 +335,8 @@ class TranslateView(HelpView):
         self.help_text = HELP_TEXT.get('Translate')
 
 
-async def setup(bot: commands.Bot):
-    await bot.add_cog(Help(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Help(client))
 
 
 def mk_embed(title, fields: dict, inline) -> discord.Embed:
@@ -349,7 +349,7 @@ def mk_embed(title, fields: dict, inline) -> discord.Embed:
 
 
 def get_main_embed() -> discord.Embed:
-    main_embed = mk_embed('What do you need help with?', 
+    main_embed = mk_embed('What do you need help with?',
                           HELP_TEXT.get('general').get('modules'), True)
     main_embed.description = '\n'.join(HELP_TEXT.get('general').get('desc'))
     return main_embed

@@ -253,5 +253,5 @@ def delete_reminder(id):
     save_reminders(reminders)
 
 
-async def setup(bot):
-    await bot.add_cog(Reminder(bot))
+async def setup(client: commands.Bot):
+    await client.add_cog(Reminder(client))
