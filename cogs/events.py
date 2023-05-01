@@ -34,6 +34,7 @@ FONT_TAGS.set_variation_by_name('Regular')
 
 DESIRED_W = 1230
 DESIRED_H = 1400
+MAX_TITLE = 16
 
 ALERT = "%s New event added in %s! check it out here: %s"
 
@@ -70,7 +71,7 @@ class Events(commands.Cog):
 
 def make_ev_img(img_path: str, title: str, tags: List[str]):
 
-    output_img_filename = 'temp/output_%s.png' % uuid.uuid4()
+    output_img_filename = 'temp/output_%s' % uuid.uuid4()
 
     base_img = Image.new('RGBA', size=(DESIRED_W, DESIRED_H),
                          color=(0, 0, 0, 0))
@@ -115,14 +116,26 @@ def make_ev_img(img_path: str, title: str, tags: List[str]):
 
     base_img.paste(img, (60, 95), mask=mask_rect)
     base_img.paste(border_rect, (60, 95), mask=border_rect)
-    base_img = Image.composite(badge_img, base_img, badge_img)
 
-    draw_title_text(base_img, title.upper(), 0, 200, DESIRED_W - 20,
-                    main_color)
     draw_tag_bubbles(base_img, sorted([tag.name.lower() for tag in tags]),
                      bubbles_color, main_color, FONT_TAGS)
+    frames = draw_title_text(base_img, title.upper(), 0, 60, DESIRED_W - 20,
+                             main_color)
 
-    base_img.save(output_img_filename)
+    # remove disposal parameter when Discord supports APNG
+    if frames:
+        # use this when Discord supports APNG
+        # duration = [1000] + [33] * (len(frames)-2) + [1000]
+        duration = 1500
+        output_img_filename = output_img_filename + ".gif"
+        frames[0].save(output_img_filename, save_all=True,
+                       append_images=frames[1:],
+                       duration=duration, loop=0, disposal=2,
+                       format='gif')
+    else:
+        base_img = Image.composite(badge_img, base_img, badge_img)
+        output_img_filename = output_img_filename + ".png"
+        base_img.save(output_img_filename)
     img.close()
     base_img.close()
     badge_img.close()
@@ -246,25 +259,75 @@ def draw_bubble_text(img, text, position, fill, font, stroke_width,
               stroke_fill=stroke_fill, anchor='mm')
 
 
-def draw_title_text(img, text, y, min_x, max_x, fill):
+def draw_title_text(img: Image.Image, text, y, min_x, max_x, fill):
     font = FONT_TITLE
     draw = ImageDraw.Draw(img)
-    size = font.getsize(text)
-    max_width = max_x - min_x
+    badge_img = Image.open(BADGE_FILE)
+    max_length = max_x - min_x
+    reset = img.copy()
+    bbox = font.getbbox(text)
+    length = bbox[2] - bbox[0]
+    height = bbox[3] - bbox[1] + 30
 
-    edited = False
+    # uncomment this when Discord supports APNG
+    # if length > max_length:
 
-    size = font.getsize(text)
-    while size[0] > max_width:
-        edited = True
-        text = text[:-1]
-        size = font.getsize(text)
+    words = text.split(' ')
+    texts = split_text(words, MAX_TITLE)
 
-    if edited:
-        text = text[:-3] + "..." if text[-4] == ' ' else text[:-3] + " ..."
-        size = font.getsize(text)
+    if len(text) > MAX_TITLE and len(texts) > 1:
+        # uncomment this when Discord supports APNG
+        # return get_frames(img, text, y, min_x, max_x, fill, height)
 
-    draw.text((max_x-size[0], y), text, fill=fill, font=font)
+        frames = []
+        temp_img = Image.new('RGBA', (max_length, height), color=(0, 0, 0, 0))
+        textdraw = ImageDraw.Draw(temp_img)
+
+        for tx in texts:
+            draw.rectangle((min_x, y, max_x, y+height), fill=(0, 0, 0, 0))
+            textdraw.rectangle((0, 0, max_length, height), fill=(0, 0, 0, 0))
+
+            bbox = font.getbbox(tx)
+            length = bbox[2] - bbox[0]
+            start_pt = max_x - length - 60
+            textdraw.text((start_pt, y), tx, fill=fill, font=font)
+            img.paste(temp_img, (min_x, y))
+            img = Image.composite(badge_img, img, badge_img)
+            frames += [img.copy()]
+            img = reset.copy()
+
+        return frames
+    else:
+        draw.text((max_x-length, y), text, fill=fill, font=font)
+        return None
+
+
+def split_text(words, chars: int):
+    res = []
+    curr_cnt = 0
+    curr_words = []
+
+    for word in words:
+        if len(word) + curr_cnt > chars:
+            res += [curr_words]
+            curr_words = []
+            curr_cnt = 0
+        curr_words.append(word)
+        curr_cnt += len(word)
+    res += [curr_words]
+    res = [' '.join(txt) for txt in res]
+
+    if len(res) == 1:
+        return [res[0]]
+    if len(res) == 2:
+        return ["%s..." % res[0], "...%s" % res[-1]]
+
+    res_txt = []
+    res_txt.append("%s..." % res[0])
+    for txt in res[1:-1]:
+        res_txt.append("... %s..." % txt)
+    res_txt.append("...%s" % res[-1])
+    return res_txt
 
 
 def crop_img(img):
@@ -286,6 +349,43 @@ def crop_img(img):
         bottom = height - offset
 
     return img.crop((left, top, right, bottom))
+
+
+# use this when Discord supports APNG
+def get_frames(img: Image.Image, text, y, min_x, max_x, fill, height):
+    font = FONT_TITLE
+    draw = ImageDraw.Draw(img)
+    badge_img = Image.open(BADGE_FILE)
+    max_length = max_x - min_x
+    reset = img.copy()
+    bbox = font.getbbox(text)
+    length = bbox[2] - bbox[0]
+    height = bbox[3] - bbox[1] + 30
+
+    frames = []
+    temp_img = Image.new('RGBA', (max_length, height), color=(0, 0, 0, 0))
+
+    textdraw = ImageDraw.Draw(temp_img)
+    start_pt = 160
+
+    textdraw.text((start_pt, y), text, fill=fill, font=font)
+    img.paste(temp_img, (min_x, y))
+    img = Image.composite(badge_img, img, badge_img)
+    frames += [img.copy()]
+
+    while min_x + start_pt + length > max_x:
+        draw.rectangle((min_x, y, max_x, y+height), fill=(0, 0, 0, 0))
+        textdraw.rectangle((0, 0, max_length, height), fill=(0, 0, 0, 0))
+        textdraw.text((start_pt, y), text, fill=fill, font=font)
+
+        img = reset.copy()
+        img.paste(temp_img, (min_x, y))
+        img = Image.composite(badge_img, img, badge_img)
+        frames.append(img.copy())
+        start_pt -= 6
+
+    frames += [img.copy()]
+    return frames
 
 
 async def setup(client: commands.Bot):
