@@ -267,7 +267,7 @@ def draw_title_text(img: Image.Image, text, y, min_x, max_x, fill):
     reset = img.copy()
     bbox = font.getbbox(text)
     length = bbox[2] - bbox[0]
-    height = bbox[3] - bbox[1] + 30
+    height = bbox[3] - bbox[1] + 25
 
     # uncomment this when Discord supports APNG
     # if length > max_length:
@@ -284,14 +284,13 @@ def draw_title_text(img: Image.Image, text, y, min_x, max_x, fill):
         textdraw = ImageDraw.Draw(temp_img)
 
         for tx in texts:
-            draw.rectangle((min_x, y, max_x, y+height), fill=(0, 0, 0, 0))
             textdraw.rectangle((0, 0, max_length, height), fill=(0, 0, 0, 0))
 
             bbox = font.getbbox(tx)
             length = bbox[2] - bbox[0]
             start_pt = max_x - length - 60
             textdraw.text((start_pt, y), tx, fill=fill, font=font)
-            img.paste(temp_img, (min_x, y))
+            img.paste(temp_img, (min_x, y), temp_img)
             img = Image.composite(badge_img, img, badge_img)
             frames += [img.copy()]
             img = reset.copy()
@@ -354,7 +353,6 @@ def crop_img(img):
 # use this when Discord supports APNG
 def get_frames(img: Image.Image, text, y, min_x, max_x, fill, height):
     font = FONT_TITLE
-    draw = ImageDraw.Draw(img)
     badge_img = Image.open(BADGE_FILE)
     max_length = max_x - min_x
     reset = img.copy()
@@ -374,12 +372,11 @@ def get_frames(img: Image.Image, text, y, min_x, max_x, fill, height):
     frames += [img.copy()]
 
     while min_x + start_pt + length > max_x:
-        draw.rectangle((min_x, y, max_x, y+height), fill=(0, 0, 0, 0))
         textdraw.rectangle((0, 0, max_length, height), fill=(0, 0, 0, 0))
         textdraw.text((start_pt, y), text, fill=fill, font=font)
 
         img = reset.copy()
-        img.paste(temp_img, (min_x, y))
+        img.paste(temp_img, (min_x, y), temp_img)
         img = Image.composite(badge_img, img, badge_img)
         frames.append(img.copy())
         start_pt -= 6
