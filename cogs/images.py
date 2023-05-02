@@ -1,7 +1,6 @@
 import discord
 import logging as lg
 import os
-import pytesseract as pyt
 import shutil
 import uuid
 from bing_image_downloader import downloader
@@ -35,29 +34,6 @@ class Images(commands.Cog, name="Images"):
         await interaction.followup.send(file=img_file)
         img_file.close()
         shutil.rmtree(temp_folder)
-
-    @commands.command(aliases=[])
-    async def transcribe(self, ctx):
-        if ctx.message.reference:
-            imgs = []
-            msg = ""
-            for attachment in ctx.message.reference.resolved.attachments:
-                if "image" in attachment.content_type:
-                    imgname = f"temp/{attachment.filename}"
-                    await attachment.save(imgname)
-                    imgs.append(imgname)
-            try:
-                for idx, img in enumerate(imgs, start=1):
-                    payload = (
-                        f"**Image {idx}**\n```{pyt.image_to_string(img)}```"
-                    )
-                    msg = msg + payload + "\n\n"
-            except pyt.TesseractError:
-                lg.error("Failed to transcribe text from image")
-            finally:
-                os.remove(img)
-
-            await ctx.message.reference.resolved.reply(msg)
 
 
 async def setup(client: commands.Bot):
