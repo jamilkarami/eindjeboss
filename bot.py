@@ -20,7 +20,7 @@ async def main():
     logging_file_name = f"{FILE_DIR}/logs/eindjeboss.log"
 
     if not Path(logging_file_name).is_file():
-        logging_file_name = "./eindjeboss.log"
+        logging_file_name = f"{FILE_DIR}/eindjeboss.log"
         if not Path(logging_file_name).is_file():
             open(logging_file_name, 'a').close()
 
@@ -58,7 +58,7 @@ async def main():
             if not filename.endswith("py"):
                 continue
             extension_name = f"cogs.{filename[:-3]}"
-            logging.info(f"Loading extension: {extension_name}")
+            logging.info("Loading extension: %s" % extension_name)
             await client.load_extension(extension_name)
 
     def prepare_files():
