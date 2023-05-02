@@ -112,7 +112,9 @@ class Reddit(commands.Cog):
 
         if include_title:
             title = title + post.title
-        description = post.url
+            description = post.shortlink
+        else:
+            description = post.url
         payload = f"{title}\n{description}"
 
         await channel.send(payload)
@@ -141,5 +143,5 @@ class Reddit(commands.Cog):
         return safe_matches
 
 
-async def setup(client: commands.Bot):
+async def setup(client: discord.Client):
     await client.add_cog(Reddit(client))
