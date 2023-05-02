@@ -3,6 +3,7 @@ FROM python:3.8
 # UPDATE INDICES AND INSTALL REQUIRED PACKAGES
 RUN apt-get -y update
 RUN apt-get -y upgrade
+RUN apt install -y libgl1-mesa-glx
 
 # INITIALIZE EINDJEBOSS
 WORKDIR /home/eindjeboss
