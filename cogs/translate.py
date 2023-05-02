@@ -1,12 +1,13 @@
 import discord
 import logging as lg
 import os
-import pytesseract
 import re
+import uuid
 from discord.ext import commands
 from discord import app_commands
 from googletrans import Translator
 from googletrans.constants import LANGUAGES
+from paddleocr import PaddleOCR
 from util.vars.eind_vars import CHANNEL_IGNORE_LIST
 
 translator = Translator()
@@ -95,24 +96,30 @@ class Translate(commands.Cog):
     @commands.command(aliases=[])
     async def trimg(self, ctx, *args):
         src = None if not args else args[0]
+        ocr = PaddleOCR(use_angle_cls=True, lang='en')
 
         if ctx.message.reference:
             imgs = []
             msg = ""
             for attachment in ctx.message.reference.resolved.attachments:
                 if "image" in attachment.content_type:
-                    imgname = f"temp/{attachment.filename}"
+                    imgname = f"temp/{uuid.uuid4()}{attachment.filename}"
                     os.makedirs(os.path.dirname(imgname), exist_ok=True)
                     await attachment.save(imgname)
                     imgs.append(imgname)
             for idx, img in enumerate(imgs, start=1):
-                translated = TranslateUtil.translate_text(
-                    TranslateUtil.cleanup(pytesseract.image_to_string(img)),
-                    src)
+                result = ocr.ocr(img, cls=True)
+                lines = []
+
+                for idxres, res in enumerate(result):
+                    res = result[idxres]
+                    img_txt = '\n'.join(["> " + x[1][0] for x in res])
+                    translated = TranslateUtil.translate_text(img_txt, src)
+                    lines.append(translated.text)
+
                 lang = LANGUAGES[translated.src].capitalize()
-                payload = f"**Image {idx}**\n_Translated from"
-                f" ({lang}):_\n```{translated.text}```"
-                msg = msg + payload + "\n\n"
+                img_msg = "**Image %s (translated from %s)**\n\n%s\n\n"
+                msg += img_msg % (idx, lang, '\n'.join(lines))
                 os.remove(img)
 
             await ctx.message.reference.resolved.reply(msg)
