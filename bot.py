@@ -6,6 +6,7 @@ import shutil
 import time
 from discord.ext import commands
 from dotenv import load_dotenv
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 TEMP = "temp"
@@ -20,16 +21,19 @@ async def main():
     logging_file_name = f"{FILE_DIR}/logs/eindjeboss.log"
 
     if not Path(logging_file_name).is_file():
-        logging_file_name = f"{FILE_DIR}/eindjeboss.log"
-        if not Path(logging_file_name).is_file():
-            open(logging_file_name, 'a').close()
+        open(logging_file_name, 'a').close()
 
-    logging.basicConfig(
-        filename=logging_file_name,
-        format="%(asctime)s %(levelname)-8s %(message)s",
-        level=logging.INFO,
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
+    log_format = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s',
+                                   datefmt='%Y-%m-%d %H:%M:%S')
+    log_handler = RotatingFileHandler(logging_file_name, mode='a',
+                                      maxBytes=5*1024*1024, backupCount=10,
+                                      encoding=None, delay=0)
+    log_handler.setFormatter(log_format)
+    log_handler.setLevel(logging.INFO)
+
+    app_log = logging.getLogger('root')
+    app_log.setLevel(logging.INFO)
+    app_log.addHandler(log_handler)
 
     intents = discord.Intents.all()
     activity = discord.Activity(
