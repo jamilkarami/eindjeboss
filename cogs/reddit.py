@@ -89,7 +89,7 @@ class Reddit(commands.Cog):
             }, timeout=10).json()['data']['children']
 
         for post in posts:
-            if post['data']['permalink'] not in db:
+            if post['data']['name'] not in db:
                 perm = f"https://www.reddit.com{post['data']['permalink']}"
 
                 if post['data']['thumbnail'] == 'self':
@@ -110,7 +110,7 @@ class Reddit(commands.Cog):
 
                 await channel.send(embed=emb)
 
-                db.append(post['data']['permalink'])
+                db.append(post['data']['name'])
 
                 with open(get_file(EINDJE_SUBREDDIT_FILE), 'w') as outfile:
                     json.dump(db[-30:], outfile)
