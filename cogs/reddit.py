@@ -1,3 +1,4 @@
+import asyncio
 import asyncpraw
 import discord
 import json
@@ -7,7 +8,6 @@ import random
 import re
 import requests
 import textwrap
-import time
 from aiocron import crontab
 from discord.ext import commands
 from discord import app_commands
@@ -45,7 +45,6 @@ EINDJE_ICON_URL = "https://i.imgur.com/ACCxKOr.png"
 
 guild_id = os.getenv('GUILD_ID')
 channel_id = os.getenv('REDDIT_CHANNEL_ID')
-url = BASE_URL + os.getenv('WEBHOOK_EINDHOVEN_SUBREDDIT')
 
 
 try:
@@ -116,7 +115,7 @@ class Reddit(commands.Cog):
                 with open(get_file(EINDJE_SUBREDDIT_FILE), 'w') as outfile:
                     json.dump(db[-30:], outfile)
 
-                time.sleep(1)
+                await asyncio.sleep(1)
 
     @commands.Cog.listener()
     async def on_message(self, message):
