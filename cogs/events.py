@@ -1,3 +1,4 @@
+import asyncio
 import discord
 import logging as lg
 import os
@@ -56,9 +57,9 @@ class Events(commands.Cog):
 
         alert_channel = await th.guild.fetch_channel(ANNOUNCEMENT_CH_ID)
         ev_rl = discord.utils.get(th.guild.roles, id=EVENTS_ROLE_ID)
-        time.sleep(3)
+        await asyncio.sleep(3)
 
-        img = get_img(th)
+        img = await get_img(th)
 
         alert_msg = ALERT % (ev_rl.mention, f_ch.mention, th.mention)
 
@@ -176,8 +177,8 @@ def is_dark(color):
     return darkness > 0.5
 
 
-def get_img(thread: discord.Thread):
-    time.sleep(1)
+async def get_img(thread: discord.Thread):
+    await asyncio.sleep(3)
     msg = thread.starter_message
     if msg.attachments:
         return download_img_from_url(msg.attachments[0].url)
