@@ -51,25 +51,38 @@ class Utilities(commands.Cog):
                 await message.reply(f"{result}")
 
     @app_commands.command(name='logs')
-    async def logs(self, intr: discord.Interaction, ln: int = 20):
-        if intr.user.id != int(os.getenv('RAGDOLL_ID')):
+    @app_commands.describe(full="Choose true if you want the full log file.",
+                           ln="The number of log lines to send.")
+    async def logs(self, intr: discord.Interaction, ln: int = 20,
+                   full: bool = False):
+        admin_role_id = int(os.getenv("ADMIN_ROLE_ID"))
+        admin_role = intr.guild.get_role(admin_role_id)
+        
+        if admin_role not in intr.user.roles:
             await intr.response.send_message(
-                'You\'re not allowed to use this command.', ephemeral=True)
-            lg.info('%s tried to use the /logs command' % intr.user.name)
+                "You are not allowed to use this command.")
+            lg.warn(
+                "%s attempted to use /role. Check integrations permissions.")
+        file_dir = os.getenv("FILE_DIR")
+        logging_file_name = f"{file_dir}/logs/eindjeboss.log"
+
+        if full:
+            await intr.user.send(file=discord.File(logging_file_name))
+            await intr.response.send_message("Done.", ephemeral=True)
             return
 
-        log_file = open("%s/logs/eindjeboss.log" % os.getenv('FILE_DIR'))
+        log_file = open(logging_file_name)
         lines = log_file.readlines()
         log_lines = lines[-min(len(lines), ln):]
 
         log_msg = ""
         for line in log_lines:
             if len(log_msg) + len(line) > 2000:
-                await intr.user.send('```%s```' % log_msg)
+                await intr.user.send(f'```{log_msg}```')
                 log_msg = ""
             log_msg = log_msg + line
-        await intr.user.send('```%s```' % log_msg)
-        await intr.response.send_message(":yes:", ephemeral=True)
+        await intr.user.send(f'```{log_msg}```')
+        await intr.response.send_message("Done.", ephemeral=True)
 
 
 def calculate(expression: str):
