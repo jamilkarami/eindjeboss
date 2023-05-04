@@ -81,7 +81,7 @@ class Reddit(commands.Cog):
         channel = await guild.fetch_channel(channel_id)
 
         posts = requests.get(
-            f'https://www.reddit.com/r/{EINDHOVEN}/new/.json',
+            f'https://www.reddit.com/r/{EINDHOVEN}/new/.json?limit=20',
             headers={
                 "Cache-Control": "no-cache",
                 "Pragma": "no-cache",
