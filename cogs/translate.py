@@ -97,8 +97,10 @@ class Translate(commands.Cog):
 
     @commands.command(aliases=[])
     async def trimg(self, ctx, *args):
+        file_dir = os.getenv('FILE_DIR')
         src = None if not args else args[0]
-        ocr = PaddleOCR(use_angle_cls=True, lang='en')
+        ocr = PaddleOCR(use_angle_cls=True, lang='en',
+                        det_model_dir=f"{file_dir}/ocr")
 
         if ctx.message.reference:
             imgs = []
