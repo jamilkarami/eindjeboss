@@ -39,6 +39,14 @@ class Translate(commands.Cog):
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
 
+        file_dir = os.getenv('FILE_DIR')
+        ocr_dir = f"{file_dir}/ocr"
+
+        # prepare OCR models pre-emptively
+        self.ocr = PaddleOCR(use_angle_cls=True, lang='en',
+                             det_model_dir=ocr_dir)
+        self.ocr.ocr("default_files/images/ehv_badge.png")
+
     @commands.Cog.listener()
     async def on_message(self, msg: discord.Message):
         if msg.author == self.client.user:
@@ -97,12 +105,7 @@ class Translate(commands.Cog):
 
     @commands.command(aliases=[])
     async def trimg(self, ctx, *args):
-        file_dir = os.getenv('FILE_DIR')
-        ocr_dir = f"{file_dir}/ocr"
         src = None if not args else args[0]
-        ocr = PaddleOCR(use_angle_cls=True, lang='en',
-                        det_model_dir=ocr_dir,
-                        rec_model_dir=ocr_dir)
 
         if ctx.message.reference:
             imgs = []
@@ -114,7 +117,7 @@ class Translate(commands.Cog):
                     await attachment.save(imgname)
                     imgs.append(imgname)
             for idx, img in enumerate(imgs, start=1):
-                result = ocr.ocr(img, cls=True)
+                result = self.ocr.ocr(img, cls=True)
                 lines = []
 
                 for idxres, res in enumerate(result):
