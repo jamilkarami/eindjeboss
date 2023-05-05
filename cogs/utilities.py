@@ -40,6 +40,7 @@ class Utilities(commands.Cog):
             try:
                 expression = matches.group(1)
                 result = '{0:.2f}'.format(calculate(expression))
+                lg.info("Calculated expression for %s", message.author.name)
             except TypeError as te:
                 lg.error(f"Failed to calculate expression \"{expression}\""
                          f" for {message.author.name}")
@@ -57,18 +58,20 @@ class Utilities(commands.Cog):
                    full: bool = False):
         admin_role_id = int(os.getenv("ADMIN_ROLE_ID"))
         admin_role = intr.guild.get_role(admin_role_id)
-        
+
         if admin_role not in intr.user.roles:
             await intr.response.send_message(
                 "You are not allowed to use this command.")
             lg.warn(
-                "%s attempted to use /role. Check integrations permissions.")
+                "%s attempted to use /role. Check integrations permissions.",
+                intr.user.name)
         file_dir = os.getenv("FILE_DIR")
         logging_file_name = f"{file_dir}/logs/eindjeboss.log"
 
         if full:
             await intr.user.send(file=discord.File(logging_file_name))
             await intr.response.send_message("Done.", ephemeral=True)
+            lg.info("Sent full log file to %s", intr.user.name)
             return
 
         log_file = open(logging_file_name)
@@ -83,6 +86,7 @@ class Utilities(commands.Cog):
             log_msg = log_msg + line
         await intr.user.send(f'```{log_msg}```')
         await intr.response.send_message("Done.", ephemeral=True)
+        lg.info("Sent logs to %s", intr.user.name)
 
 
 def calculate(expression: str):

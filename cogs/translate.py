@@ -64,6 +64,7 @@ class Translate(commands.Cog):
                 await msg.reply('Destination language invalid. Check typos.')
             else:
                 await msg.reply(f"{translated.text}")
+                lg.info("Translated text for %s", msg.author.name)
 
     async def translate_context(self, intr: discord.Interaction,
                                 msg: discord.Message):
@@ -89,6 +90,7 @@ class Translate(commands.Cog):
             lang = LANGUAGES[translated.src].capitalize()
             payload = f"Translated from ({lang}): {translated.text}"
             await ctx.message.reference.resolved.reply(payload)
+            lg.info('Sent translation to %s', ctx.message.author.name)
             return
         await ctx.message.reply(
             "\"!tr\" can only be used as a reply to another message")
@@ -123,6 +125,7 @@ class Translate(commands.Cog):
                 os.remove(img)
 
             await ctx.message.reference.resolved.reply(msg)
+            lg.info("Sent image translation to %s", ctx.message.author.name)
 
     @app_commands.command(name="translate",
                           description="Translate a specific text.")
@@ -135,6 +138,7 @@ class Translate(commands.Cog):
         await intr.response.send_message(
             f"Translation of _\"{text}\"_ from"
             f" _{src.name}_ to _{dst.name}_: {tr.text}")
+        lg.info("Translated text for %s", intr.user.name)
 
 
 class TranslateUtil:

@@ -106,6 +106,7 @@ class Periodics(commands.Cog):
                                             style=discord.ButtonStyle.url,
                                             url=WARNING_SIREN_LINK))
             await channel.send(WARNING_SIREN_MSG, view=view)
+            lg.info("Sent siren warning")
 
     async def send_periodic_message(self, message, channel_id, guild):
         channel = await guild.fetch_channel(channel_id)
@@ -164,6 +165,7 @@ class Periodics(commands.Cog):
 
         await channel.send(title, file=discord.File(WEATHER_OUTPUT_FILE))
         os.remove(WEATHER_OUTPUT_FILE)
+        lg.info("Sent daily weather forecast")
 
     def draw_text(self, draw: ImageDraw, text, pos, fill, font, text_size):
         font = ImageFont.truetype(font, text_size)

@@ -18,16 +18,17 @@ class IMDB(commands.Cog):
 
     @app_commands.command(name="imdb",
                           description="Search for a movie/series on IMDb.")
-    async def imdb(self, interaction: discord.Interaction, query: str):
+    async def imdb(self, intr: discord.Interaction, query: str):
         movies = ia.search_movie(query)
         if not movies:
-            await interaction.response.send_message('No results found for "' +
-                                                    query + '" on IMDB.',
-                                                    ephemeral=True)
+            await intr.response.send_message('No results found for "' +
+                                             query + '" on IMDB.',
+                                             ephemeral=True)
             return
         movie_id = movies[0].movieID
-        await interaction.response.send_message(
+        await intr.response.send_message(
             "https://www.imdb.com/title/tt{id}/".format(id=movie_id))
+        lg.info("Sent movie to %s", intr.user.name)
 
 
 async def setup(client: commands.Bot):

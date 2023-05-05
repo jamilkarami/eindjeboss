@@ -90,6 +90,8 @@ class Reddit(commands.Cog):
 
         for post in posts:
             if post['data']['name'] not in db:
+                lg.info("Current reddit post stash: %s", db)
+                lg.info("Found new reddit post: %s", post['data']['name'])
                 perm = f"https://www.reddit.com{post['data']['permalink']}"
 
                 if post['data']['thumbnail'] == 'self':
