@@ -2,7 +2,6 @@ import asyncio
 import discord
 import logging as lg
 import os
-import time
 import urllib.request
 import uuid
 from bing_image_downloader import downloader
@@ -65,6 +64,7 @@ class Events(commands.Cog):
 
         output_img = make_ev_img(img, th.name, th.applied_tags)
         await alert_channel.send(alert_msg, file=discord.File(output_img))
+        lg.info("Sent event alert for event %s", th.name)
 
         os.remove(img)
         os.remove(output_img)

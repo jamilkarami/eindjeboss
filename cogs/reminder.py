@@ -49,6 +49,7 @@ class Reminder(commands.Cog):
             await intr.followup.send(
                 "Could not parse the time. Please try again!",
                 ephemeral=True)
+            lg.info("Failed to parse time %s for %s", r_time, intr.user.name)
             return
 
         if r_ts < time.time():
@@ -64,6 +65,7 @@ class Reminder(commands.Cog):
             await intr.followup.send(
                 f"I will remind you of **{msg}** on **{r_d}** :timer:",
                 view=ReminderView(rem_id, reminder))
+            lg.info("Set one-time reminder for %s", intr.user.name)
 
         else:
             reminder = mk_reminder(r_t, msg, intr.guild_id,
@@ -71,6 +73,7 @@ class Reminder(commands.Cog):
             self.loop.create_task(self.add_rem(rem_id, reminder))
             await intr.followup.send(
                 f"I will remind you of **{msg}** daily at **{r_t}** :timer:")
+            lg.info("Set daily reminder for %s", intr.user.name)
 
     @app_commands.command(name="myreminders",
                           description="Get a list of your active reminders.")
@@ -105,6 +108,7 @@ class Reminder(commands.Cog):
 
         await intr.response.send_message(content=f"```{output}```",
                                          ephemeral=True)
+        lg.info("Sent reminders to %s", intr.user.name)
 
     @app_commands.command(name="deletereminder",
                           description="Delete one of your set reminders.")
@@ -125,6 +129,7 @@ class Reminder(commands.Cog):
 
         await intr.response.send_message("Invalid ID. Please check again.",
                                          ephemeral=True)
+        lg.info("Deleted reminder for user %s", intr.user.name)
 
     async def startup_reminders(self):
         reminders = get_reminders()

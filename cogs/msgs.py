@@ -25,7 +25,7 @@ SPONTAAN_STR = "SPONTAAN. REIZEN. DRANKJES MET DE MEIDEN. SHOPPEN. \
 SPECIAALBIER. SUSHI. SARCASME. DANSJES. BOULDEREN. TATOEAGES. UITGAAN."
 OPINION = "The Eindhoven Community Discord's collectively humble opinion on %s"
 TZ = "Europe/Amsterdam"
-MAX_MEMBERS_TAG = 25
+MAX_MEMBERS_TAG = 50
 MSG_TOTAL_DESC = "Find out how many messages you (or someone else) \
 have/has sent in total in this server."
 
@@ -121,11 +121,6 @@ class Messages(commands.Cog, name="Messages"):
         if msg_cont == "ass":
             await msg.add_reaction(ASS_EMOJI)
 
-    @app_commands.command(name="now")
-    async def now(self, intr: discord.Interaction):
-        now = datetime.now(pytz.timezone(TZ)).strftime("%H:%M on %A, %Y-%m-%d")
-        await intr.response.send_message(f"It is {now}")
-
     @app_commands.command(name="tagall")
     async def tagall(self, intr: discord.Interaction):
         if type(intr.channel).__name__ != "Thread":
@@ -147,6 +142,8 @@ class Messages(commands.Cog, name="Messages"):
             if user.id != self.client.user.id:
                 message = message + f"<@{user.id}> "
         await intr.response.send_message(message)
+        lg.info("Tagged everyone in thread %s on behalf of %s",
+                intr.channel.name, intr.user.name)
 
     @app_commands.command(name="mymsgtotal",
                           description=MSG_TOTAL_DESC,)
@@ -160,6 +157,7 @@ class Messages(commands.Cog, name="Messages"):
         await intr.response.send_message(
             "%s has sent a total of around %s messages in this server."
             % (user.mention, ttl_msg))
+        lg.info("Sent message total for %s to %s", user.name, intr.user.name)
 
     def get_total_messages(self, guild_id, user_id):
         url = MSG_URL.format(guild_id, user_id)

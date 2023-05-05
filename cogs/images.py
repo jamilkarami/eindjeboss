@@ -21,8 +21,8 @@ class Images(commands.Cog, name="Images"):
         lg.info(f"[{__name__}] Cog is ready")
 
     @app_commands.command()
-    async def img(self, interaction: discord.Interaction, query: str):
-        await interaction.response.defer()
+    async def img(self, intr: discord.Interaction, query: str):
+        await intr.response.defer()
         temp_folder = "temp/%s" % (uuid.uuid4())
         output_folder = "%s/%s" % (temp_folder, query)
         downloader.download(query, limit=1,  output_dir=temp_folder,
@@ -31,9 +31,10 @@ class Images(commands.Cog, name="Images"):
         img_file = discord.File(os.path.join(output_folder,
                                              os.listdir(output_folder)[0]))
 
-        await interaction.followup.send(file=img_file)
+        await intr.followup.send(file=img_file)
         img_file.close()
         shutil.rmtree(temp_folder)
+        lg.info("Sent image to %s for query \"%s\"", intr.user.name, query)
 
 
 async def setup(client: commands.Bot):

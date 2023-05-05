@@ -42,12 +42,14 @@ class Casino(commands.Cog):
             num = random.randint(1, DEFAULT_ROLL)
             await msg.reply(
                 f"You roll a D20 for _\"{reason_for_roll}\"_. You get: {num}.")
+            lg.info("%s rolled a D20", msg.author.name)
             return
 
         if msg_cont.startswith(HEY_ARNOL_TEXT) and msg_cont.endswith("?"):
             random.seed()
             answer = random.choice(EIGHT_BALL_OPTIONS)
             await msg.reply(answer)
+            lg.info("%s asked Arnol a question", msg.author.name)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -67,6 +69,7 @@ class Casino(commands.Cog):
 
         await intr.response.send_message(
             f"You roll a D{str(maximum)}. You get: {str(num)}.")
+        lg.info("%s rolled a D20", intr.user.name)
 
     @app_commands.command(name="8ball",
                           description=EIGHT_BALL_DESCRIPTION)
@@ -74,6 +77,7 @@ class Casino(commands.Cog):
         random.seed()
         message = f"Magic 8 ball says: {random.choice(EIGHT_BALL_OPTIONS)}"
         await intr.response.send_message(message)
+        lg.info("%s used the magic 8 ball", intr.user.name)
 
     @app_commands.command(description="Flip a coin.")
     async def coin(self, intr: discord.Interaction):
@@ -81,6 +85,7 @@ class Casino(commands.Cog):
         random.seed()
         message = f"You flip a coin. It lands on: {random.choice(options)}"
         await intr.response.send_message(message)
+        lg.info("%s flipped a coin", intr.user.name)
 
     @app_commands.command(name="chooseforme",
                           description=CH_DESC)
@@ -94,6 +99,7 @@ class Casino(commands.Cog):
         resp = (f"You asked me to choose from {resp_o}.\n\nI choose: **{ch}**")
 
         await intr.response.send_message(resp)
+        lg.info("%s asked Arnol to choose", intr.user.name)
 
 
 async def setup(client: commands.Bot):

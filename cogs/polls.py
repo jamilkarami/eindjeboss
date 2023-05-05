@@ -58,6 +58,7 @@ class Polls(commands.Cog):
                           description="Create a poll with up to 4 options")
     async def poll(self, intr: discord.Interaction):
         await intr.response.send_modal(self.poll_modal())
+        lg.info("Sent poll to %s", intr.user.name)
 
     @app_commands.command(name="yesno",
                           description="Shortcut to a yes/no poll")
@@ -66,6 +67,7 @@ class Polls(commands.Cog):
         resp = await intr.original_response()
         await resp.add_reaction(YES_EMOJI)
         await resp.add_reaction(NO_EMOJI)
+        lg.info("Sent yes/no poll to %s", intr.user.name)
 
 
 async def setup(client: commands.Bot):
