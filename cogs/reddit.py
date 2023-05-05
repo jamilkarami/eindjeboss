@@ -115,7 +115,7 @@ class Reddit(commands.Cog):
                 db.append(post['data']['name'])
 
                 with open(get_file(EINDJE_SUBREDDIT_FILE), 'w') as outfile:
-                    json.dump(db[-30:], outfile)
+                    json.dump(db[-100:], outfile)
 
                 await asyncio.sleep(1)
 
