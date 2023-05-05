@@ -28,12 +28,8 @@ async def main():
     log_handler = RotatingFileHandler(logging_file_name, mode='a',
                                       maxBytes=5*1024*1024, backupCount=10,
                                       encoding=None, delay=0)
-    log_handler.setFormatter(log_format)
-    log_handler.setLevel(logging.INFO)
 
-    app_log = logging.getLogger('root')
-    app_log.setLevel(logging.INFO)
-    app_log.addHandler(log_handler)
+    discord.utils.setup_logging(handler=log_handler, formatter=log_format)
 
     intents = discord.Intents.all()
     activity = discord.Activity(
