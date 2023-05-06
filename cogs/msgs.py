@@ -32,7 +32,7 @@ have/has sent in total in this server."
 
 class Messages(commands.Cog, name="Messages"):
 
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     @commands.Cog.listener()

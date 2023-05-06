@@ -9,7 +9,7 @@ ia = Cinemagoer()
 
 class IMDB(commands.Cog):
 
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     @commands.Cog.listener()

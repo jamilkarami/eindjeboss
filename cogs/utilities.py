@@ -17,7 +17,7 @@ operators = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
 
 class Utilities(commands.Cog):
 
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     @commands.Cog.listener()

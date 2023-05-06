@@ -29,7 +29,7 @@ TRANSLATE_PROMPT_REGEX = r"(?:tr|translate) (.+) to (.+)"
 
 class Translate(commands.Cog):
 
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
         self.ctx_menu = app_commands.ContextMenu(
             name='Translate Message',
@@ -47,8 +47,7 @@ class Translate(commands.Cog):
         # prepare OCR models pre-emptively
         self.ocr = PaddleOCR(use_angle_cls=True, lang='en',
                              det_model_dir=ocr_dir)
-        th = threading.Thread(self.prepare_ocr)
-        th.start()
+        await self.client.loop.run_in_executor(None, self.prepare_ocr)
 
     @commands.Cog.listener()
     async def on_message(self, msg: discord.Message):

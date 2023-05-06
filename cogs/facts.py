@@ -12,7 +12,7 @@ HEADERS = {'X-Api-Key': API_NINJAS_KEY}
 
 class Facts(commands.Cog):
 
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     @commands.Cog.listener()

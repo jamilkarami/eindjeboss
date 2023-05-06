@@ -24,7 +24,7 @@ reminder_file = get_file(REMINDER_FILE)
 class Reminder(commands.Cog):
     loop = asyncio.get_running_loop()
 
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client: discord.Client = client
 
     @commands.Cog.listener()
