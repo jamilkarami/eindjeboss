@@ -47,7 +47,8 @@ class Translate(commands.Cog):
         # prepare OCR models pre-emptively
         self.ocr = PaddleOCR(use_angle_cls=True, lang='en',
                              det_model_dir=ocr_dir)
-        asyncio.run(self.prepare_ocr())
+        th = threading.Thread(self.prepare_ocr)
+        th.start()
 
     @commands.Cog.listener()
     async def on_message(self, msg: discord.Message):
@@ -76,7 +77,7 @@ class Translate(commands.Cog):
                 await msg.reply(f"{translated.text}")
                 lg.info("Translated text for %s", msg.author.name)
 
-    async def prepare_ocr(self):
+    def prepare_ocr(self):
         self.ocr.ocr("default_files/images/ehv_badge.png")
 
     async def translate_context(self, intr: discord.Interaction,
