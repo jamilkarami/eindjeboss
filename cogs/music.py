@@ -7,12 +7,14 @@ from discord.ext import commands
 from discord import app_commands
 from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy.exceptions import SpotifyException
+from util.util import get_colors_from_img
 
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials())
 sp_scope = "user-library-read"
 
 S_DESC = "Sends a link to the song that matches your query the most on Spotify"
 SC_DESC = "Sends a link to the song you are currently listening to on Spotify"
+SP_ICON = "https://i.imgur.com/XX2a6pf.png"
 
 
 class Music(commands.Cog):
@@ -31,11 +33,11 @@ class Music(commands.Cog):
             name = intr.user.name
             result = sp.search(f"{query}", type="track")
             if len(result['tracks']['items']) > 0:
-                await intr.response.send_message(
-                    result['tracks']['items'][0]['external_urls']['spotify'])
+                embed = mk_sp_embed(result['tracks']['items'][0], intr.user)
+                await intr.response.send_message(embed=embed)
             else:
                 await intr.response.send_message(
-                    'No results found for: ' + query)
+                    'No results found for: ' + query, ephemeral=True)
         except SpotifyException as e:
             lg.error(f"Failed to send song to {name} for query \"{query}\"")
             lg.debug(e)
@@ -45,6 +47,14 @@ class Music(commands.Cog):
     @app_commands.command(name="spc",
                           description=SC_DESC)
     async def spc(self, intr: discord.Interaction):
+        user_id = intr.user.id
+
+        if intr.guild.get_member(user_id).status == discord.Status.offline:
+            await intr.response.send_message(
+                "You have to be online to use this command.",
+                ephemeral=True)
+            return
+
         spotify_act = None
 
         user = intr.user
@@ -55,15 +65,17 @@ class Music(commands.Cog):
 
         if spotify_act is None:
             await intr.response.send_message(
-                "You are not currently listening to anything on Spotify or you"
-                " haven't connected Discord to your Spotify account.",
+                "You not currently listening to anything on Spotify or you "
+                "haven't connected Discord to your Spotify account.",
                 ephemeral=True)
             return
 
         try:
-            await intr.response.send_message(spotify_act.track_url)
+            embed = mk_spc_embed(spotify_act, intr.user)
+            await intr.response.send_message(embed=embed)
         except Exception as e:
             lg.error(f"Failed to send current song to {intr.user.name}")
+            print(e)
             lg.debug(e)
         else:
             lg.info(f"Sent current song to {intr.user.name}")
@@ -103,6 +115,62 @@ class Music(commands.Cog):
             lg.debug(e)
         else:
             lg.info(f"Sent lyrics to {name} for query: {query}")
+
+
+def get_artist_url(artist):
+    artist_name = artist['name']
+    artist_id = artist['uri'].split(':')[2]
+    return f"[{artist_name}](https://open.spotify.com/artist/{artist_id})"
+
+
+def get_album_url(album):
+    album_name = album['name']
+    album_id = album['uri'].split(':')[2]
+    return f"[{album_name}](https://open.spotify.com/album/{album_id})"
+
+
+def mk_sp_embed(song, user: discord.Member) -> discord.Embed:
+    artists = song['artists']
+    artist = artists[0]['name']
+    title = f"{artist} - {song['name']}"
+    footer = f"On album: {song['album']['name']}"
+    album_cover_url = song['album']['images'][0]['url']
+    track_url = song['external_urls']['spotify']
+    author = f"{user.display_name} is listening to..." + '\u2800'*12
+
+    cl = get_colors_from_img(album_cover_url)[1]
+
+    embed = discord.Embed(title=title, url=track_url,
+                          color=discord.Color.from_rgb(cl[0], cl[1], cl[2]))
+    embed.set_author(name=author, icon_url=user.avatar.url)
+    embed.set_footer(text=footer, icon_url=SP_ICON)
+    embed.set_thumbnail(url=album_cover_url)
+
+    if len(artists) > 1:
+        artist_names = [get_artist_url(art) for art in artists]
+        embed.description = f"_with {', '.join(artist_names[1:])}_"
+
+    return embed
+
+
+def mk_spc_embed(spotify_act: discord.Spotify,
+                 user: discord.Member) -> discord.Embed:
+    cl = get_colors_from_img(spotify_act.album_cover_url)[1]
+
+    title = f"{spotify_act.artists[0]} - {spotify_act.title}"
+    footer = f"On album: {spotify_act.album}"
+    author = f"_{user.display_name} is listening to..._" + '\u2800'*12
+
+    embed = discord.Embed(title=title,
+                          color=discord.Color.from_rgb(cl[0], cl[1], cl[2]))
+    embed.set_author(name=author, icon_url=user.avatar.url)
+    embed.url = spotify_act.track_url
+    embed.set_footer(text=footer, icon_url=SP_ICON)
+    embed.set_thumbnail(url=spotify_act.album_cover_url)
+
+    if len(spotify_act.artists) > 1:
+        embed.description = f"_with {', '.join(spotify_act.artists[1:])}_"
+    return embed
 
 
 async def setup(client: commands.Bot):
