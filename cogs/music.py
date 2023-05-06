@@ -159,7 +159,7 @@ def mk_spc_embed(spotify_act: discord.Spotify,
 
     title = f"{spotify_act.artists[0]} - {spotify_act.title}"
     footer = f"On album: {spotify_act.album}"
-    author = f"_{user.display_name} is listening to..._" + '\u2800'*12
+    author = f"{user.display_name} is listening to..." + '\u2800'*12
 
     embed = discord.Embed(title=title,
                           color=discord.Color.from_rgb(cl[0], cl[1], cl[2]))

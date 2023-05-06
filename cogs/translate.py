@@ -2,6 +2,7 @@ import discord
 import logging as lg
 import os
 import re
+import threading
 import uuid
 from discord.ext import commands
 from discord import app_commands
@@ -45,7 +46,7 @@ class Translate(commands.Cog):
         # prepare OCR models pre-emptively
         self.ocr = PaddleOCR(use_angle_cls=True, lang='en',
                              det_model_dir=ocr_dir)
-        self.ocr.ocr("default_files/images/ehv_badge.png")
+        threading.Thread(target=self.ocr.ocr).start()
 
     @commands.Cog.listener()
     async def on_message(self, msg: discord.Message):
