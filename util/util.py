@@ -1,5 +1,8 @@
 import json
 import os
+import urllib.request
+import uuid
+from colorthief import ColorThief
 
 
 def load_json_file(path):
@@ -29,3 +32,22 @@ def check_limit(command: str):
         save_json_file(limits, "limits.json")
         return True
     return False
+
+
+def download_img_from_url(url, prefix=None):
+    opener = urllib.request.build_opener()
+    opener.addheaders = [('User-agent', "Mozilla/5.0 (Windows NT 6.1)")]
+
+    urllib.request.install_opener(opener)
+    img_filename = urllib.request.urlretrieve(url, prefix)[0]
+
+    return img_filename
+
+
+def get_colors_from_img(img_url):
+    img_path = download_img_from_url(img_url, uuid.uuid4())
+    colorthief = ColorThief(img_path)
+    palette = colorthief.get_palette()
+    os.remove(img_path)
+
+    return palette
