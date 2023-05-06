@@ -69,7 +69,7 @@ WARNING_SIREN_BUTTON_LABEL = "Click here for more information"
 
 class Periodics(commands.Cog):
 
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     @commands.Cog.listener()

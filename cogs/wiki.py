@@ -10,7 +10,7 @@ class Wiki(commands.Cog):
 
     wiki_summary: WikipediaSummary
 
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
         self.wiki_summary = WikipediaSummary()
 

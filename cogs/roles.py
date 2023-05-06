@@ -8,7 +8,7 @@ FOCUS_DESC = "Limits your view to the conversation channels"
 
 class Roles(commands.Cog):
 
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     @commands.Cog.listener()

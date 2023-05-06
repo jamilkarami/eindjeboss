@@ -13,7 +13,7 @@ UNSAFE_CHANNELS = [N_CHANNEL_ID, CANDY_CHANNEL_ID]
 
 
 class Images(commands.Cog, name="Images"):
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     @commands.Cog.listener()

@@ -24,7 +24,7 @@ CH_DESC = "Let Arnol choose! Handy for when you don't know what to pick."
 
 
 class Casino(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     @commands.Cog.listener()
