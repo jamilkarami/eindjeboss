@@ -131,12 +131,12 @@ def get_album_url(album):
 
 def mk_sp_embed(song, user: discord.Member) -> discord.Embed:
     artists = song['artists']
-    artist = artists[0]['name']
-    title = f"{artist} - {song['name']}"
+    artist = f"By {artists[0]['name']}"
+    title = song['name']
     footer = f"On album: {song['album']['name']}"
     album_cover_url = song['album']['images'][0]['url']
     track_url = song['external_urls']['spotify']
-    author = f"{user.display_name} is listening to..." + '\u2800'*12
+    author = f"{user.display_name} is listening to... "
 
     cl = get_colors_from_img(album_cover_url)[1]
 
@@ -148,8 +148,9 @@ def mk_sp_embed(song, user: discord.Member) -> discord.Embed:
 
     if len(artists) > 1:
         artist_names = [get_artist_url(art) for art in artists]
-        embed.description = f"_with {', '.join(artist_names[1:])}_"
+        artist += f", _with {', '.join(artist_names[1:])}_"
 
+    embed.description = artist + "\n" + "\u2800" * 43
     return embed
 
 
@@ -157,9 +158,10 @@ def mk_spc_embed(spotify_act: discord.Spotify,
                  user: discord.Member) -> discord.Embed:
     cl = get_colors_from_img(spotify_act.album_cover_url)[1]
 
-    title = f"{spotify_act.artists[0]} - {spotify_act.title}"
+    title = f"{spotify_act.title}"
+    description = f"By {spotify_act.artists[0]}"
     footer = f"On album: {spotify_act.album}"
-    author = f"{user.display_name} is listening to..." + '\u2800'*12
+    author = f"{user.display_name} is listening to... "
 
     embed = discord.Embed(title=title,
                           color=discord.Color.from_rgb(cl[0], cl[1], cl[2]))
@@ -169,7 +171,9 @@ def mk_spc_embed(spotify_act: discord.Spotify,
     embed.set_thumbnail(url=spotify_act.album_cover_url)
 
     if len(spotify_act.artists) > 1:
-        embed.description = f"_with {', '.join(spotify_act.artists[1:])}_"
+        description += f", _with {', '.join(spotify_act.artists[1:])}_"
+
+    embed.description = description + "\n" + "\u2800" * 43
     return embed
 
 
