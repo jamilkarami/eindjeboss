@@ -1,9 +1,7 @@
-import asyncio
 import discord
 import logging as lg
 import os
 import re
-import threading
 import uuid
 from discord.ext import commands
 from discord import app_commands
