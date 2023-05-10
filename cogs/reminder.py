@@ -6,6 +6,7 @@ import logging as lg
 import os
 import time
 import uuid
+from aiocron import crontab
 from discord.ext import commands
 from discord import app_commands
 from table2ascii import table2ascii as t2a, PresetStyle
@@ -140,6 +141,7 @@ class Reminder(commands.Cog):
             if not vals['repeat'] and vals['time'] < time.time():
                 to_remove.append(reminder)
             else:
+                
                 self.loop.create_task(self.start_reminder(
                     reminder))
 
@@ -158,24 +160,23 @@ class Reminder(commands.Cog):
 
     async def start_reminder(self, rem_id):
         rem = get_reminder(rem_id)
-        tm = rem['time']
         repeat = rem['repeat']
+        tm = rem['time']
 
         if repeat:
             tm_to_remind = dateparser.parse(
                 tm, settings=DATE_PARSER_SETTINGS_AMS).timestamp()
             if tm_to_remind < time.time():
                 tm_to_remind = tm_to_remind + 86400
-        else:
-            tm_to_remind = tm
 
-        await asyncio.sleep(tm_to_remind - time.time())
+            await asyncio.sleep(tm_to_remind - time.time())
 
-        await self.notify_users(rem_id)
-        if not repeat:
+            await self.notify_users(rem_id)
             delete_reminder(rem_id)
         else:
-            self.start_reminder(rem_id)
+            hour, minute = tm.split(':')
+            cron_time = f"{minute} {hour} * * *"
+            crontab(cron_time, self.notify_users, args=(rem_id), start=True)
 
     async def notify_users(self, rem_id):
         rem = get_reminder(rem_id)

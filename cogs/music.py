@@ -156,7 +156,7 @@ def mk_sp_embed(song, user: discord.Member) -> discord.Embed:
 
 def mk_spc_embed(spotify_act: discord.Spotify,
                  user: discord.Member) -> discord.Embed:
-    cl = get_colors_from_img(spotify_act.album_cover_url)[1]
+    cl = get_colors_from_img(spotify_act.album_cover_url)[0]
 
     title = f"{spotify_act.title}"
     description = f"By {spotify_act.artists[0]}"
