@@ -5,7 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 
-class Casino(commands.Cog):
+class Admin(commands.Cog):
     def __init__(self, client: discord.Client):
         self.client = client
 
@@ -51,5 +51,6 @@ class Casino(commands.Cog):
         await intr.response.send_message("Done.", ephemeral=True)
         lg.info("Sent logs to %s", intr.user.name)
 
+
 async def setup(client: commands.Bot):
-    await client.add_cog(Casino(client))
+    await client.add_cog(Admin(client))
