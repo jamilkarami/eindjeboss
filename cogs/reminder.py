@@ -141,7 +141,7 @@ class Reminder(commands.Cog):
             if not vals['repeat'] and vals['time'] < time.time():
                 to_remove.append(reminder)
             else:
-                
+
                 self.loop.create_task(self.start_reminder(
                     reminder))
 
