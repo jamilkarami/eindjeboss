@@ -140,7 +140,7 @@ def mk_sp_embed(song, user: discord.Member) -> discord.Embed:
 
     cl = get_colors_from_img(album_cover_url)[1]
 
-    embed = discord.Embed(title=title, url=track_url,
+    embed = discord.Embed(title=title, url=f"{track_url}?go=1",
                           color=discord.Color.from_rgb(cl[0], cl[1], cl[2]))
     embed.set_author(name=author, icon_url=user.avatar.url)
     embed.set_footer(text=footer, icon_url=SP_ICON)
@@ -163,10 +163,9 @@ def mk_spc_embed(spotify_act: discord.Spotify,
     footer = f"On album: {spotify_act.album}"
     author = f"{user.display_name} is listening to... "
 
-    embed = discord.Embed(title=title,
+    embed = discord.Embed(title=title, url=f"{spotify_act.track_url}?go=1",
                           color=discord.Color.from_rgb(cl[0], cl[1], cl[2]))
     embed.set_author(name=author, icon_url=user.avatar.url)
-    embed.url = spotify_act.track_url
     embed.set_footer(text=footer, icon_url=SP_ICON)
     embed.set_thumbnail(url=spotify_act.album_cover_url)
 
