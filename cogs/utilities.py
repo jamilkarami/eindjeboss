@@ -59,11 +59,11 @@ class Utilities(commands.Cog):
         admin_role_id = int(os.getenv("ADMIN_ROLE_ID"))
         admin_role = intr.guild.get_role(admin_role_id)
 
-        if admin_role not in intr.user.roles:
+        if not admin_role or admin_role not in intr.user.roles:
             await intr.response.send_message(
                 "You are not allowed to use this command.")
             lg.warn(
-                "%s attempted to use /role. Check integrations permissions.",
+                "%s attempted to use /logs. Check integrations permissions.",
                 intr.user.name)
         file_dir = os.getenv("FILE_DIR")
         logging_file_name = f"{file_dir}/logs/eindjeboss.log"
