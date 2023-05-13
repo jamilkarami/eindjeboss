@@ -163,7 +163,7 @@ class Reminder(commands.Cog):
         repeat = rem['repeat']
         tm = rem['time']
 
-        if repeat:
+        if not repeat:
             tm_to_remind = dateparser.parse(
                 tm, settings=DATE_PARSER_SETTINGS_AMS).timestamp()
             if tm_to_remind < time.time():
