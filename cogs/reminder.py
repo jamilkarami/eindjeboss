@@ -164,14 +164,9 @@ class Reminder(commands.Cog):
         tm = rem['time']
 
         if not repeat:
-            tm_to_remind = dateparser.parse(
-                tm, settings=DATE_PARSER_SETTINGS_AMS).timestamp()
-            if tm_to_remind < time.time():
-                tm_to_remind = tm_to_remind + 86400
-
-            await asyncio.sleep(tm_to_remind - time.time())
-
-            await self.notify_users(rem_id)
+            if tm >= time.time():
+                await asyncio.sleep(tm - time.time())
+                await self.notify_users(rem_id)
             delete_reminder(rem_id)
         else:
             hour, minute = tm.split(':')
