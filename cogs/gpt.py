@@ -1,11 +1,14 @@
-import discord
 import logging as lg
-import openai
 import os
+
+import discord
+import openai
+from aiocron import crontab
 from discord import app_commands
 from discord.ext import commands
 from openai.error import RateLimitError
-from util.util import save_json_file, load_json_file, get_file
+
+usage_reset_cron = "0 0 1 * *"
 
 model_engines = {
     "ada": "text-ada-001",
@@ -35,7 +38,10 @@ class GPT(commands.Cog, name="gpt"):
 
     def __init__(self, bot):
         self.bot = bot
+        self.gptusage = self.bot.dbmanager.get_collection('gptusage')
+        self.gptset = self.bot.dbmanager.get_collection('gptsettings')
         openai.api_key = GPT_TOKEN
+        crontab(usage_reset_cron, func=self.reset_usage)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -45,16 +51,19 @@ class GPT(commands.Cog, name="gpt"):
     async def gpt(self, intr: discord.Interaction, query: str):
         gpt_usage_limit = int(os.getenv('GPT_USAGE_LIMIT'))
 
-        settings = get_gpt_settings(intr.user.id)
-        usage = get_gpt_usage(intr.user.id)
+        settings = await self.get_gpt_settings(intr.user.id)
+        usage = await self.get_gpt_usage(intr.user.id)
 
-        if usage and usage >= gpt_usage_limit:
+        if usage and usage['usage'] >= gpt_usage_limit:
             await intr.response.send_message(LIMIT, ephemeral=True)
             return
 
         if not settings:
             model_engine = model_engines.get('davinci')
             max_tokens = 256
+            await self.save_gpt_settings({'_id': intr.user.id,
+                                          'model': model_engine,
+                                          'max_tokens': max_tokens})
         else:
             model_engine = settings['model']
             max_tokens = settings['max_tokens']
@@ -80,7 +89,7 @@ class GPT(commands.Cog, name="gpt"):
             await intr.edit_original_response(embed=em)
             ttl_tok = max(int(completion.usage.total_tokens *
                           multipliers.get(model_engine)), 1)
-            add_usage(intr.user.id, ttl_tok)
+            await self.add_usage(intr.user.id, ttl_tok)
             lg.info(
                 f"GPT used by {intr.user.name}. ({ttl_tok} tokens)")
         except RateLimitError as e:
@@ -92,47 +101,40 @@ class GPT(commands.Cog, name="gpt"):
     @app_commands.command(name='gptsettings',
                           description="Set your preferences for GPT Prompts")
     @app_commands.choices(model=model_engines_choices)
-    async def gptsettings(self, int: discord.Interaction,
-                          model: app_commands.Choice[str],
-                          max_tokens: int = 256):
+    async def setgptsettings(self, int: discord.Interaction,
+                             model: app_commands.Choice[str],
+                             max_tokens: int = 256):
         if max_tokens > 1024 or max_tokens < 128:
             await int.response.send_message(
                 "Max tokens can be between 128 and 1024. Please try again")
             return
-        user_settings = {"model": model.value, "max_tokens": max_tokens}
-        save_gpt_settings(int.user.id, user_settings)
+        user_settings = {"_id": int.user.id, "model": model.value,
+                         "max_tokens": max_tokens}
+        await self.save_gpt_settings(user_settings)
         await int.response.send_message("GPT Settings saved.", ephemeral=True)
 
+    async def save_gpt_settings(self, user_settings):
+        await self.gptset.update_one({'_id': user_settings.get('_id')},
+                                     {"$set": user_settings}, True)
 
-def save_gpt_settings(id, user_settings):
-    id = str(id)
-    settings = get_gpt_settings(None)
-    settings[id] = user_settings
-    save_json_file(settings, get_file(GPT_SETTINGS_FILE))
+    async def get_gpt_settings(self, user_id):
+        return await self.gptset.find_one({'_id': user_id})
 
+    async def add_usage(self, user_id, ttl_tok):
+        usage = await self.get_gpt_usage(user_id)
 
-def get_gpt_settings(id):
-    settings = load_json_file(get_file(GPT_SETTINGS_FILE))
-    if not id:
-        return settings
-    return settings.get(str(id))
+        if usage:
+            usage['usage'] = usage['usage'] + ttl_tok
+        else:
+            usage = {'_id': user_id, 'usage': ttl_tok}
 
+        await self.gptusage.update_one({'_id': user_id}, {"$set": usage}, True)
 
-def add_usage(id, tokens):
-    id = str(id)
-    usage = get_gpt_usage(None)
-    if not usage.get(id):
-        usage[id] = tokens
-    else:
-        usage[id] = usage.get(id) + tokens
-    save_json_file(usage, get_file(GPT_USAGE_FILE))
+    async def get_gpt_usage(self, user_id):
+        return await self.gptusage.find_one({'_id': user_id})
 
-
-def get_gpt_usage(id):
-    usage = load_json_file(get_file(GPT_USAGE_FILE))
-    if not id:
-        return usage
-    return usage.get(str(id))
+    async def reset_usage(self):
+        return await self.gptusage.drop()
 
 
 async def setup(client: commands.Bot):

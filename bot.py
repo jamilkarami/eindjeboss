@@ -1,22 +1,56 @@
 import asyncio
-import discord
 import logging
 import os
 import shutil
 import time
-from discord.ext import commands
-from dotenv import load_dotenv
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+import discord
+from discord.ext import commands
+from dotenv import load_dotenv
+
+from util.db import DbManager
+
+load_dotenv()
 TEMP = "temp"
+STATUS = os.getenv("BOT_STATUS")
+FILE_DIR = os.getenv("FILE_DIR")
+
+
+class Eindjeboss(commands.Bot):
+
+    def __init__(self) -> None:
+        intents = discord.Intents.all()
+        activity = discord.Activity(
+            type=discord.ActivityType.listening, detail="", name=STATUS)
+        super().__init__(command_prefix="!", case_insensitive=True,
+                         intents=intents, activity=activity)
+
+    async def setup_hook(self):
+        if hasattr(time, 'tzset'):
+            os.environ['TZ'] = 'Europe/Amsterdam'
+            time.tzset()
+
+        if os.path.exists(TEMP) and os.path.isdir(TEMP):
+            shutil.rmtree(TEMP)
+        shutil.copytree("default_files", FILE_DIR, dirs_exist_ok=True)
+
+        self.dbmanager = DbManager()
+        await self.load_extensions()
+        await self.tree.sync()
+
+    async def load_extensions(self):
+        for filename in os.listdir("./cogs"):
+            if not filename.endswith('py'):
+                continue
+            extension_name = f"cogs.{filename[:-3]}"
+            logging.info(f"Loading extension: {extension_name}")
+            await self.load_extension(extension_name)
 
 
 async def main():
-    load_dotenv()
     TOKEN = os.getenv("DISCORD_TOKEN")
-    STATUS = os.getenv("BOT_STATUS")
-    FILE_DIR = os.getenv("FILE_DIR")
 
     logging_file_name = f"{FILE_DIR}/logs/eindjeboss.log"
 
@@ -31,44 +65,13 @@ async def main():
 
     discord.utils.setup_logging(handler=log_handler, formatter=log_format)
 
-    intents = discord.Intents.all()
-    activity = discord.Activity(
-        type=discord.ActivityType.listening, detail="", name=STATUS
-    )
-    intents.members = True
-    client = commands.Bot(
-        command_prefix="!", case_insensitive=True,
-        intents=intents, activity=activity
-    )
+    client = Eindjeboss()
 
     @client.event
     async def on_ready():
         print(f"{client.user.name} is ready to serve.")
 
-    @client.event
-    async def on_connect():
-        print(f"{client.user.name} has connected to discord!")
-        if hasattr(time, 'tzset'):
-            os.environ['TZ'] = 'Europe/Amsterdam'
-            time.tzset()
-        await client.tree.sync()
-
-    async def load_extensions():
-        for filename in os.listdir("cogs"):
-            if not filename.endswith("py"):
-                continue
-            extension_name = f"cogs.{filename[:-3]}"
-            logging.info("Loading extension: %s" % extension_name)
-            await client.load_extension(extension_name)
-
-    def prepare_files():
-        if os.path.exists(TEMP) and os.path.isdir(TEMP):
-            shutil.rmtree(TEMP)
-        shutil.copytree("default_files", FILE_DIR, dirs_exist_ok=True)
-
     async with client:
-        prepare_files()
-        await load_extensions()
         await client.start(TOKEN)
 
 
