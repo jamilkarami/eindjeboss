@@ -77,7 +77,7 @@ class MainHelpView(discord.ui.View):
             content=None, embed=mk_l_embed('Miscellaneous'), view=MiscView())
 
 
-class HelpView(discord.ui.View):
+class CategoryView(discord.ui.View):
 
     def __init__(self):
         super().__init__()
@@ -90,7 +90,7 @@ class HelpView(discord.ui.View):
                                         view=MainHelpView())
 
 
-class GPTView(HelpView):
+class GPTView(CategoryView):
 
     @discord.ui.button(label="/gpt", style=discord.ButtonStyle.green,
                        row=0)
@@ -111,7 +111,7 @@ class GPTView(HelpView):
         self.help_text = HELP_TEXT.get('GPT')
 
 
-class ImageView(HelpView):
+class ImageView(CategoryView):
 
     @discord.ui.button(label="/img", style=discord.ButtonStyle.green, row=0)
     async def help_img(self, intr: discord.Interaction,
@@ -131,7 +131,7 @@ class ImageView(HelpView):
         self.help_text = HELP_TEXT.get('Images')
 
 
-class MiscView(HelpView):
+class MiscView(CategoryView):
 
     @discord.ui.button(label="/focus", style=discord.ButtonStyle.green,
                        row=0)
@@ -173,17 +173,20 @@ class MiscView(HelpView):
         self.help_text = HELP_TEXT.get('Misc')
 
 
-class MusicView(HelpView):
+class MusicView(CategoryView):
+
+    @discord.ui.button(label="/lyrics", style=discord.ButtonStyle.green, row=0)
+    async def help_ly(self, intr: discord.Interaction, btn: discord.ui.Button):
+        embed = mk_embed(btn.label, self.help_text.get(btn.label), False)
+        await intr.response.edit_message(embed=embed)
 
     @discord.ui.button(label="/spc", style=discord.ButtonStyle.green, row=0)
-    async def help_cu(self, intr: discord.Interaction, btn:
-                      discord.ui.Button):
+    async def help_cu(self, intr: discord.Interaction, btn: discord.ui.Button):
         embed = mk_embed(btn.label, self.help_text.get(btn.label), False)
         await intr.response.edit_message(embed=embed)
 
     @discord.ui.button(label="/sp", style=discord.ButtonStyle.green, row=0)
-    async def help_sp(self, intr: discord.Interaction,
-                      btn: discord.ui.Button):
+    async def help_sp(self, intr: discord.Interaction, btn: discord.ui.Button):
         embed = mk_embed(btn.label, self.help_text.get(btn.label), False)
         await intr.response.edit_message(embed=embed)
 
@@ -192,7 +195,7 @@ class MusicView(HelpView):
         self.help_text = HELP_TEXT.get('Music')
 
 
-class PollView(HelpView):
+class PollView(CategoryView):
 
     @discord.ui.button(label="/poll", style=discord.ButtonStyle.green, row=0)
     async def help_poll(self, intr: discord.Interaction,
@@ -211,7 +214,7 @@ class PollView(HelpView):
         self.help_text = HELP_TEXT.get('Polls')
 
 
-class RedditView(HelpView):
+class RedditView(CategoryView):
 
     @discord.ui.button(label="/randomcat", style=discord.ButtonStyle.green,
                        row=0)
@@ -246,7 +249,7 @@ class RedditView(HelpView):
         self.help_text = HELP_TEXT.get('Reddit')
 
 
-class ReminderView(HelpView):
+class ReminderView(CategoryView):
 
     @discord.ui.button(label="/remindme", style=discord.ButtonStyle.green,
                        row=0)
@@ -275,7 +278,7 @@ class ReminderView(HelpView):
         self.help_text = HELP_TEXT.get('Reminders')
 
 
-class RNGView(HelpView):
+class RNGView(CategoryView):
 
     @discord.ui.button(label="/8ball", style=discord.ButtonStyle.green, row=0)
     async def help_8ball(self, intr: discord.Interaction,
@@ -307,7 +310,7 @@ class RNGView(HelpView):
         self.help_text = HELP_TEXT.get('RNG')
 
 
-class TranslateView(HelpView):
+class TranslateView(CategoryView):
 
     @discord.ui.button(label="!tr", style=discord.ButtonStyle.green,
                        row=0)

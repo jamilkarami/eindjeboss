@@ -171,7 +171,7 @@ class Reminder(commands.Cog):
         else:
             hour, minute = tm.split(':')
             cron_time = f"{minute} {hour} * * *"
-            crontab(cron_time, self.notify_users, args=(rem_id), start=True)
+            crontab(cron_time, self.notify_users, args=(rem_id,), start=True)
 
     async def notify_users(self, rem_id):
         rem = get_reminder(rem_id)

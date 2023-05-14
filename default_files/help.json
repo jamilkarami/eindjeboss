@@ -49,6 +49,10 @@
         }
     },
     "Music": {
+        "/lyrics": {
+            "Description": "Sends the lyrics of the song that matches your query the most.",
+            "Example": "```/lyrics Mazie - dumb dumb\n\nResponse: Disappointment takes us by surprise...```"
+        },
         "/spc": {
             "Description": "Sends a link to the song you're currently listening to on Spotify.",
             "Example": "```/spc\n\nResponse: https://open.spotify.com/track/3tsD0AXz90ghHzJAvXPHcW?si=fb110d4abd37479d```",
