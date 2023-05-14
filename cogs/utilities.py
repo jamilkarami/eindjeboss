@@ -2,9 +2,7 @@ import ast
 import discord
 import logging as lg
 import operator as op
-import os
 import re
-from discord import app_commands
 from discord.ext import commands
 from util.vars.eind_vars import CHANNEL_IGNORE_LIST
 
