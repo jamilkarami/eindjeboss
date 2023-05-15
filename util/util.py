@@ -2,7 +2,10 @@ import json
 import os
 import urllib.request
 import uuid
+
 from colorthief import ColorThief
+from table2ascii import PresetStyle
+from table2ascii import table2ascii as t2a
 
 
 def load_json_file(path):
@@ -17,6 +20,21 @@ def save_json_file(data, path):
     f = open(path, "w")
     output = json.dumps(data, indent=4)
     print(output, file=f)
+
+
+def tabulate(headers, data, fields):
+    body = []
+
+    for item in data:
+        body.append([item[field] for field in fields])
+
+    output = t2a(
+        header=headers,
+        body=body,
+        style=PresetStyle.thin_thick_rounded
+    )
+
+    return output
 
 
 def get_file(path):

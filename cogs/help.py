@@ -36,6 +36,11 @@ class MainHelpView(discord.ui.View):
         await intr.response.edit_message(
             content=None, embed=mk_l_embed('GPT'), view=GPTView())
 
+    @discord.ui.button(label="Help", style=discord.ButtonStyle.blurple)
+    async def help(self, intr: discord.Interaction, btn: discord.ui.button):
+        await intr.response.edit_message(
+            content=None, embed=mk_l_embed('Help'), view=HelpView())
+
     @discord.ui.button(label="Images", style=discord.ButtonStyle.blurple)
     async def images(self, intr: discord.Interaction, btn: discord.ui.button):
         await intr.response.edit_message(
@@ -88,6 +93,27 @@ class CategoryView(discord.ui.View):
         await int.response.edit_message(content=None,
                                         embed=get_main_embed(),
                                         view=MainHelpView())
+
+
+class HelpView(CategoryView):
+
+    @discord.ui.button(label="/help", style=discord.ButtonStyle.green,
+                       row=0)
+    async def help_help(self, intr: discord.Interaction,
+                        btn: discord.ui.Button):
+        embed = mk_embed(btn.label, self.help_text.get(btn.label), False)
+        await intr.response.edit_message(embed=embed)
+
+    @discord.ui.button(label="/ticket", style=discord.ButtonStyle.green,
+                       row=0)
+    async def help_ticket(self, intr: discord.Interaction,
+                          btn: discord.ui.Button):
+        embed = mk_embed(btn.label, self.help_text.get(btn.label), False)
+        await intr.response.edit_message(embed=embed)
+
+    def __init__(self):
+        super().__init__()
+        self.help_text = HELP_TEXT.get('Help')
 
 
 class GPTView(CategoryView):
