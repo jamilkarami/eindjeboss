@@ -125,7 +125,7 @@ class Reminder(commands.Cog):
         for reminder in rems:
             if not reminder['daily'] and reminder['time'] < time.time():
                 await self.delete_reminder(reminder['_id'])
-            await self.start_reminder(reminder)
+            self.loop.create_task(self.start_reminder(reminder))
 
     async def add_user_to_reminder(self, rem_id, user_id):
         rem = await self.get_reminder(rem_id)
