@@ -16,6 +16,23 @@
             "If you're looking for something related to Arnol that you don't find here, feel free to reach out to the mods/admins."
         ]
     },
+    "Help": {
+        "/help": {
+            "Description": "Open this help menu",
+            "Example": "```/help```"
+        },
+        "/ticket": {
+            "Description": "Opens a support ticket to be checked by the mods/admins",
+            "Example": "```/ticket```",
+            "Details": [
+                "This command opens a modal in front of you that lets you fill in the ticket title and a description.",
+                "Tickets can be anything from feedback to reporting rule-breaking behavior.",
+                "Try to be clear and descriptive to ensure the process is as smooth as possible.",
+                "",
+                "**Please do NOT abuse this command.**"
+            ]
+        }
+    },
     "GPT": {
         "/gptsettings": {
             "Description": "Modify your ChatGPT settings",
