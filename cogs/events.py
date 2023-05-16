@@ -10,6 +10,7 @@ from colorthief import ColorThief
 from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageEnhance
 from typing import List
+from discord import app_commands
 
 ANNOUNCEMENT_CH_ID = int(os.getenv('EVENT_ANNOUNCEMENT_CHANNEL_ID'))
 EVENTS_FORUM_ID = int(os.getenv('EVENTS_FORUM_ID'))
@@ -49,24 +50,44 @@ class Events(commands.Cog):
         lg.info(f"[{__name__}] Cog is ready")
 
     @commands.Cog.listener()
-    async def on_thread_create(self, th: discord.Thread):
-        f_ch = await th.guild.fetch_channel(EVENTS_FORUM_ID)
-        if th.parent_id != EVENTS_FORUM_ID:
+    async def on_thread_create(self, thread: discord.Thread):
+        if thread.parent_id != EVENTS_FORUM_ID:
+            return
+        await self.announce_event(thread)
+
+    @app_commands.command(name="announceevent")
+    async def announceevent(self, intr: discord.Interaction,
+                            thread: discord.Thread,
+                            img_override: str = None):
+        await intr.response.defer(ephemeral=True)
+        if thread.parent_id != EVENTS_FORUM_ID:
+            await intr.followup.send(
+                "This thread is not in the events forum", ephemeral=True)
+            return
+        try:
+            await self.announce_event(thread, img_override)
+            await intr.followup.send('Done.', ephemeral=True)
+        except Exception:
+            await intr.followup.send("Failed to announce. Check the image.",
+                                     ephemeral=True)
+
+    async def announce_event(self, thread: discord.Thread,
+                             img: str = None):
+        f_ch = await thread.guild.fetch_channel(EVENTS_FORUM_ID)
+        if thread.parent_id != EVENTS_FORUM_ID:
             return
 
-        alert_channel = await th.guild.fetch_channel(ANNOUNCEMENT_CH_ID)
-        ev_rl = discord.utils.get(th.guild.roles, id=EVENTS_ROLE_ID)
+        alert_channel = await thread.guild.fetch_channel(ANNOUNCEMENT_CH_ID)
+        ev_rl = discord.utils.get(thread.guild.roles, id=EVENTS_ROLE_ID)
         await asyncio.sleep(3)
 
-        img = await get_img(th)
+        img = await get_img(thread) if not img else download_img_from_url(img)
 
-        alert_msg = ALERT % (ev_rl.mention, f_ch.mention, th.mention)
+        alert_msg = ALERT % (ev_rl.mention, f_ch.mention, thread.mention)
 
-        output_img = make_ev_img(img, th.name, th.applied_tags)
+        output_img = make_ev_img(img, thread.name, thread.applied_tags)
         await alert_channel.send(alert_msg, file=discord.File(output_img))
-        lg.info("Sent event alert for event %s", th.name)
 
-        os.remove(img)
         os.remove(output_img)
 
 
@@ -179,7 +200,7 @@ def is_dark(color):
 
 async def get_img(thread: discord.Thread):
     await asyncio.sleep(3)
-    msg = thread.starter_message
+    msg = await thread.fetch_message(thread.id)
     if msg.attachments:
         return download_img_from_url(msg.attachments[0].url)
     if msg.embeds:
