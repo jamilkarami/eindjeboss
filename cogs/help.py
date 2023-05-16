@@ -104,10 +104,10 @@ class HelpView(CategoryView):
         embed = mk_embed(btn.label, self.help_text.get(btn.label), False)
         await intr.response.edit_message(embed=embed)
 
-    @discord.ui.button(label="/ticket", style=discord.ButtonStyle.green,
+    @discord.ui.button(label="/modmail", style=discord.ButtonStyle.green,
                        row=0)
-    async def help_ticket(self, intr: discord.Interaction,
-                          btn: discord.ui.Button):
+    async def help_modmail(self, intr: discord.Interaction,
+                           btn: discord.ui.Button):
         embed = mk_embed(btn.label, self.help_text.get(btn.label), False)
         await intr.response.edit_message(embed=embed)
 

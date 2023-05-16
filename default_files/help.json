@@ -21,12 +21,12 @@
             "Description": "Open this help menu",
             "Example": "```/help```"
         },
-        "/ticket": {
-            "Description": "Opens a support ticket to be checked by the mods/admins",
-            "Example": "```/ticket```",
+        "/modmail": {
+            "Description": "Opens a ticket to be checked by the mods/admins",
+            "Example": "```/modmail```",
             "Details": [
                 "This command opens a modal in front of you that lets you fill in the ticket title and a description.",
-                "Tickets can be anything from feedback to reporting rule-breaking behavior.",
+                "Tickets can be anything from feedback, to suggestions, to reporting rule-breaking behavior.",
                 "Try to be clear and descriptive to ensure the process is as smooth as possible.",
                 "",
                 "**Please do NOT abuse this command.**"

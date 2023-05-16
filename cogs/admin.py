@@ -67,8 +67,8 @@ class Admin(commands.Cog):
         await intr.response.send_message("Done.", ephemeral=True)
         lg.info("Sent logs to %s", intr.user.name)
 
-    @app_commands.command(name="ticket")
-    async def ticket(self, intr: discord.Interaction):
+    @app_commands.command(name="modmail")
+    async def modmail(self, intr: discord.Interaction):
         await intr.response.send_modal(self.TicketModal(self.tickets))
         lg.info("Sent ticket modal to %s", intr.user.display_name)
 
