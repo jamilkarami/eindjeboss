@@ -69,7 +69,8 @@ class Events(commands.Cog):
         try:
             await self.announce_event(thread, img_override)
             await intr.followup.send('Done.', ephemeral=True)
-        except Exception:
+        except Exception as e:
+            lg.exception(e)
             await intr.followup.send("Failed to announce. Check the image.",
                                      ephemeral=True)
 
@@ -183,7 +184,8 @@ def download_img_from_url(url):
     img_filename = "temp/temp_%s.jpg" % img_id
 
     response = requests.get(url, stream=True)
-    with open(img_filename, 'wb') as out_file:
+    os.makedirs(os.path.dirname(img_filename), exist_ok=True)
+    with open(img_filename, 'wb+') as out_file:
         shutil.copyfileobj(response.raw, out_file)
     del response
 
