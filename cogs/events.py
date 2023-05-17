@@ -1,16 +1,18 @@
 import asyncio
-import discord
 import logging as lg
 import os
-import urllib.request
+import shutil
 import uuid
-from bing_image_downloader import downloader
-from colorsys import rgb_to_hsv, hsv_to_rgb
-from colorthief import ColorThief
-from discord.ext import commands
-from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageEnhance
+from colorsys import hsv_to_rgb, rgb_to_hsv
 from typing import List
+
+import discord
+import requests
+from bing_image_downloader import downloader
+from colorthief import ColorThief
 from discord import app_commands
+from discord.ext import commands
+from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 
 ANNOUNCEMENT_CH_ID = int(os.getenv('EVENT_ANNOUNCEMENT_CHANNEL_ID'))
 EVENTS_FORUM_ID = int(os.getenv('EVENTS_FORUM_ID'))
@@ -180,11 +182,10 @@ def download_img_from_url(url):
     img_id = uuid.uuid4()
     img_filename = "temp/temp_%s.jpg" % img_id
 
-    opener = urllib.request.build_opener()
-    opener.addheaders = [('User-agent', "Mozilla/5.0 (Windows NT 6.1)")]
-
-    urllib.request.install_opener(opener)
-    urllib.request.urlretrieve(url, img_filename)
+    response = requests.get(url, stream=True)
+    with open(img_filename, 'wb') as out_file:
+        shutil.copyfileobj(response.raw, out_file)
+    del response
 
     return img_filename
 
