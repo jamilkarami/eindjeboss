@@ -1,16 +1,18 @@
-import discord
+import json
 import logging as lg
 import os
-import requests
+from datetime import date, datetime
+
 import dateparser
-import json
+import discord
+import requests
 from aiocron import crontab
-from datetime import datetime, date
 from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
-from util.util import load_json_file, get_file
-from util.vars.periodic_reminders import WEATHER_DT, PSV_DT, ALERT_DT
+
+from util.util import get_file, load_json_file
 from util.vars.eind_vars import PERIODIC_MESSAGES_FILE
+from util.vars.periodic_reminders import ALERT_DT, PSV_DT, WEATHER_DT
 
 FILE_DIR = os.getenv('FILE_DIR')
 
@@ -52,13 +54,13 @@ SZ_SML_TTL = 14
 SIZE_VALUE = 28
 
 # PSV games
+STADION_ID = int(os.getenv("STADION_ID"))
 PSV_TEAM_ID = os.getenv("PSV_TEAM_ID")
 FIXTURES_URL = os.getenv("FOOTBALL_API_FIXTURES_URL")
 FOOTBALL_API_KEY = os.getenv("FOOTBALL_API_KEY")
 X_RAPID_API_HOST = os.getenv("X_RAPID_API_HOST")
-MATCH_STR = "**PSV Eindhoven** will be playing in **%s** against **%s**\
- at **Philips Stadion** today at **%s**. Expect heavy traffic around the\
- stadium."
+MATCH_STR = ("**%s** and **%s** will be playing at %s as part of the **%s**"
+             " at **%s**. Expect heavy traffic around the stadium.")
 
 WARNING_SIREN_MSG = "The public warning sirens will be tested today at 12:00."
 WARNING_SIREN_LINK = ("https://www.government.nl/topics/counterterrorism-and-"
@@ -206,12 +208,14 @@ class Periodics(commands.Cog):
         return txt_img
 
     async def check_psv_game(self):
-        today = date.today().strftime('%Y-%m-%d')
+        today = date.today()
 
-        query_string = {"season": "2022", "team": PSV_TEAM_ID,
+        season_year = today.year-1 if today.month < 7 else today.year
+
+        query_string = {"season": season_year,
                         "timezone": "Europe/Amsterdam",
-                        "from": today,
-                        "to": today}
+                        "date": today.strftime('%Y-%m-%d'),
+                        "venue": int(STADION_ID)}
         channel = await self.client.fetch_channel(CHANNEL_ID)
 
         headers = {
@@ -224,21 +228,17 @@ class Periodics(commands.Cog):
         content = json.loads(response.content)
 
         if not content['response']:
-            lg.info("PSV is not playing today.")
             return
 
-        if str(content['response'][0]['teams']['home']['id']) != PSV_TEAM_ID:
-            lg.info("PSV is playing today, but not at home")
-            return
-
-        dt = content['response'][0]['fixture']['date']
+        home = content['response'][0]['teams']['home']['name']
+        away = content['response'][0]['teams']['away']['name']
         competition = content['response'][0]['league']['name']
-
+        dt = content['response'][0]['fixture']['date']
         match_time = dateparser.parse(dt).strftime("%H:%M")
-        opponent = content['response'][0]['teams']['away']['name']
 
-        warning_msg = MATCH_STR % (competition, opponent, match_time)
-        lg.info("PSV is playing in Philips Stadion today.")
+        warning_msg = MATCH_STR % (home, away, "Philips Stadion", competition,
+                                   match_time)
+        lg.info("There is match playing at Philips Stadion today.")
         await channel.send(warning_msg)
 
 

@@ -62,13 +62,11 @@ class Reminder(commands.Cog):
         await self.save_reminder(reminder)
 
         if daily:
-            await intr.followup.send(
-                f"I will remind you of **{msg}** daily at **{p_time}** :timer:"
-            )
-            return
-        await intr.followup.send(
-            f"I will remind you of **{msg}** on **{p_day}** :timer:",
-            view=ReminderView(rem_id, self))
+            r = f"I will remind you of **{msg}** daily at **{p_time}** :timer:"
+        else:
+            r = f"I will remind you of **{msg}** on **{p_day}** :timer:",
+
+        await intr.followup.send(r, view=ReminderView(rem_id, self))
 
     @app_commands.command(name="myreminders",
                           description="Get a list of your active reminders.")
