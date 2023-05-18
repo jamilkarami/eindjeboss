@@ -105,7 +105,7 @@ class Messages(commands.Cog, name="Messages"):
             await msg.reply(f"Respect tables. {TABLE_FIX}")
             return
 
-        if msg_cont == "ok":
+        if msg_cont == "ok" or msg_cont == "--- -.-":
             await msg.add_reaction(WICKED_EMOJI)
             return
 
