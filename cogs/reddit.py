@@ -58,6 +58,9 @@ reddit = asyncpraw.Reddit(
 
 class Reddit(commands.Cog):
 
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+
     @commands.Cog.listener()
     async def on_ready(self):
         lg.info("[%s] Cog is ready", __name__)
@@ -69,11 +72,8 @@ class Reddit(commands.Cog):
                 args=(FOOD_CHANNEL_ID, FOOD, True), start=True)
         crontab(REDDIT_EINDHOVEN_DT, self.monitor_feed, start=True)
 
-    def __init__(self, client: discord.Client):
-        self.client = client
-
     async def monitor_feed(self):
-        guild = await self.client.fetch_guild(guild_id)
+        guild = await self.bot.fetch_guild(guild_id)
         channel = await guild.fetch_channel(channel_id)
 
         posts = requests.get(
@@ -127,7 +127,7 @@ class Reddit(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author == self.client.user:
+        if message.author == self.bot.user:
             return
         if message.channel.name in CHANNEL_IGNORE_LIST:
             return
@@ -176,7 +176,7 @@ class Reddit(commands.Cog):
         return chosen_post.url
 
     async def schedule_pic(self, channel_id, subs, include_title):
-        channel = await self.client.fetch_channel(channel_id)
+        channel = await self.bot.fetch_channel(channel_id)
         sub_name = subs if str == type(subs) else random.choice(subs)
         subreddit = await reddit.subreddit(sub_name)
 
@@ -230,5 +230,5 @@ def mk_embed(title, emb_url, description=None):
     return embed
 
 
-async def setup(client: discord.Client):
+async def setup(client: commands.Bot):
     await client.add_cog(Reddit(client))

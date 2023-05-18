@@ -44,8 +44,8 @@ ALERT = "%s New event added in %s! check it out here: %s"
 
 class Events(commands.Cog):
 
-    def __init__(self, client: discord.Client):
-        self.client = client
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_ready(self):

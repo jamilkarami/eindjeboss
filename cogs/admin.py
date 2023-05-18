@@ -21,9 +21,10 @@ D_FMT = "%Y-%m-%d %H:%M"
 
 
 class Admin(commands.Cog):
-    def __init__(self, client: discord.Client):
-        self.client = client
-        self.tickets = self.client.dbmanager.get_collection('tickets')
+
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+        self.tickets = self.bot.dbmanager.get_collection('tickets')
 
     @commands.Cog.listener()
     async def on_ready(self):

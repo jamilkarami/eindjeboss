@@ -71,8 +71,8 @@ WARNING_SIREN_BUTTON_LABEL = "Click here for more information"
 
 class Periodics(commands.Cog):
 
-    def __init__(self, client: discord.Client):
-        self.client = client
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -85,7 +85,7 @@ class Periodics(commands.Cog):
 
     async def schedule_periodic_messages(self):
         guild_id = os.getenv("GUILD_ID")
-        guild = await self.client.fetch_guild(guild_id)
+        guild = await self.bot.fetch_guild(guild_id)
         periodics = load_json_file(get_file(PERIODIC_MESSAGES_FILE))
         cnt = len(periodics.keys())
         for periodic in periodics.keys():
@@ -101,7 +101,7 @@ class Periodics(commands.Cog):
             f"[{__name__}] Scheduled {cnt} periodic message{'s'[:cnt ^ 1]}")
 
     async def send_siren_alert(self):
-        channel = await self.client.fetch_channel(CHANNEL_ID)
+        channel = await self.bot.fetch_channel(CHANNEL_ID)
         if datetime.today().weekday() == 0:
             view = discord.ui.View()
             view.add_item(discord.ui.Button(label=WARNING_SIREN_BUTTON_LABEL,
@@ -117,7 +117,7 @@ class Periodics(commands.Cog):
     async def send_weather_forecast(self):
         today = datetime.today().strftime('%d-%m-%Y')
         title = f"Weather in {CITY_NAME} Today ({today})"
-        channel = await self.client.fetch_channel(CHANNEL_ID)
+        channel = await self.bot.fetch_channel(CHANNEL_ID)
         weather_url = f"{BASE_URL}q={CITY_QUERY}&appid={OW}&cnt=6&units={UNIT}"
         response = requests.get(weather_url)
         weather_info = response.json()
@@ -216,7 +216,7 @@ class Periodics(commands.Cog):
                         "timezone": "Europe/Amsterdam",
                         "date": today.strftime('%Y-%m-%d'),
                         "venue": int(STADION_ID)}
-        channel = await self.client.fetch_channel(CHANNEL_ID)
+        channel = await self.bot.fetch_channel(CHANNEL_ID)
 
         headers = {
             "X-RapidAPI-Key": FOOTBALL_API_KEY,

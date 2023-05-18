@@ -12,8 +12,8 @@ CURRENT_F1 = "http://ergast.com/api/f1/current.json"
 
 class F1(commands.Cog):
 
-    def __init__(self, client: discord.Client):
-        self.client = client
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_ready(self):

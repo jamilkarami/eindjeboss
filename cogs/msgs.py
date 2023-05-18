@@ -29,8 +29,8 @@ have/has sent in total in this server."
 
 class Messages(commands.Cog, name="Messages"):
 
-    def __init__(self, client: discord.Client):
-        self.client = client
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -82,7 +82,7 @@ class Messages(commands.Cog, name="Messages"):
 
     @commands.Cog.listener()
     async def on_message(self, msg):
-        if msg.author == self.client.user:
+        if msg.author == self.bot.user:
             return
         if msg.channel.id in CHANNEL_IGNORE_LIST:
             return
@@ -136,7 +136,7 @@ class Messages(commands.Cog, name="Messages"):
         message = ""
 
         for user in users:
-            if user.id != self.client.user.id:
+            if user.id != self.bot.user.id:
                 message = message + f"<@{user.id}> "
         await intr.response.send_message(message)
         lg.info("Tagged everyone in thread %s on behalf of %s",

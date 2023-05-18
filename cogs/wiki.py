@@ -11,8 +11,8 @@ class Wiki(commands.Cog):
 
     wiki_summary: WikipediaSummary
 
-    def __init__(self, client: discord.Client):
-        self.client = client
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
         self.wiki_summary = WikipediaSummary()
 
     @commands.Cog.listener()

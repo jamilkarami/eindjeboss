@@ -3,7 +3,6 @@ import logging as lg
 import operator as op
 import re
 
-import discord
 from discord.ext import commands
 
 from util.vars.eind_vars import CHANNEL_IGNORE_LIST
@@ -17,8 +16,8 @@ operators = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
 
 class Utilities(commands.Cog):
 
-    def __init__(self, client: discord.Client):
-        self.client = client
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -26,7 +25,7 @@ class Utilities(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author == self.client.user:
+        if message.author == self.bot.user:
             return
         if message.channel.id in CHANNEL_IGNORE_LIST:
             return

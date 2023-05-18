@@ -21,8 +21,8 @@ SP_ICON = "https://i.imgur.com/XX2a6pf.png"
 
 class Music(commands.Cog):
 
-    def __init__(self, client: commands.Bot):
-        self.client = client
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_ready(self):

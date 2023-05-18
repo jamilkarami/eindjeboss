@@ -11,8 +11,8 @@ HELP_TEXT = load_json_file(get_file('help.json'))
 
 class Help(commands.Cog, name="help"):
 
-    def __init__(self, client):
-        self.bot = client
+    def __init__(self, bot):
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_ready(self):

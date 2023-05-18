@@ -78,4 +78,4 @@ async def main():
 try:
     asyncio.run(main())
 except KeyboardInterrupt:
-    print("Eindjeboss powering down...")
+    print("Powering down...")

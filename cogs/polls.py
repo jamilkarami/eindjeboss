@@ -10,8 +10,8 @@ from util.vars.eind_vars import NO_EMOJI, NUMBER_EMOJIS, YES_EMOJI
 
 class Polls(commands.Cog):
 
-    def __init__(self, client):
-        self.bot = client
+    def __init__(self, bot):
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_ready(self):

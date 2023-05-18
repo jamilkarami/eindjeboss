@@ -26,12 +26,13 @@ CH_DESC = "Let Arnol choose! Handy for when you don't know what to pick."
 
 
 class Casino(commands.Cog):
-    def __init__(self, client: discord.Client):
-        self.client = client
+
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_message(self, msg):
-        if msg.author == self.client.user:
+        if msg.author == self.bot.user:
             return
         if msg.channel.name in CHANNEL_IGNORE_LIST:
             return

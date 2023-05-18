@@ -23,9 +23,9 @@ DATE_PARSER_SETTINGS_AMS = {'PREFER_DATES_FROM': 'future',
 class Reminder(commands.Cog):
     loop = asyncio.get_running_loop()
 
-    def __init__(self, client: discord.Client):
-        self.client = client
-        self.reminders = self.client.dbmanager.get_collection('reminders')
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+        self.reminders = self.bot.dbmanager.get_collection('reminders')
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -177,7 +177,7 @@ class Reminder(commands.Cog):
         rem = await self.reminders.find_one({'_id': rem_id})
         if not rem:
             return
-        guild = await self.client.fetch_guild(rem['guild'])
+        guild = await self.bot.fetch_guild(rem['guild'])
         reminder_channel = await guild.fetch_channel(REMINDER_CHANNEL_ID)
 
         users = [await guild.fetch_member(user_id) for user_id in rem['users']]

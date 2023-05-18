@@ -36,8 +36,8 @@ LIMIT = "You have reached the usage limit for ChatGPT. Please try again later."
 
 class GPT(commands.Cog, name="gpt"):
 
-    def __init__(self, client):
-        self.bot = client
+    def __init__(self, bot):
+        self.bot = bot
         self.gptusage = self.bot.dbmanager.get_collection('gptusage')
         self.gptset = self.bot.dbmanager.get_collection('gptsettings')
         openai.api_key = GPT_TOKEN

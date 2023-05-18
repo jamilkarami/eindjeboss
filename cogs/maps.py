@@ -14,8 +14,8 @@ PHOTOS_URL = "https://maps.googleapis.com/maps/api/place/photo"
 
 class Maps(commands.Cog, name="maps"):
 
-    def __init__(self, client):
-        self.bot = client
+    def __init__(self, bot):
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_ready(self):
