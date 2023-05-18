@@ -99,13 +99,24 @@ class Reddit(commands.Cog):
                     emb.set_footer(
                         text=f"Posted by {post['data']['author']}")
                 elif post['data']['is_video']:
+                    url = post['data']['thumbnail']
+
                     emb = mk_embed(post['data']['title'], perm)
-                    emb.set_image(url=post['data']['thumbnail'])
+                    emb.set_image(url=url
+                                  if url.startswith('https://') else None)
                     emb.set_footer(
                         text=f"Video posted by {post['data']['author']}")
                 else:  # image post
+                    url = post['data']['url']
+
+                    if not url.startswith('https://'):
+                        if url.startswith('/r/'):
+                            url = 'https://www.reddit.com%s' % url
+                        else:
+                            url = None
+
                     emb = mk_embed(post['data']['title'], perm)
-                    emb.set_image(url=post['data']['url'])
+                    emb.set_image(url=url)
                     emb.set_footer(
                         text=f"Image posted by {post['data']['author']}")
 
