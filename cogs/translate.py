@@ -1,13 +1,15 @@
-import discord
 import logging as lg
 import os
 import re
 import uuid
-from discord.ext import commands
+
+import discord
 from discord import app_commands
+from discord.ext import commands
 from googletrans import Translator
 from googletrans.constants import LANGUAGES
 from paddleocr import PaddleOCR
+
 from util.vars.eind_vars import CHANNEL_IGNORE_LIST
 
 translator = Translator()

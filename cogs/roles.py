@@ -1,7 +1,8 @@
-import discord
 import logging as lg
-from discord.ext import commands
+
+import discord
 from discord import app_commands
+from discord.ext import commands
 
 FOCUS_DESC = "Limits your view to the conversation channels"
 

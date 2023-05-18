@@ -1,12 +1,14 @@
-import discord
 import logging as lg
+
+import discord
 import requests
 import spotipy
 from bs4 import BeautifulSoup
-from discord.ext import commands
 from discord import app_commands
-from spotipy.oauth2 import SpotifyClientCredentials
+from discord.ext import commands
 from spotipy.exceptions import SpotifyException
+from spotipy.oauth2 import SpotifyClientCredentials
+
 from util.util import get_colors_from_img
 
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials())

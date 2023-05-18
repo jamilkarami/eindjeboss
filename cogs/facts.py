@@ -1,6 +1,7 @@
-import discord
 import logging as lg
 import os
+
+import discord
 import requests
 from discord import app_commands
 from discord.ext import commands

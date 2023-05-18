@@ -1,10 +1,11 @@
-import discord
 import logging as lg
 import os
-import requests as rq
 import uuid
-from discord.ext import commands
+
+import discord
+import requests as rq
 from discord import app_commands
+from discord.ext import commands
 
 SEARCH_URL = "https://maps.googleapis.com/maps/api/place/textsearch/json"
 PLACE_URL = "https://maps.googleapis.com/maps/api/place/details/json"
@@ -13,8 +14,8 @@ PHOTOS_URL = "https://maps.googleapis.com/maps/api/place/photo"
 
 class Maps(commands.Cog, name="maps"):
 
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, client):
+        self.bot = client
 
     @commands.Cog.listener()
     async def on_ready(self):

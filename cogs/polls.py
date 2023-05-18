@@ -1,12 +1,17 @@
-import discord
 import logging as lg
-from discord.ext import commands
+
+import discord
 from discord import app_commands
+from discord.ext import commands
 from discord.ui import Modal, TextInput
-from util.vars.eind_vars import NUMBER_EMOJIS, YES_EMOJI, NO_EMOJI
+
+from util.vars.eind_vars import NO_EMOJI, NUMBER_EMOJIS, YES_EMOJI
 
 
 class Polls(commands.Cog):
+
+    def __init__(self, client):
+        self.bot = client
 
     @commands.Cog.listener()
     async def on_ready(self):

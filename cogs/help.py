@@ -1,16 +1,18 @@
-import discord
 import logging as lg
-from discord.ext import commands
+
+import discord
 from discord import app_commands
-from util.util import load_json_file, get_file
+from discord.ext import commands
+
+from util.util import get_file, load_json_file
 
 HELP_TEXT = load_json_file(get_file('help.json'))
 
 
 class Help(commands.Cog, name="help"):
 
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, client):
+        self.bot = client
 
     @commands.Cog.listener()
     async def on_ready(self):
