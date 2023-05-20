@@ -16,7 +16,7 @@ from discord.ext import commands
 from util.util import get_file
 from util.vars.eind_vars import (CAR_SUBS, CAT_SUBS, CHANNEL_IGNORE_LIST,
                                  DOG_SUBS, HOT_WHEELS_SUB, REDDIT_USER_AGENT)
-from util.vars.periodic_reminders import REDDIT_EINDHOVEN_DT, TOP_REDDIT_DT
+from util.vars.periodics import REDDIT_EINDHOVEN_DT, TOP_REDDIT_DT
 
 # random commands
 SUBREDDIT_REGEX = "(?<!reddit.com)/r/[a-zA-Z0-9]{3,}"
