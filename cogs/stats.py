@@ -1,5 +1,6 @@
 import logging as lg
 from datetime import date
+from typing import Union
 
 import discord
 from aiocron import crontab
@@ -27,8 +28,7 @@ class Stats(commands.Cog):
 
     @commands.Cog.listener()
     async def on_app_command_completion(self, intr: discord.Interaction,
-                                        command: app_commands.Command |
-                                        app_commands.ContextMenu):
+                                        command):
         if command.name in self.blacklist:
             return
         self.update_stats(f"/{command.name}")
