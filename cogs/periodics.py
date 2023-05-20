@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 from util.util import get_file, load_json_file
 from util.vars.eind_vars import PERIODIC_MESSAGES_FILE
-from util.vars.periodic_reminders import ALERT_DT, PSV_DT, WEATHER_DT
+from util.vars.periodics import ALERT_DT, PSV_DT, WEATHER_DT
 
 FILE_DIR = os.getenv('FILE_DIR')
 
