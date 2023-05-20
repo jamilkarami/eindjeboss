@@ -53,6 +53,11 @@ class Messages(commands.Cog, name="Messages"):
     async def f_msi(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FuckMSI")
 
+    @app_commands.command(name="meta",
+                          description=OPINION % "Meta")
+    async def f_meta(self, interaction: discord.Interaction):
+        await interaction.response.send_message("#FuckMeta")
+
     @app_commands.command(name="lenovo",
                           description=OPINION % "Lenovo")
     async def f_lenovo(self, interaction: discord.Interaction):
