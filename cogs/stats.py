@@ -10,8 +10,8 @@ from util.util import get_file, load_json_file, save_json_file
 from util.vars.periodics import STATS_SYNC
 
 STATS_FILE_NAME = "command_stats.json"
-STATS_BLACKLIST = ["announceevent", "closeticket", "handleticket", "logs",
-                   "opentickets", "usertickets"]
+STATS_BLACKLIST = ["announceevent", "closeticket", "createsetting",
+                   "handleticket", "logs", "opentickets", "set", "usertickets"]
 
 
 class Stats(commands.Cog):
@@ -28,7 +28,7 @@ class Stats(commands.Cog):
     @commands.Cog.listener()
     async def on_app_command_completion(self, intr: discord.Interaction,
                                         command):
-        if command.name in self.blacklist:
+        if command.name in STATS_BLACKLIST:
             return
         self.update_stats(f"/{command.name}")
 
