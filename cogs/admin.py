@@ -9,8 +9,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.ui import Modal, TextInput
-from bot import Eindjeboss
 
+from bot import Eindjeboss
 from util.util import tabulate
 
 TICKET_NOT_FOUND = ("Failed to find a ticket with this ID"
@@ -68,6 +68,35 @@ class Admin(commands.Cog):
         await intr.user.send(f'```{log_msg}```')
         await intr.response.send_message("Done.", ephemeral=True)
         lg.info("Sent logs to %s", intr.user.name)
+
+    @app_commands.command(name="set")
+    @app_commands.rename(name="setting-name", new_vl="new-value")
+    async def set(self, intr: discord.Interaction, name: str = None,
+                  new_vl: str = None):
+        if not name:
+            settings = await self.bot.get_settings()
+
+            headers = ["ID", "Value", "Description"]
+            fields = ["_id", "value", "description"]
+            table = tabulate(headers, settings, fields)
+
+            msg = f"Current settings:\n```{table}```"
+            await intr.response.send_message(msg)
+            return
+
+        old_vl = await self.bot.update_setting({"_id": name, "value": new_vl})
+        msg = f"Updated setting {name} with value {new_vl} (was {old_vl})"
+        await intr.response.send_message(msg, ephemeral=True)
+
+    @app_commands.command(name="createsetting")
+    @app_commands.rename(setting_name="setting-name", value="initial-value")
+    async def createsetting(self, intr: discord.Interaction, setting_name: str,
+                            description: str, value: str):
+        await self.bot.add_setting({"_id": setting_name,
+                                    "description": description,
+                                    "value": value})
+        msg = f"Created setting {setting_name} with initial value {value}"
+        await intr.response.send_message(msg, ephemeral=True)
 
     @app_commands.command(name="modmail")
     async def modmail(self, intr: discord.Interaction):

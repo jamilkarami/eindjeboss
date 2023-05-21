@@ -16,6 +16,7 @@ load_dotenv()
 TEMP = "temp"
 STATUS = os.getenv("BOT_STATUS")
 FILE_DIR = os.getenv("FILE_DIR")
+SETTING_VALS = {"_id", "description", "value"}
 
 
 class Eindjeboss(commands.Bot):
@@ -39,6 +40,7 @@ class Eindjeboss(commands.Bot):
 
         self.dbmanager = DbManager()
         await self.load_extensions()
+        await self.load_settings()
         await self.tree.sync()
 
     async def load_extensions(self):
@@ -48,6 +50,42 @@ class Eindjeboss(commands.Bot):
             extension_name = f"cogs.{filename[:-3]}"
             logging.info(f"Loading extension: {extension_name}")
             await self.load_extension(extension_name)
+        logging.info("Finished loading extensions")
+
+    async def load_settings(self):
+        settings = await self.settings.find({}).to_list(length=88675309)
+        for setting in settings:
+            self.__setattr__(setting["_id"], setting["value"])
+        logging.info("Finished loadings settings")
+
+    async def add_setting(self, setting):
+        if setting.keys() != SETTING_VALS:
+            raise ValueError(
+                f"Setting {setting} does not match expected fields")
+
+        self.__setattr__(setting["_id"], setting["value"])
+        self.settings.insert_one(setting)
+        logging.info("Added setting %s with value %s", setting["_id"],
+                     setting["value"])
+
+    async def update_setting(self, setting):
+        settings = await self.settings.find({}).to_list(length=88675309)
+
+        if not any([st["_id"] == setting["_id"] for st in settings]):
+            raise ValueError(
+                f"Setting {setting} not found. Create it with /createsetting")
+
+        old_val = self.__getattribute__(setting["_id"])
+        self.__setattr__(setting["_id"], setting["value"])
+        await self.settings.update_one({"_id": setting["_id"]},
+                                       {"$set": {"value": setting["value"]}})
+        logging.info("Updated setting %s with value %s (was %s)",
+                     setting["_id"], setting["value"], old_val)
+        return old_val
+
+    async def get_settings(self):
+        settings = await self.settings.find({}).to_list(length=88675309)
+        return settings
 
 
 async def main():
