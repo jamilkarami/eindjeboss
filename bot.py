@@ -75,8 +75,8 @@ async def main():
     async with client:
         await client.start(TOKEN)
 
-
-try:
-    asyncio.run(main())
-except KeyboardInterrupt:
-    print("Powering down...")
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("Powering down...")
