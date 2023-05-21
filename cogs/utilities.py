@@ -5,6 +5,7 @@ import re
 
 from discord.ext import commands
 
+from bot import Eindjeboss
 from util.vars.eind_vars import CHANNEL_IGNORE_LIST
 
 CALC_REGEX = r"(?:calc|calculate) (.{3,})"
@@ -16,7 +17,7 @@ operators = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
 
 class Utilities(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
 
     @commands.Cog.listener()

@@ -4,12 +4,14 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from bot import Eindjeboss
+
 FOCUS_DESC = "Limits your view to the conversation channels"
 
 
 class Roles(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
 
     @commands.Cog.listener()

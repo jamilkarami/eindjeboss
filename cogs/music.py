@@ -9,6 +9,7 @@ from discord.ext import commands
 from spotipy.exceptions import SpotifyException
 from spotipy.oauth2 import SpotifyClientCredentials
 
+from bot import Eindjeboss
 from util.util import get_colors_from_img
 
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials())
@@ -21,7 +22,7 @@ SP_ICON = "https://i.imgur.com/XX2a6pf.png"
 
 class Music(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
 
     @commands.Cog.listener()

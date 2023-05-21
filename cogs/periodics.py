@@ -10,6 +10,7 @@ from aiocron import crontab
 from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
+from bot import Eindjeboss
 from util.util import get_file, load_json_file
 from util.vars.eind_vars import PERIODIC_MESSAGES_FILE
 from util.vars.periodics import ALERT_DT, PSV_DT, WEATHER_DT
@@ -71,7 +72,7 @@ WARNING_SIREN_BUTTON_LABEL = "Click here for more information"
 
 class Periodics(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
 
     @commands.Cog.listener()

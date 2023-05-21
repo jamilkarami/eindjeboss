@@ -14,6 +14,8 @@ from discord import app_commands
 from discord.ext import commands
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 
+from bot import Eindjeboss
+
 ANNOUNCEMENT_CH_ID = int(os.getenv('EVENT_ANNOUNCEMENT_CHANNEL_ID'))
 EVENTS_FORUM_ID = int(os.getenv('EVENTS_FORUM_ID'))
 EVENTS_ROLE_ID = int(os.getenv('EVENTS_ROLE_ID'))
@@ -44,7 +46,7 @@ ALERT = "%s New event added in %s! check it out here: %s"
 
 class Events(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
 
     @commands.Cog.listener()

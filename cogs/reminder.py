@@ -13,6 +13,8 @@ from discord.ext import commands
 from table2ascii import PresetStyle
 from table2ascii import table2ascii as t2a
 
+from bot import Eindjeboss
+
 REMINDER_CHANNEL_ID = int(os.getenv("REMINDER_CHANNEL_ID"))
 DATE_PARSER_SETTINGS_AMS = {'PREFER_DATES_FROM': 'future',
                             'DATE_ORDER': 'DMY',
@@ -23,7 +25,7 @@ DATE_PARSER_SETTINGS_AMS = {'PREFER_DATES_FROM': 'future',
 class Reminder(commands.Cog):
     loop = asyncio.get_running_loop()
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
         self.reminders = self.bot.dbmanager.get_collection('reminders')
 

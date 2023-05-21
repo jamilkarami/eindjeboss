@@ -25,7 +25,8 @@ class Eindjeboss(commands.Bot):
         activity = discord.Activity(
             type=discord.ActivityType.listening, detail="", name=STATUS)
         super().__init__(command_prefix="!", case_insensitive=True,
-                         intents=intents, activity=activity)
+                         intents=intents, activity=activity,
+                         owner_id=os.getenv('RAGDOLL_ID'))
 
     async def setup_hook(self):
         if hasattr(time, 'tzset'):

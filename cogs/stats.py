@@ -1,12 +1,11 @@
 import logging as lg
 from datetime import date
-from typing import Union
 
 import discord
 from aiocron import crontab
-from discord import app_commands
 from discord.ext import commands
 
+from bot import Eindjeboss
 from util.util import get_file, load_json_file, save_json_file
 from util.vars.periodics import STATS_SYNC
 
@@ -17,7 +16,7 @@ STATS_BLACKLIST = ["announceevent", "closeticket", "handleticket", "logs",
 
 class Stats(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
         self.comm_stats = self.bot.dbmanager.get_collection('command_stats')
         crontab(STATS_SYNC, self.sync_stats, start=True)

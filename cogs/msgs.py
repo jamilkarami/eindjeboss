@@ -9,6 +9,7 @@ import requests
 from discord import app_commands
 from discord.ext import commands
 
+from bot import Eindjeboss
 from util.vars.eind_vars import (ASS_EMOJI, CHANNEL_IGNORE_LIST,
                                  EXCLAMATION_EMOJI, HARAM_EMOJI,
                                  QUESTION_EMOJI, TABLE_FIX, TABLE_FLIP,
@@ -29,7 +30,7 @@ have/has sent in total in this server."
 
 class Messages(commands.Cog, name="Messages"):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
 
     @commands.Cog.listener()

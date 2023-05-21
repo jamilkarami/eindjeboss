@@ -7,6 +7,8 @@ import requests as rq
 from discord import app_commands
 from discord.ext import commands
 
+from bot import Eindjeboss
+
 SEARCH_URL = "https://maps.googleapis.com/maps/api/place/textsearch/json"
 PLACE_URL = "https://maps.googleapis.com/maps/api/place/details/json"
 PHOTOS_URL = "https://maps.googleapis.com/maps/api/place/photo"
@@ -14,7 +16,7 @@ PHOTOS_URL = "https://maps.googleapis.com/maps/api/place/photo"
 
 class Maps(commands.Cog, name="maps"):
 
-    def __init__(self, bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
 
     @commands.Cog.listener()

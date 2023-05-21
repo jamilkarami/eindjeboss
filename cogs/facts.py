@@ -6,6 +6,8 @@ import requests
 from discord import app_commands
 from discord.ext import commands
 
+from bot import Eindjeboss
+
 API_NINJAS_KEY = os.getenv('API_NINJAS_KEY')
 FACTS_API_URL = 'https://api.api-ninjas.com/v1/facts?limit=1'
 HEADERS = {'X-Api-Key': API_NINJAS_KEY}
@@ -13,7 +15,7 @@ HEADERS = {'X-Api-Key': API_NINJAS_KEY}
 
 class Facts(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
 
     @commands.Cog.listener()

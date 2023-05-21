@@ -6,12 +6,14 @@ from discord import app_commands
 from discord.ext import commands
 from wikipedia_summary import WikipediaSummary
 
+from bot import Eindjeboss
+
 
 class Wiki(commands.Cog):
 
     wiki_summary: WikipediaSummary
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
         self.wiki_summary = WikipediaSummary()
 
