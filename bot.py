@@ -39,6 +39,7 @@ class Eindjeboss(commands.Bot):
         shutil.copytree("default_files", FILE_DIR, dirs_exist_ok=True)
 
         self.dbmanager = DbManager()
+        self.settings = self.dbmanager.get_collection('settings')
         await self.load_extensions()
         await self.load_settings()
         await self.tree.sync()
