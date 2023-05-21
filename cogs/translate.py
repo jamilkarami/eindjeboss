@@ -10,6 +10,7 @@ from googletrans import Translator
 from googletrans.constants import LANGUAGES
 from paddleocr import PaddleOCR
 
+from bot import Eindjeboss
 from util.vars.eind_vars import CHANNEL_IGNORE_LIST
 
 translator = Translator()
@@ -29,7 +30,7 @@ TRANSLATE_PROMPT_REGEX = r"(?:tr|translate) (.+) to (.+)"
 
 class Translate(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
         self.ctx_menu = app_commands.ContextMenu(
             name='Translate Message',

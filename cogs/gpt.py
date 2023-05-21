@@ -8,6 +8,8 @@ from discord import app_commands
 from discord.ext import commands
 from openai.error import RateLimitError
 
+from bot import Eindjeboss
+
 usage_reset_cron = "0 0 1 * *"
 
 model_engines = {
@@ -36,7 +38,7 @@ LIMIT = "You have reached the usage limit for ChatGPT. Please try again later."
 
 class GPT(commands.Cog, name="gpt"):
 
-    def __init__(self, bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
         self.gptusage = self.bot.dbmanager.get_collection('gptusage')
         self.gptset = self.bot.dbmanager.get_collection('gptsettings')

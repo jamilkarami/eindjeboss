@@ -8,6 +8,8 @@ from bing_image_downloader import downloader
 from discord import app_commands
 from discord.ext import commands
 
+from bot import Eindjeboss
+
 N_CHANNEL_ID = os.getenv("N_CHANNEL_ID")
 CANDY_CHANNEL_ID = os.getenv("CANDY_CHANNEL_ID")
 UNSAFE_CHANNELS = [N_CHANNEL_ID, CANDY_CHANNEL_ID]
@@ -15,7 +17,7 @@ UNSAFE_CHANNELS = [N_CHANNEL_ID, CANDY_CHANNEL_ID]
 
 class Images(commands.Cog, name="Images"):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
 
     @commands.Cog.listener()

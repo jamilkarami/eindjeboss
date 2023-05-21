@@ -4,10 +4,12 @@ import traceback
 import discord
 from discord.ext import commands
 
+from bot import Eindjeboss
+
 
 class ExceptionHandler(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
         self.bot.tree.error(coro=self.__dispatch_to_app_command_handler)
 

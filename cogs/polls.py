@@ -5,12 +5,13 @@ from discord import app_commands
 from discord.ext import commands
 from discord.ui import Modal, TextInput
 
+from bot import Eindjeboss
 from util.vars.eind_vars import NO_EMOJI, NUMBER_EMOJIS, YES_EMOJI
 
 
 class Polls(commands.Cog):
 
-    def __init__(self, bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
 
     @commands.Cog.listener()

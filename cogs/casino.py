@@ -5,6 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from bot import Eindjeboss
 from util.vars.eind_vars import CHANNEL_IGNORE_LIST
 
 DEFAULT_ROLL = 20
@@ -27,7 +28,7 @@ CH_DESC = "Let Arnol choose! Handy for when you don't know what to pick."
 
 class Casino(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
 
     @commands.Cog.listener()

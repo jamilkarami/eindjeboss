@@ -7,12 +7,14 @@ import requests
 from discord import app_commands
 from discord.ext import commands
 
+from bot import Eindjeboss
+
 CURRENT_F1 = "http://ergast.com/api/f1/current.json"
 
 
 class F1(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
 
     @commands.Cog.listener()

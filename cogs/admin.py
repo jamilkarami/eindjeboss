@@ -9,6 +9,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.ui import Modal, TextInput
+from bot import Eindjeboss
 
 from util.util import tabulate
 
@@ -22,7 +23,7 @@ D_FMT = "%Y-%m-%d %H:%M"
 
 class Admin(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
         self.tickets = self.bot.dbmanager.get_collection('tickets')
 

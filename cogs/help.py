@@ -4,6 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from bot import Eindjeboss
 from util.util import get_file, load_json_file
 
 HELP_TEXT = load_json_file(get_file('help.json'))
@@ -11,7 +12,7 @@ HELP_TEXT = load_json_file(get_file('help.json'))
 
 class Help(commands.Cog, name="help"):
 
-    def __init__(self, bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
 
     @commands.Cog.listener()

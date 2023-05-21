@@ -5,12 +5,14 @@ from discord import app_commands
 from discord.ext import commands
 from imdb import Cinemagoer
 
+from bot import Eindjeboss
+
 ia = Cinemagoer()
 
 
 class IMDB(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Eindjeboss):
         self.bot = bot
 
     @commands.Cog.listener()
