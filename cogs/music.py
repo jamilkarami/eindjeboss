@@ -50,9 +50,9 @@ class Music(commands.Cog):
     @app_commands.command(name="spc",
                           description=SC_DESC)
     async def spc(self, intr: discord.Interaction):
-        user_id = intr.user.id
+        user = intr.guild.get_member(intr.user.id)
 
-        if intr.guild.get_member(user_id).status == discord.Status.offline:
+        if user.status == discord.Status.offline:
             await intr.response.send_message(
                 "You have to be online to use this command.",
                 ephemeral=True)
@@ -60,9 +60,7 @@ class Music(commands.Cog):
 
         spotify_act = None
 
-        user = intr.user
-        activities = intr.guild.get_member(user.id).activities
-        for activity in activities:
+        for activity in user.activities:
             if isinstance(activity, discord.Spotify):
                 spotify_act = activity
 
@@ -74,14 +72,14 @@ class Music(commands.Cog):
             return
 
         try:
-            embed = mk_spc_embed(spotify_act, intr.user)
+            embed = mk_spc_embed(spotify_act, user)
             await intr.response.send_message(embed=embed)
         except Exception as e:
-            lg.error(f"Failed to send current song to {intr.user.name}")
+            lg.error(f"Failed to send current song to {user.name}")
             print(e)
             lg.debug(e)
         else:
-            lg.info(f"Sent current song to {intr.user.name}")
+            lg.info(f"Sent current song to {user.name}")
 
     @app_commands.command(name="lyrics",
                           description="Sends the lyrics of a song matching"
