@@ -207,7 +207,7 @@ class Reddit(commands.Cog):
         for match in safe_matches:
             payload = payload + f"https://www.reddit.com{match}\n"
 
-        await message.reply(payload)
+        await message.reply(payload, suppress_embeds=len(safe_matches) > 1)
 
     async def get_safe_matches(self, matches):
         safe_matches = []

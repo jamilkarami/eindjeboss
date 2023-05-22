@@ -9,7 +9,7 @@ from table2ascii import table2ascii as t2a
 
 
 def load_json_file(path):
-    with open(path, "rb") as f:
+    with open(path, "rb+") as f:
         try:
             return json.loads(f.read())
         except Exception:
