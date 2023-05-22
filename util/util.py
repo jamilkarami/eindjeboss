@@ -9,11 +9,11 @@ from table2ascii import table2ascii as t2a
 
 
 def load_json_file(path):
-    with open(path, "rb+") as f:
-        try:
+    try:
+        with open(path, "rb+") as f:
             return json.loads(f.read())
-        except Exception:
-            return dict()
+    except Exception:
+        return dict()
 
 
 def save_json_file(data, path):
