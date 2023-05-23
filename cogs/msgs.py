@@ -92,7 +92,7 @@ class Messages(commands.Cog, name="Messages"):
         await interaction.response.send_message(HARAM_EMOJI)
 
     @commands.Cog.listener()
-    async def on_message(self, msg):
+    async def on_message(self, msg: discord.Message):
         if msg.author == self.bot.user:
             return
         if msg.channel.id in CHANNEL_IGNORE_LIST:
@@ -102,10 +102,16 @@ class Messages(commands.Cog, name="Messages"):
 
         cur_time = datetime.now(pytz.timezone(TZ)).strftime("%H:%M")
         times = ["04:20", "4:20", "16:20"]
+        times_tt = ["04:22", "4:22", "16:22"]
 
         if '420' in msg_cont and \
                 str(msg.channel.id) == C_CH_ID and cur_time in times:
             await msg.reply(f'Blaze it! {HARAM_EMOJI}')
+            return
+
+        if '422' in msg_cont and \
+                str(msg.channel.id) == C_CH_ID and cur_time in times_tt:
+            await msg.reply(f'422 is 420 too {HARAM_EMOJI}')
             return
 
         if TABLE_FLIP in msg_cont:
