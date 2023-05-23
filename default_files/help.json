@@ -1,6 +1,7 @@
 {
     "general": {
         "modules": {
+            "Help": "/help, /modmail",
             "GPT": "/gpt, /gptsettings",
             "Images": "/img, !transcribe",
             "Misc": "/focus, /imdb, /nextf1race, /place, /wiki",
@@ -10,6 +11,18 @@
             "Reminders": "/remindme, /myreminders, /deletereminder",
             "RNG": "/8ball, /chooseforme, /coin, /roll",
             "Translate": "!tr, !trimg, /translate"
+        },
+        "emojis": {
+            "Help": "❗",
+            "GPT": "🤖",
+            "Images": "🖼️",
+            "Misc": "🗂️",
+            "Music": "💽",
+            "Polls": "📊",
+            "Reddit": "<:reddit:1110666247789613116>",
+            "Reminders": "⏰",
+            "RNG": "🎲",
+            "Translate": "📖"
         },
         "desc": [
             "Keep in mind that maybe not everything related to Arnol is explained here.",
