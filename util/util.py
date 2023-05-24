@@ -68,7 +68,7 @@ def download_img_from_url(url, path=None):
 
 
 def get_colors_from_img(img_url):
-    img_path = download_img_from_url(img_url, str(uuid.uuid4()))
+    img_path = download_img_from_url(img_url)
     colorthief = ColorThief(img_path)
     palette = colorthief.get_palette()
     os.remove(img_path)
