@@ -25,7 +25,18 @@ class Admin(commands.Cog):
 
     def __init__(self, bot: Eindjeboss):
         self.bot = bot
+        self.ctx_menu = app_commands.ContextMenu(
+            name='Report Message',
+            callback=self.report_message,
+        )
+        self.bot.tree.add_command(self.ctx_menu)
         self.tickets = self.bot.dbmanager.get_collection('tickets')
+
+    async def report_message(self, intr: discord.Interaction,
+                             msg: discord.Message):
+        await intr.response.send_modal(self.TicketModal(self.tickets, msg))
+        lg.info("Sent ticket modal to %s for message %s",
+                intr.user.display_name, msg.jump_url)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -188,9 +199,26 @@ class Admin(commands.Cog):
                                   {"channel": rep_channel.id,
                                    "status": TicketStatus.IN_PROGESS.value}}])
 
-        msg = f"Ticket submitted by {user.mention}\n\n"
+        msg = f"**Ticket submitted by {user.mention}**\n\n"
         embed = discord.Embed(title=ticket_title, description=description)
         await rep_channel.send(msg, embed=embed)
+
+        if "message_content" in ticket:
+            data = ticket["message_content"]
+            author = data["message_author"]
+            url = data["url"]
+            attachments = []
+
+            msg = f"**Reference: {url} sent by {author}:**\n\n"
+
+            if data["content"]:
+                msg_content = data["content"]
+                msg += f"_\"{msg_content}\"_"
+            if data["img_paths"]:
+                for path in data["img_paths"]:
+                    attachments.append(discord.File(path))
+
+            await rep_channel.send(msg, files=attachments)
 
         if TicketStatus.OPEN.value == old_status:
             resp = f"Ticket in progress: {rep_channel.mention}"
@@ -223,9 +251,10 @@ class Admin(commands.Cog):
 
     class TicketModal(Modal):
 
-        def __init__(self, collection):
+        def __init__(self, collection, message: discord.Message = None):
             super().__init__(title="Submit a ticket", timeout=600)
             self.collection = collection
+            self.message = message
 
         ticket_title = TextInput(
             label="Subject", style=discord.TextStyle.short,
@@ -239,18 +268,10 @@ class Admin(commands.Cog):
         async def on_submit(self, intr: discord.Interaction):
             ticket_channel_id = os.getenv('TICKET_CHANNEL_ID')
             ticket_id = str(uuid.uuid1())[:5]
-            msg = (f"New ticket submitted by {intr.user.display_name}."
-                   f" Respond to it with /handleticket {ticket_id}")
 
-            self.collection.insert_one({'_id': ticket_id,
-                                        'author': intr.user.display_name,
-                                        'author_id': intr.user.id,
-                                        'title': self.ticket_title.value,
-                                        'description': self.description.value,
-                                        'sub_time': time.time(),
-                                        'status': TicketStatus.OPEN.value})
-            await intr.response.send_message("Ticket submitted.",
-                                             ephemeral=True)
+            tick_type = "report" if self.message else "ticket"
+            msg = (f"New {tick_type} submitted by {intr.user.display_name}."
+                   f" Respond to it with /handleticket {ticket_id}")
 
             embed_author = f"Ticket by {intr.user.display_name}"
             embed_title = self.ticket_title.value
@@ -261,6 +282,25 @@ class Admin(commands.Cog):
                                   color=discord.Color.red())
 
             embed.set_author(name=embed_author)
+
+            data = {'_id': ticket_id,
+                    'author': intr.user.display_name,
+                    'author_id': intr.user.id,
+                    'title': self.ticket_title.value,
+                    'description': self.description.value,
+                    'sub_time': time.time(),
+                    'status': TicketStatus.OPEN.value}
+
+            if self.message:
+                data['message_id'] = self.message.id
+                data['message_content'] = await get_msg_data(ticket_id,
+                                                             self.message)
+                msg_url = f"[Link]({self.message.jump_url})"
+                embed.add_field(name="Reference", value=msg_url)
+
+            self.collection.insert_one(data)
+            await intr.response.send_message("Ticket submitted.",
+                                             ephemeral=True)
 
             channel = await intr.guild.fetch_channel(ticket_channel_id)
             await channel.send(content=msg, embed=embed)
@@ -275,6 +315,25 @@ class Admin(commands.Cog):
 
         async def on_timeout(self) -> None:
             return
+
+
+async def get_msg_data(ticket: str, message: discord.Message):
+    data = {"url": message.jump_url, "message_author": message.author.mention}
+
+    if message.content:
+        data['content'] = message.content
+    if message.attachments:
+        file_dir = os.getenv("FILE_DIR")
+        paths = []
+        for idx, attachment in enumerate(message.attachments, start=1):
+            report_dir = f"{file_dir}/reports/{ticket}/"
+            path = report_dir + f"{idx}_{attachment.filename}"
+            os.makedirs(report_dir, exist_ok=True)
+            await attachment.save(path)
+            paths.append(path)
+        data['img_paths'] = paths
+
+    return data
 
 
 class TicketStatus(Enum):

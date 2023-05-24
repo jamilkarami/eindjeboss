@@ -1,8 +1,9 @@
 import json
 import os
-import urllib.request
+import shutil
 import uuid
 
+import requests
 from colorthief import ColorThief
 from table2ascii import PresetStyle
 from table2ascii import table2ascii as t2a
@@ -52,14 +53,18 @@ def check_limit(command: str):
     return False
 
 
-def download_img_from_url(url, prefix=None):
-    opener = urllib.request.build_opener()
-    opener.addheaders = [('User-agent', "Mozilla/5.0 (Windows NT 6.1)")]
+def download_img_from_url(url, path=None):
+    img_id = uuid.uuid4()
+    if not path:
+        path = "temp/temp_%s.jpg" % img_id
 
-    urllib.request.install_opener(opener)
-    img_filename = urllib.request.urlretrieve(url, prefix)[0]
+    response = requests.get(url, stream=True)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'wb+') as out_file:
+        shutil.copyfileobj(response.raw, out_file)
+    del response
 
-    return img_filename
+    return path
 
 
 def get_colors_from_img(img_url):
