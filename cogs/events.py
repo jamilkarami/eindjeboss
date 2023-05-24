@@ -1,13 +1,11 @@
 import asyncio
 import logging as lg
 import os
-import shutil
 import uuid
 from colorsys import hsv_to_rgb, rgb_to_hsv
 from typing import List
 
 import discord
-import requests
 from bing_image_downloader import downloader
 from colorthief import ColorThief
 from discord import app_commands
@@ -15,6 +13,7 @@ from discord.ext import commands
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 
 from bot import Eindjeboss
+from util.util import download_img_from_url
 
 ANNOUNCEMENT_CH_ID = int(os.getenv('EVENT_ANNOUNCEMENT_CHANNEL_ID'))
 EVENTS_FORUM_ID = int(os.getenv('EVENTS_FORUM_ID'))
@@ -179,19 +178,6 @@ def download_img_from_bing(query):
                         timeout=60, verbose=False)
 
     return os.path.join(output_folder, os.listdir(output_folder)[0])
-
-
-def download_img_from_url(url):
-    img_id = uuid.uuid4()
-    img_filename = "temp/temp_%s.jpg" % img_id
-
-    response = requests.get(url, stream=True)
-    os.makedirs(os.path.dirname(img_filename), exist_ok=True)
-    with open(img_filename, 'wb+') as out_file:
-        shutil.copyfileobj(response.raw, out_file)
-    del response
-
-    return img_filename
 
 
 def is_dark(color):
