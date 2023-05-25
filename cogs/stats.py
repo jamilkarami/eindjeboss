@@ -45,8 +45,16 @@ class Stats(commands.Cog):
     async def sync_stats(self):
         stats = load_json_file(get_file(STATS_FILE_NAME))
         today = date.today().strftime('%Y/%m/%d')
-        await self.comm_stats.update_one({"_id": today}, {"$inc": stats},
-                                         upsert=True)
+        data = {
+            "_id": today,
+            "date": {
+                "day": date.today().day,
+                "month": date.today().month,
+                "year": date.today().year
+            },
+            "usage": stats,
+        }
+        await self.comm_stats.insert_one(data)
         save_json_file({}, get_file(STATS_FILE_NAME))
 
 
