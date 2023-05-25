@@ -30,7 +30,12 @@ class Stats(commands.Cog):
                                         command):
         if command.name in STATS_BLACKLIST:
             return
-        self.update_stats(f"/{command.name}")
+        name = command.name
+        if command.name == "Translate Message":
+            name = "/translate (context)"
+        if command.name == "Report Message":
+            name = "/modmail (context)"
+        self.update_stats(f"/{name}")
 
     def update_stats(self, name):
         stats_file = load_json_file(get_file(STATS_FILE_NAME))
