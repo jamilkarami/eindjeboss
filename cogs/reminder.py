@@ -68,7 +68,7 @@ class Reminder(commands.Cog):
         if daily:
             r = f"I will remind you of **{msg}** daily at **{p_time}** :timer:"
         else:
-            r = f"I will remind you of **{msg}** on **{p_day}** :timer:",
+            r = f"I will remind you of **{msg}** on **{p_day}** :timer:"
 
         await intr.followup.send(r, view=ReminderView(rem_id, self))
 

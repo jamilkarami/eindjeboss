@@ -197,7 +197,8 @@ class Admin(commands.Cog):
         await self.tickets.update_one(
             {"_id": ticket_id}, [{"$set":
                                   {"channel": rep_channel.id,
-                                   "status": TicketStatus.IN_PROGESS.value}}])
+                                   "status": TicketStatus.IN_PROGESS.value,
+                                   "updated": int(time.time())}}])
 
         msg = f"**Ticket submitted by {user.mention}**\n\n"
         embed = discord.Embed(title=ticket_title, description=description)
@@ -243,6 +244,7 @@ class Admin(commands.Cog):
             return
 
         ticket['status'] = TicketStatus.CLOSED.value
+        ticket['updated'] = int(time.time())
         channel = await intr.guild.fetch_channel(ticket['channel'])
         await channel.delete()
         await self.tickets.update_one({"_id": ticket_id}, {"$set": ticket})
@@ -288,7 +290,7 @@ class Admin(commands.Cog):
                     'author_id': intr.user.id,
                     'title': self.ticket_title.value,
                     'description': self.description.value,
-                    'sub_time': time.time(),
+                    'sub_time': int(time.time()),
                     'status': TicketStatus.OPEN.value}
 
             if self.message:
