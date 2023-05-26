@@ -1,5 +1,5 @@
+import datetime
 import logging as lg
-from datetime import date
 
 import discord
 from aiocron import crontab
@@ -44,14 +44,11 @@ class Stats(commands.Cog):
 
     async def sync_stats(self):
         stats = load_json_file(get_file(STATS_FILE_NAME))
-        today = date.today().strftime('%Y/%m/%d')
+        now = datetime.datetime.now()
+        today = now.strftime("%Y/%m/%d")
         data = {
             "_id": today,
-            "date": {
-                "day": date.today().day,
-                "month": date.today().month,
-                "year": date.today().year
-            },
+            "date": datetime.datetime.now(),
             "usage": stats,
         }
         await self.comm_stats.insert_one(data)
