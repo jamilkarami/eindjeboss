@@ -32,9 +32,9 @@ class Stats(commands.Cog):
             return
         name = command.name
         if command.name == "Translate Message":
-            name = "/translate (context)"
+            name = "translate (context)"
         if command.name == "Report Message":
-            name = "/modmail (context)"
+            name = "modmail (context)"
         self.update_stats(f"/{name}")
 
     def update_stats(self, name):
@@ -44,11 +44,11 @@ class Stats(commands.Cog):
 
     async def sync_stats(self):
         stats = load_json_file(get_file(STATS_FILE_NAME))
-        now = datetime.datetime.now()
-        today = now.strftime("%Y/%m/%d")
+        today = datetime.date.today()
+        trunc = datetime.datetime(today.year, today.month, today.day)
         data = {
-            "_id": today,
-            "date": datetime.datetime.now(),
+            "_id": today.strftime("%Y/%m/%d"),
+            "date": trunc,
             "usage": stats,
         }
         await self.comm_stats.insert_one(data)
