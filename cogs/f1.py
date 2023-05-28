@@ -1,5 +1,5 @@
 import logging as lg
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import discord
 import pytz
@@ -71,7 +71,7 @@ class F1(commands.Cog):
                 time_str = '%s %s' % (v['date'], v['time'])
                 time_ams = tz_local.localize(
                     datetime.strptime(
-                            time_str, '%Y-%m-%d %H:%M:%SZ')).astimezone(tz_ams)
+                        time_str, '%Y-%m-%d %H:%M:%SZ')).astimezone(tz_ams)
                 times_ams[time_ams] = k
 
         return times_ams
@@ -79,7 +79,10 @@ class F1(commands.Cog):
     def get_next_f1_race(self):
         data = requests.get(CURRENT_F1).json()
         for race in data['MRData']['RaceTable']['Races']:
-            if race['date'] > str(datetime.today().strftime('%Y-%m-%d')):
+            rc_tm = f"{race['date']} {race['time']}"
+            rc_tm_dt = datetime.strptime(rc_tm, "%Y-%m-%d %H:%M:%SZ")
+            now = datetime.now()
+            if rc_tm_dt + timedelta(hours=2) > now:
                 return race
         return None
 
