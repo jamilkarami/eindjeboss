@@ -13,17 +13,13 @@ from bot import Eindjeboss
 usage_reset_cron = "0 0 1 * *"
 
 model_engines = {
-    "ada": "text-ada-001",
-    "babbage": "text-babbage-001",
-    "curie": "text-curie-001",
     "davinci": "text-davinci-003",
+    "3.5-turbo": "gpt-3.5-turbo"
 }
 
 multipliers = {
-    "text-ada-001": 0.02,
-    "text-babbage-001": 0.025,
-    "text-curie-001": 0.1,
-    "text-davinci-003": 1
+    "text-davinci-003": 1,
+    "gpt-3.5-turbo": 0.1
 }
 
 model_engines_choices = [app_commands.Choice(name=k, value=v)
@@ -75,16 +71,29 @@ class GPT(commands.Cog, name="gpt"):
         try:
             await intr.response.send_message(embed=em)
 
-            completion = openai.Completion.create(
-                engine=model_engine,
-                prompt=query,
-                max_tokens=max_tokens,
-                n=1,
-                stop=None,
-                temperature=0.5,
-            )
+            if model_engine.startswith("gpt"):
+                completion = openai.ChatCompletion.create(
+                    model=model_engine,
+                    messages=[{"role": "user", "name": str(intr.user.id),
+                               "content": query}],
+                    max_tokens=max_tokens,
+                    n=1,
+                    stop=None,
+                    temperature=0.5
+                )
 
-            response = completion.choices[0].text.strip()
+                response = completion.choices[0].message.content
+            else:
+                completion = openai.Completion.create(
+                    engine=model_engine,
+                    prompt=query,
+                    max_tokens=max_tokens,
+                    n=1,
+                    stop=None,
+                    temperature=0.5,
+                )
+
+                response = completion.choices[0].text.strip()
 
             em.description = response
             em.color = discord.Color.green()
