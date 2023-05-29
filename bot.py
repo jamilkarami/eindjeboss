@@ -80,19 +80,8 @@ class Eindjeboss(commands.Bot):
                      setting["value"])
 
     async def update_setting(self, setting):
-        settings = await self.settings.find({}).to_list(length=88675309)
-
-        if not any([st["_id"] == setting["_id"] for st in settings]):
-            raise ValueError(
-                f"Setting {setting} not found. Create it with /createsetting")
-
-        old_val = self.__getattribute__(setting["_id"])
-        self.__setattr__(setting["_id"], setting["value"])
-        await self.settings.update_one({"_id": setting["_id"]},
-                                       {"$set": {"value": setting["value"]}})
-        logging.info("Updated setting %s with value %s (was %s)",
-                     setting["_id"], setting["value"], old_val)
-        return old_val
+        return await self.settings.find_one_and_update(
+            {"_id": setting["_id"]}, {"$set": {"value": setting["value"]}})
 
     async def get_settings(self):
         settings = await self.settings.find({}).to_list(length=88675309)

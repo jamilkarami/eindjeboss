@@ -95,8 +95,14 @@ class Admin(commands.Cog):
             await intr.response.send_message(msg, ephemeral=True)
             return
 
-        old_vl = await self.bot.update_setting({"_id": name, "value": new_vl})
-        msg = f"Updated setting {name} with value {new_vl} (was {old_vl})"
+        old_doc = await self.bot.update_setting({"_id": name, "value": new_vl})
+        if not old_doc:
+            await intr.response.send_message(
+                "Could not find setting with name %s" % name)
+            return
+
+        old_val = old_doc["value"]
+        msg = f"Updated setting {name} with value {new_vl} (was {old_val})"
         await intr.response.send_message(msg, ephemeral=True)
 
     @app_commands.command(name="createsetting")
