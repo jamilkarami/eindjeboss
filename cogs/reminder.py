@@ -61,16 +61,19 @@ class Reminder(commands.Cog):
             return
 
         rem_time = p_time if daily else p_ts
-        reminder = mk_reminder(rem_id, rem_time, msg, intr.guild_id, daily,
-                               intr.user.id)
-        await self.save_reminder(reminder)
 
         if daily:
             r = f"I will remind you of **{msg}** daily at **{p_time}** :timer:"
         else:
             r = f"I will remind you of **{msg}** on **{p_day}** :timer:"
 
-        await intr.followup.send(r, view=ReminderView(rem_id, self))
+        view = ReminderView(rem_id, self)
+        rem_msg = await intr.followup.send(r, view=view, wait=True)
+
+        reminder = mk_reminder(rem_id, rem_time, msg, intr.guild_id, daily,
+                               intr.user.id, rem_msg.id)
+
+        await self.save_reminder(reminder)
 
     @app_commands.command(name="myreminders",
                           description="Get a list of your active reminders.")
@@ -128,26 +131,20 @@ class Reminder(commands.Cog):
             if not reminder['daily'] and reminder['time'] < time.time():
                 await self.delete_reminder(reminder['_id'])
             self.loop.create_task(self.start_reminder(reminder))
+            if reminder["message_id"]:
+                self.bot.add_view(ReminderView(reminder["_id"], self),
+                                  message_id=reminder["message_id"])
 
     async def add_user_to_reminder(self, rem_id, user_id):
-        rem = await self.get_reminder(rem_id)
-        if user_id not in rem['users']:
-            rem['users'].append(user_id)
-            await self.reminders.update_one({'_id': rem_id}, {'$set': rem})
-            return True
-        return False
+        update = await self.reminders.update_one({"_id": rem_id},
+                                                 {"$addToSet":
+                                                  {"users": user_id}})
+        return update.modified_count
 
     async def remove_user_from_reminder(self, rem_id, user_id):
-        rem = await self.get_reminder(rem_id)
-        if user_id in rem['users']:
-            rem['users'].remove(user_id)
-
-            if not rem['users']:
-                await self.reminders.delete_one({'_id': rem_id})
-            else:
-                await self.reminders.update_one({'_id': rem_id}, {'$set': rem})
-            return True
-        return False
+        update = await self.reminders.update_one(
+            {"_id": rem_id}, {"$pull": {"users": user_id}})
+        return update.modified_count
 
     async def save_reminder(self, reminder):
         await self.reminders.insert_one(reminder)
@@ -195,31 +192,39 @@ class Reminder(commands.Cog):
 
 class ReminderView(discord.ui.View):
 
-    def __init__(self, rem_id, rem_cls: Reminder):
+    def __init__(self, rem_id, rem_cls):
         super().__init__(timeout=None)
-        self.r_id = rem_id
-        self.r_cls = rem_cls
+        self.add_item(ReminderButton("Remind me too",
+                                     rem_id, rem_cls))
 
-    @discord.ui.button(label="Remind me too",
-                       style=discord.ButtonStyle.blurple)
-    async def handle_add_user_reminder(self,
-                                       intr: discord.Interaction,
-                                       btn: discord.ui.Button):
-        added = await self.r_cls.add_user_to_reminder(self.r_id, intr.user.id)
-        if added:
+
+class ReminderButton(discord.ui.Button):
+
+    def __init__(self, label, rem_id, rem_cls: Reminder):
+        super().__init__()
+        self.label = label
+        self.r_id = rem_id
+        self.rem_cls = rem_cls
+        self.custom_id = rem_id
+        self.style = discord.ButtonStyle.blurple
+
+    async def callback(self, intr: discord.Interaction):
+        add = await self.rem_cls.add_user_to_reminder(self.r_id, intr.user.id)
+        if add:
             await intr.response.send_message("Done. ✅", ephemeral=True)
             return
         await intr.response.send_message(
             "You are already subscribed to this reminder.", ephemeral=True)
 
 
-def mk_reminder(rem_id, timestamp, msg, guild_id, daily, user):
+def mk_reminder(rem_id, timestamp, msg, guild_id, daily, user, msg_id):
     return {
         '_id': rem_id,
         'time': timestamp,
         'msg': msg,
         'guild': guild_id,
         'daily': daily,
+        'message_id': msg_id,
         'users': [user]
     }
 
