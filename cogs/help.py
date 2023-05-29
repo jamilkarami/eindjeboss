@@ -27,9 +27,12 @@ class Help(commands.Cog, name="help"):
                           description="Get help with Arnol\'s commands")
     async def help(self, intr: discord.Interaction):
         helptext = await self.helpcoll.find_one()
-        main_embed = mk_embed("What do you need help with?",
-                              helptext["general"]["modules"], True)
-        main_embed.description = "\n".join(helptext["general"]["desc"])
+
+        modules = get_modules(helptext)
+        main_embed = mk_embed("What do you need help with?", modules, True)
+
+        disclaimer = "\n".join(helptext["general"]["desc"])
+        main_embed.add_field(name="", value=f"_{disclaimer}_", inline=False)
 
         await intr.response.send_message(embed=main_embed,
                                          view=MainView(helptext, main_embed),
@@ -120,3 +123,14 @@ def mk_embed(title, fields: dict, inline) -> discord.Embed:
             v = "\n".join(v)
         embed.add_field(name=k, value=v, inline=inline)
     return embed
+
+
+def get_modules(data):
+    modules = {}
+
+    for k, v in data.items():
+        if k in ["_id", "general"]:
+            continue
+        modules[k] = ", ".join(v.keys())
+
+    return modules
