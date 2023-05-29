@@ -101,12 +101,14 @@ class Admin(commands.Cog):
 
     @app_commands.command(name="createsetting")
     @app_commands.rename(setting_name="setting-name", value="initial-value")
-    async def createsetting(self, intr: discord.Interaction, setting_name: str,
+    async def createsetting(self, intr: discord.Interaction, setting: str,
                             description: str, value: str):
-        await self.bot.add_setting({"_id": setting_name,
+        if value.isdigit():
+            value = int(value)
+        await self.bot.add_setting({"_id": setting,
                                     "description": description,
                                     "value": value})
-        msg = f"Created setting {setting_name} with initial value {value}"
+        msg = f"Created setting **{setting}** with initial value **{value}**"
         await intr.response.send_message(msg, ephemeral=True)
 
     @app_commands.command(name="modmail")
