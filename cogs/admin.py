@@ -100,7 +100,7 @@ class Admin(commands.Cog):
         await intr.response.send_message(msg, ephemeral=True)
 
     @app_commands.command(name="createsetting")
-    @app_commands.rename(setting_name="setting-name", value="initial-value")
+    @app_commands.rename(setting="setting-name", value="initial-value")
     async def createsetting(self, intr: discord.Interaction, setting: str,
                             description: str, value: str):
         if value.isdigit():
