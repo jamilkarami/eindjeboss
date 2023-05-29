@@ -10,6 +10,9 @@ from openai.error import RateLimitError
 
 from bot import Eindjeboss
 
+GPT_TOKEN = os.getenv('OPENAI_TOKEN')
+LIMIT = "You have reached the usage limit for ChatGPT. Please try again later."
+
 usage_reset_cron = "0 0 1 * *"
 
 model_engines = {
@@ -24,12 +27,6 @@ multipliers = {
 
 model_engines_choices = [app_commands.Choice(name=k, value=v)
                          for k, v in model_engines.items()]
-
-GPT_TOKEN = os.getenv('OPENAI_TOKEN')
-GPT_SETTINGS_FILE = 'gpt_settings.json'
-GPT_USAGE_FILE = 'gpt_usage.json'
-
-LIMIT = "You have reached the usage limit for ChatGPT. Please try again later."
 
 
 class GPT(commands.Cog, name="gpt"):
@@ -47,7 +44,10 @@ class GPT(commands.Cog, name="gpt"):
 
     @app_commands.command(name='gpt', description="Prompt the OpenAI GPT chat")
     async def gpt(self, intr: discord.Interaction, query: str):
-        gpt_usage_limit = int(os.getenv('GPT_USAGE_LIMIT'))
+        max_tokens = await self.bot.get_setting("gpt_max_token", 256)
+        default_model = await self.bot.get_setting("gpt_default_model",
+                                                   "3.5-turbo")
+        gpt_usage_limit = await self.bot.get_setting("gpt_token_limit", 10000)
 
         settings = await self.get_gpt_settings(intr.user.id)
         usage = await self.get_gpt_usage(intr.user.id)
@@ -57,8 +57,7 @@ class GPT(commands.Cog, name="gpt"):
             return
 
         if not settings:
-            model_engine = model_engines.get('davinci')
-            max_tokens = 256
+            model_engine = model_engines.get(default_model)
             await self.save_gpt_settings({'_id': intr.user.id,
                                           'model': model_engine,
                                           'max_tokens': max_tokens})

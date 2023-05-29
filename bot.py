@@ -44,6 +44,16 @@ class Eindjeboss(commands.Bot):
         await self.load_settings()
         await self.tree.sync()
 
+    async def get_setting(self, name: str, default):
+        name = name.lower()
+        try:
+            return getattr(self, name)
+        except AttributeError:
+            msg = "Setting %s not found. Defaulting to %s" % (name, default)
+            logging.info(msg)
+            await self.alert_owner(msg)
+            return default
+
     async def load_extensions(self):
         for filename in os.listdir("./cogs"):
             if not filename.endswith('py'):
@@ -88,10 +98,12 @@ class Eindjeboss(commands.Bot):
         settings = await self.settings.find({}).to_list(length=88675309)
         return settings
 
+    async def alert_owner(self, message):
+        owner = await self.fetch_user(self.owner_id)
+        await owner.send(message)
+
 
 async def main():
-    TOKEN = os.getenv("DISCORD_TOKEN")
-
     logging_file_name = f"{FILE_DIR}/logs/eindjeboss.log"
 
     if not Path(logging_file_name).is_file():
@@ -112,7 +124,7 @@ async def main():
         print(f"{client.user.name} is ready to serve.")
 
     async with client:
-        await client.start(TOKEN)
+        await client.start(os.getenv("DISCORD_TOKEN"))
 
 if __name__ == "__main__":
     try:
