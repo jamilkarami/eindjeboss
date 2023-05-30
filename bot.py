@@ -42,7 +42,6 @@ class Eindjeboss(commands.Bot):
         self.settings = self.dbmanager.get_collection('settings')
         await self.load_extensions()
         await self.load_settings()
-        await self.tree.sync()
 
     async def get_setting(self, name: str, default):
         name = name.lower()

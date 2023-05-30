@@ -42,6 +42,16 @@ class Admin(commands.Cog):
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
 
+    @app_commands.command(name="sync")
+    async def sync(self, intr: discord.Interaction):
+        if intr.user.id != self.bot.owner_id:
+            await intr.response.send_message(
+                "You are not allowed to use this command.", ephemeral=True)
+            return
+        await intr.response.defer(ephemeral=True)
+        await self.bot.tree.sync()
+        await intr.followup.send("Synced", ephemeral=True)
+
     @app_commands.command(name='logs')
     @app_commands.describe(full="Choose true if you want the full log file.",
                            ln="The number of log lines to send.")
