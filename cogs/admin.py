@@ -42,15 +42,22 @@ class Admin(commands.Cog):
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
 
-    @app_commands.command(name="sync")
-    async def sync(self, intr: discord.Interaction):
+    @commands.command(name="sync")
+    async def sync(self, ctx: commands.Context):
+        if ctx.author.id != self.bot.owner_id:
+            return
+        await self.bot.tree.sync()
+        await ctx.author.send("Synced")
+
+    @app_commands.command(name="reloadsettings")
+    async def reload_settings(self, intr: discord.Interaction):
         if intr.user.id != self.bot.owner_id:
             await intr.response.send_message(
                 "You are not allowed to use this command.", ephemeral=True)
             return
         await intr.response.defer(ephemeral=True)
-        await self.bot.tree.sync()
-        await intr.followup.send("Synced", ephemeral=True)
+        await self.bot.load_settings()
+        await intr.followup.send("Settings reloaded", ephemeral=True)
 
     @app_commands.command(name='logs')
     @app_commands.describe(full="Choose true if you want the full log file.",
