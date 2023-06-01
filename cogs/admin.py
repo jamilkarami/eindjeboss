@@ -34,7 +34,8 @@ class Admin(commands.Cog):
 
     async def report_message(self, intr: discord.Interaction,
                              msg: discord.Message):
-        await intr.response.send_modal(self.TicketModal(self.tickets, msg))
+        await intr.response.send_modal(self.TicketModal(self.tickets, self.bot,
+                                                        msg))
         lg.info("Sent ticket modal to %s for message %s",
                 intr.user.display_name, msg.jump_url)
 
@@ -136,7 +137,7 @@ class Admin(commands.Cog):
 
     @app_commands.command(name="modmail")
     async def modmail(self, intr: discord.Interaction):
-        await intr.response.send_modal(self.TicketModal(self.tickets))
+        await intr.response.send_modal(self.TicketModal(self.bot, self.tickets))
         lg.info("Sent ticket modal to %s", intr.user.display_name)
 
     @app_commands.command(name="opentickets")
@@ -278,10 +279,12 @@ class Admin(commands.Cog):
 
     class TicketModal(Modal):
 
-        def __init__(self, collection, message: discord.Message = None):
+        def __init__(self, collection, bot: Eindjeboss,
+                     message: discord.Message = None):
             super().__init__(title="Submit a ticket", timeout=600)
             self.collection = collection
             self.message = message
+            self.bot = bot
 
         ticket_title = TextInput(
             label="Subject", style=discord.TextStyle.short,
@@ -293,7 +296,7 @@ class Admin(commands.Cog):
                                 max_length=1024)
 
         async def on_submit(self, intr: discord.Interaction):
-            ticket_channel_id = os.getenv('TICKET_CHANNEL_ID')
+            ticket_channel_id = self.bot.get_setting("modmail_channel")
             ticket_id = str(uuid.uuid1())[:5]
 
             tick_type = "report" if self.message else "ticket"
