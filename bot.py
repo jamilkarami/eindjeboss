@@ -43,7 +43,7 @@ class Eindjeboss(commands.Bot):
         await self.load_extensions()
         await self.load_settings()
 
-    async def get_setting(self, name: str, default):
+    async def get_setting(self, name: str, default = None):
         name = name.lower()
         try:
             return getattr(self, name)
