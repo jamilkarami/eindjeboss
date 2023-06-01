@@ -297,7 +297,8 @@ class Admin(commands.Cog):
                                 max_length=1024)
 
         async def on_submit(self, intr: discord.Interaction):
-            ticket_channel_id = self.bot.get_setting("modmail_channel", None)
+            ticket_channel_id = await self.bot.get_setting(
+                "modmail_channel", None)
             ticket_id = str(uuid.uuid1())[:5]
 
             tick_type = "report" if self.message else "ticket"
