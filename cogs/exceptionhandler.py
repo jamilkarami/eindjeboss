@@ -1,4 +1,3 @@
-import os
 import traceback
 
 import discord
@@ -19,9 +18,8 @@ class ExceptionHandler(commands.Cog):
     @commands.Cog.listener()
     async def on_app_command_error(self, intr: discord.Interaction,
                                    err: discord.app_commands.AppCommandError):
-        rd_id = os.getenv('RAGDOLL_ID')
-        user = await intr.guild.fetch_member(rd_id)
-        stacktrace = ''.join(traceback.format_exception(err))
+        user = await intr.guild.fetch_member(self.bot.owner_id)
+        stacktrace = ''.join(traceback.format_exception(None, err, None))
         msg = "Exception in command **/%s**\n```logs\n%s```"
         await user.send(msg % (intr.command.name, stacktrace))
 
