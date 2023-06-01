@@ -71,7 +71,7 @@ class GPT(commands.Cog, name="gpt"):
             await intr.response.send_message(embed=em)
 
             if model_engine.startswith("gpt"):
-                completion = openai.ChatCompletion.create(
+                completion = await openai.ChatCompletion.acreate(
                     model=model_engine,
                     messages=[{"role": "user", "name": str(intr.user.id),
                                "content": query}],
@@ -83,7 +83,7 @@ class GPT(commands.Cog, name="gpt"):
 
                 response = completion.choices[0].message.content
             else:
-                completion = openai.Completion.create(
+                completion = await openai.Completion.acreate(
                     engine=model_engine,
                     prompt=query,
                     max_tokens=max_tokens,
