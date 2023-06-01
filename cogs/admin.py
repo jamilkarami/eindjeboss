@@ -242,7 +242,7 @@ class Admin(commands.Cog):
             if data["content"]:
                 msg_content = data["content"]
                 msg += f"_\"{msg_content}\"_"
-            if data["img_paths"]:
+            if data.get("img_paths"):
                 for path in data["img_paths"]:
                     attachments.append(discord.File(path))
 
