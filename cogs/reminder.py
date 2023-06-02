@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import logging as lg
-import os
 import time
 import uuid
 
@@ -15,7 +14,6 @@ from table2ascii import table2ascii as t2a
 
 from bot import Eindjeboss
 
-REMINDER_CHANNEL_ID = int(os.getenv("REMINDER_CHANNEL_ID"))
 DATE_PARSER_SETTINGS_AMS = {'PREFER_DATES_FROM': 'future',
                             'DATE_ORDER': 'DMY',
                             'TIMEZONE': 'Europe/Amsterdam',
@@ -177,7 +175,8 @@ class Reminder(commands.Cog):
         if not rem:
             return
         guild = await self.bot.fetch_guild(rem['guild'])
-        reminder_channel = await guild.fetch_channel(REMINDER_CHANNEL_ID)
+        reminder_channel_id = await self.bot.get_setting("reminder_channel_id")
+        reminder_channel = await guild.fetch_channel(reminder_channel_id)
 
         users = [await guild.fetch_member(user_id) for user_id in rem['users']]
         msg = rem['msg']

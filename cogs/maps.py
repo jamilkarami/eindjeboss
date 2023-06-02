@@ -26,7 +26,7 @@ class Maps(commands.Cog, name="maps"):
     @app_commands.command(name="place")
     async def place(self, interaction: discord.Interaction, query: str):
         api_key = os.getenv('GOOGLE_MAPS_API_KEY')
-        eindhoven_coords = os.getenv('COORDS')
+        eindhoven_coords = await self.bot.get_setting("eindhoven_coords")
 
         search_results = rq.get(SEARCH_URL,
                                 params={'key': api_key,

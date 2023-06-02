@@ -18,7 +18,6 @@ from util.vars.periodics import ALERT_DT, PSV_DT, WEATHER_DT
 FILE_DIR = os.getenv('FILE_DIR')
 
 # Weather
-CHANNEL_ID = int(os.getenv("ENGLISH_CHANNEL_ID"))
 OW = os.getenv("OPENWEATHER_API_KEY")
 CITY_QUERY = "EINDHOVEN, NL"
 CITY_NAME = "Eindhoven"
@@ -102,7 +101,8 @@ class Periodics(commands.Cog):
             f"[{__name__}] Scheduled {cnt} periodic message{'s'[:cnt ^ 1]}")
 
     async def send_siren_alert(self):
-        channel = await self.bot.fetch_channel(CHANNEL_ID)
+        channel_id = await self.bot.get_setting("lounge_channel_id")
+        channel = await self.bot.fetch_channel(channel_id)
         if datetime.today().weekday() == 0:
             view = discord.ui.View()
             view.add_item(discord.ui.Button(label=WARNING_SIREN_BUTTON_LABEL,
@@ -116,9 +116,10 @@ class Periodics(commands.Cog):
         await channel.send(message)
 
     async def send_weather_forecast(self):
+        channel_id = await self.bot.get_setting("lounge_channel_id")
         today = datetime.today().strftime('%d-%m-%Y')
         title = f"Weather in {CITY_NAME} Today ({today})"
-        channel = await self.bot.fetch_channel(CHANNEL_ID)
+        channel = await self.bot.fetch_channel(channel_id)
         weather_url = f"{BASE_URL}q={CITY_QUERY}&appid={OW}&cnt=6&units={UNIT}"
         response = requests.get(weather_url)
         weather_info = response.json()
@@ -217,7 +218,8 @@ class Periodics(commands.Cog):
                         "timezone": "Europe/Amsterdam",
                         "date": today.strftime('%Y-%m-%d'),
                         "venue": int(STADION_ID)}
-        channel = await self.bot.fetch_channel(CHANNEL_ID)
+        channel_id = await self.bot.get_setting("lounge_channel_id")
+        channel = await self.bot.fetch_channel(channel_id)
 
         headers = {
             "X-RapidAPI-Key": FOOTBALL_API_KEY,

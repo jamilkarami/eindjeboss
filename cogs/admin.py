@@ -65,7 +65,7 @@ class Admin(commands.Cog):
                            ln="The number of log lines to send.")
     async def logs(self, intr: discord.Interaction, ln: int = 20,
                    full: bool = False):
-        admin_role_id = int(os.getenv("ADMIN_ROLE_ID"))
+        admin_role_id = await self.bot.get_setting("admin_role_id")
         admin_role = intr.guild.get_role(admin_role_id)
 
         if not admin_role or admin_role not in intr.user.roles:
@@ -75,8 +75,7 @@ class Admin(commands.Cog):
                 "%s attempted to use /logs. Check integrations permissions.",
                 intr.user.name)
             return
-        file_dir = os.getenv("FILE_DIR")
-        logging_file_name = f"{file_dir}/logs/eindjeboss.log"
+        logging_file_name = f"{self.bot.file_dir}/logs/eindjeboss.log"
 
         if full:
             await intr.user.send(file=discord.File(logging_file_name))
@@ -192,7 +191,7 @@ class Admin(commands.Cog):
     @app_commands.command(name="handleticket")
     @app_commands.rename(ticket_id="ticket-id")
     async def handleticket(self, intr: discord.Interaction, ticket_id: str):
-        mod_category_id = int(os.getenv('MODERATOR_CATEGORY_ID'))
+        mod_category_id = await self.bot.get_setting("moderator_category_id")
         ticket = await self.tickets.find_one({"_id": ticket_id})
 
         if not ticket:
@@ -325,8 +324,8 @@ class Admin(commands.Cog):
 
             if self.message:
                 data['message_id'] = self.message.id
-                data['message_content'] = await get_msg_data(ticket_id,
-                                                             self.message)
+                data['message_content'] = await self.get_msg_data(ticket_id,
+                                                                  self.message)
                 msg_url = f"[Link]({self.message.jump_url})"
                 embed.add_field(name="Reference", value=msg_url)
 
@@ -348,24 +347,23 @@ class Admin(commands.Cog):
         async def on_timeout(self) -> None:
             return
 
+        async def get_msg_data(self, ticket: str, message: discord.Message):
+            data = {"url": message.jump_url,
+                    "message_author": message.author.mention}
 
-async def get_msg_data(ticket: str, message: discord.Message):
-    data = {"url": message.jump_url, "message_author": message.author.mention}
+            if message.content:
+                data['content'] = message.content
+            if message.attachments:
+                paths = []
+                for idx, attachment in enumerate(message.attachments, start=1):
+                    report_dir = f"{self.bot.file_dir}/reports/{ticket}/"
+                    path = report_dir + f"{idx}_{attachment.filename}"
+                    os.makedirs(report_dir, exist_ok=True)
+                    await attachment.save(path)
+                    paths.append(path)
+                data['img_paths'] = paths
 
-    if message.content:
-        data['content'] = message.content
-    if message.attachments:
-        file_dir = os.getenv("FILE_DIR")
-        paths = []
-        for idx, attachment in enumerate(message.attachments, start=1):
-            report_dir = f"{file_dir}/reports/{ticket}/"
-            path = report_dir + f"{idx}_{attachment.filename}"
-            os.makedirs(report_dir, exist_ok=True)
-            await attachment.save(path)
-            paths.append(path)
-        data['img_paths'] = paths
-
-    return data
+            return data
 
 
 class TicketStatus(Enum):

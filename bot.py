@@ -27,7 +27,8 @@ class Eindjeboss(commands.Bot):
             type=discord.ActivityType.listening, detail="", name=STATUS)
         super().__init__(command_prefix="!", case_insensitive=True,
                          intents=intents, activity=activity,
-                         owner_id=int(os.getenv('RAGDOLL_ID')))
+                         owner_id=int(os.getenv('OWNER_ID')))
+        self.file_dir = FILE_DIR
 
     async def setup_hook(self):
         if hasattr(time, 'tzset'):
@@ -43,7 +44,7 @@ class Eindjeboss(commands.Bot):
         await self.load_extensions()
         await self.load_settings()
 
-    async def get_setting(self, name: str, default = None):
+    async def get_setting(self, name: str, default=None):
         name = name.lower()
         try:
             return getattr(self, name)
