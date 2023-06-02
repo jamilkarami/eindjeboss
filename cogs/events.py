@@ -15,10 +15,6 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 from bot import Eindjeboss
 from util.util import download_img_from_url
 
-ANNOUNCEMENT_CH_ID = int(os.getenv('EVENT_ANNOUNCEMENT_CHANNEL_ID'))
-EVENTS_FORUM_ID = int(os.getenv('EVENTS_FORUM_ID'))
-EVENTS_ROLE_ID = int(os.getenv('EVENTS_ROLE_ID'))
-
 FILE_DIR = os.getenv('FILE_DIR')
 
 # set up static image files
@@ -54,7 +50,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_thread_create(self, thread: discord.Thread):
-        if thread.parent_id != EVENTS_FORUM_ID:
+        if thread.parent_id != await self.bot.get_setting("events_forum_id"):
             return
         await self.announce_event(thread)
 
@@ -63,7 +59,7 @@ class Events(commands.Cog):
                             thread: discord.Thread,
                             img_override: str = None):
         await intr.response.defer(ephemeral=True)
-        if thread.parent_id != EVENTS_FORUM_ID:
+        if thread.parent_id != await self.bot.get_setting("events_forum_id"):
             await intr.followup.send(
                 "This thread is not in the events forum", ephemeral=True)
             return
@@ -77,12 +73,19 @@ class Events(commands.Cog):
 
     async def announce_event(self, thread: discord.Thread,
                              img: str = None):
-        f_ch = await thread.guild.fetch_channel(EVENTS_FORUM_ID)
-        if thread.parent_id != EVENTS_FORUM_ID:
+        events_forum_id = await self.bot.get_setting("events_forum_id")
+        announcement_ch_id = await self.bot.get_setting(
+            "event_announcement_channel_id")
+
+        if thread.parent_id != events_forum_id:
             return
 
-        alert_channel = await thread.guild.fetch_channel(ANNOUNCEMENT_CH_ID)
-        ev_rl = discord.utils.get(thread.guild.roles, id=EVENTS_ROLE_ID)
+        f_ch = await thread.guild.fetch_channel(events_forum_id)
+
+        alert_channel = await thread.guild.fetch_channel(announcement_ch_id)
+        ev_rl = discord.utils.get(
+            thread.guild.roles,
+            id=await self.bot.get_setting("events_role_id"))
         await asyncio.sleep(3)
 
         img = await get_img(thread) if not img else download_img_from_url(img)

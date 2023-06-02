@@ -10,10 +10,6 @@ from discord.ext import commands
 
 from bot import Eindjeboss
 
-N_CHANNEL_ID = os.getenv("N_CHANNEL_ID")
-CANDY_CHANNEL_ID = os.getenv("CANDY_CHANNEL_ID")
-UNSAFE_CHANNELS = [N_CHANNEL_ID, CANDY_CHANNEL_ID]
-
 
 class Images(commands.Cog, name="Images"):
 

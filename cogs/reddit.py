@@ -23,9 +23,6 @@ from util.vars.periodics import REDDIT_EINDHOVEN_DT, TOP_REDDIT_DT
 SUBREDDIT_REGEX = "(?<!reddit.com)/r/[a-zA-Z0-9]{3,}"
 I_REDDIT_REGEX = "https://i.redd.it/[a-zA-Z0-9]*.(png|jpg)"
 I_IMGUR_REGEX = "https://i.imgur.com/[a-zA-Z0-9]*.(png|jpg)"
-ANIMALS_CHANNEL_ID = int(os.getenv("ANIMALS_CHANNEL_ID"))
-CARS_CHANNEL_ID = int(os.getenv("CARS_CHANNEL_ID"))
-FOOD_CHANNEL_ID = int(os.getenv("FOOD_CHANNEL_ID"))
 CATS = "cats"
 DOGS = "rarepuppers"
 CARS = "carporn"
@@ -39,9 +36,6 @@ EINDJE_SUBREDDIT_FILE = "eindjesubreddit.json"
 AUTHOR_NAME = "New post on /r/eindhoven"
 AUTHOR_URL = "https://www.reddit.com/r/eindhoven"
 EINDJE_ICON_URL = "https://i.imgur.com/ACCxKOr.png"
-
-guild_id = os.getenv('GUILD_ID')
-channel_id = os.getenv('REDDIT_CHANNEL_ID')
 
 
 try:
@@ -65,17 +59,22 @@ class Reddit(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         lg.info("[%s] Cog is ready", __name__)
+        animals_channel_id = await self.bot.get_setting("animals_channel_id")
+        cars_channel_id = await self.bot.get_setting("cars_channel_id")
+        food_channel_id = await self.bot.get_setting("cars_channel_id")
         crontab(TOP_REDDIT_DT, func=self.schedule_pic,
-                args=(ANIMALS_CHANNEL_ID, [CATS, DOGS], False), start=True)
+                args=(animals_channel_id, [CATS, DOGS], False), start=True)
         crontab(TOP_REDDIT_DT, func=self.schedule_pic,
-                args=(CARS_CHANNEL_ID, CARS, True), start=True)
+                args=(cars_channel_id, CARS, True), start=True)
         crontab(TOP_REDDIT_DT, func=self.schedule_pic,
-                args=(FOOD_CHANNEL_ID, FOOD, True), start=True)
+                args=(food_channel_id, FOOD, True), start=True)
         crontab(REDDIT_EINDHOVEN_DT, self.monitor_feed, start=True)
 
     async def monitor_feed(self):
+        guild_id = await self.bot.get_setting("guild_id")
+        reddit_channel_id = await self.bot.get_setting("reddit_channel_id")
         guild = await self.bot.fetch_guild(guild_id)
-        channel = await guild.fetch_channel(channel_id)
+        channel = await guild.fetch_channel(reddit_channel_id)
 
         posts = requests.get(
             f'https://www.reddit.com/r/{EINDHOVEN}/new/.json?limit=20',

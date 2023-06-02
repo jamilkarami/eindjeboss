@@ -1,6 +1,5 @@
 import json
 import logging as lg
-import os
 from datetime import datetime
 
 import discord
@@ -15,7 +14,6 @@ from util.vars.eind_vars import (ASS_EMOJI, CHANNEL_IGNORE_LIST,
                                  QUESTION_EMOJI, TABLE_FIX, TABLE_FLIP,
                                  WICKED_EMOJI)
 
-C_CH_ID = os.getenv("CANDY_CHANNEL_ID")
 MSG_URL = "https://discord.com/api/v9/guilds/{}/messages/search?author_id={}"
 
 SPONTAAN_STR = "SPONTAAN. REIZEN. DRANKJES MET DE MEIDEN. SHOPPEN. \
@@ -98,6 +96,8 @@ class Messages(commands.Cog, name="Messages"):
         if msg.channel.id in CHANNEL_IGNORE_LIST:
             return
 
+        ft_channel_id = self.bot.get_setting("420_channel_id")
+
         msg_cont = msg.content.lower()
 
         cur_time = datetime.now(pytz.timezone(TZ)).strftime("%H:%M")
@@ -105,12 +105,12 @@ class Messages(commands.Cog, name="Messages"):
         times_tt = ["04:22", "4:22", "16:22"]
 
         if '420' in msg_cont and \
-                str(msg.channel.id) == C_CH_ID and cur_time in times:
+                str(msg.channel.id) == ft_channel_id and cur_time in times:
             await msg.reply(f'Blaze it! {HARAM_EMOJI}')
             return
 
         if '422' in msg_cont and \
-                str(msg.channel.id) == C_CH_ID and cur_time in times_tt:
+                str(msg.channel.id) == ft_channel_id and cur_time in times_tt:
             await msg.reply(f'422 is 420 too {HARAM_EMOJI}')
             return
 
@@ -176,7 +176,7 @@ class Messages(commands.Cog, name="Messages"):
     def get_total_messages(self, guild_id, user_id):
         url = MSG_URL.format(guild_id, user_id)
         data = requests.get(url=url, headers={
-            "Authorization": os.getenv("DISCORD_AUTH_HEADER")})
+            "Authorization": self.bot.get_setting("discord_auth_header")})
         return json.loads(data.content)["total_results"]
 
 
