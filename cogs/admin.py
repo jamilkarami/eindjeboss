@@ -47,8 +47,8 @@ class Admin(commands.Cog):
     async def sync(self, ctx: commands.Context):
         if ctx.author.id != self.bot.owner_id:
             return
-        await self.bot.tree.sync()
-        await ctx.author.send("Synced")
+        await self.bot.sync_and_update()
+        await ctx.message.add_reaction("✅")
 
     @app_commands.command(name="reloadsettings")
     async def reload_settings(self, intr: discord.Interaction):
