@@ -59,15 +59,11 @@ class Reddit(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         lg.info("[%s] Cog is ready", __name__)
-        animals_channel_id = await self.bot.get_setting("animals_channel_id")
-        cars_channel_id = await self.bot.get_setting("cars_channel_id")
-        food_channel_id = await self.bot.get_setting("cars_channel_id")
-        crontab(TOP_REDDIT_DT, func=self.schedule_pic,
-                args=(animals_channel_id, [CATS, DOGS], False), start=True)
-        crontab(TOP_REDDIT_DT, func=self.schedule_pic,
-                args=(cars_channel_id, CARS, True), start=True)
-        crontab(TOP_REDDIT_DT, func=self.schedule_pic,
-                args=(food_channel_id, FOOD, True), start=True)
+        daily_reddit = await self.bot.get_setting("daily_reddit")
+        for k, v in daily_reddit.items():
+            crontab(TOP_REDDIT_DT, func=self.schedule_pic,
+                    args=(int(k), v, True), start=True)
+
         crontab(REDDIT_EINDHOVEN_DT, self.monitor_feed, start=True)
 
     async def monitor_feed(self):
