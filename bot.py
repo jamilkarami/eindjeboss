@@ -41,8 +41,16 @@ class Eindjeboss(commands.Bot):
 
         self.dbmanager = DbManager()
         self.settings = self.dbmanager.get_collection('settings')
+        self.cmds = self.dbmanager.get_collection('commands')
         await self.load_extensions()
         await self.load_settings()
+
+    async def sync_and_update(self):
+        cmds = await self.tree.sync()
+        cmd_mentions = [{"_id": cmd.name, "mention": cmd.mention}
+                        for cmd in cmds]
+        await self.cmds.drop()
+        await self.cmds.insert_many(cmd_mentions)
 
     async def get_setting(self, name: str, default=None):
         name = name.lower()
