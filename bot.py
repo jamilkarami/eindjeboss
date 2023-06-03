@@ -47,10 +47,9 @@ class Eindjeboss(commands.Bot):
 
     async def sync_and_update(self):
         cmds = await self.tree.sync()
-        cmd_mentions = [{"_id": cmd.name, "mention": cmd.mention}
-                        for cmd in cmds]
+        cmd_mentions = {{f"/{cmd.name}": cmd.mention} for cmd in cmds}
         await self.cmds.drop()
-        await self.cmds.insert_many(cmd_mentions)
+        await self.cmds.insert_one(cmd_mentions)
 
     async def get_setting(self, name: str, default=None):
         name = name.lower()

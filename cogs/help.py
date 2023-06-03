@@ -28,7 +28,7 @@ class Help(commands.Cog, name="help"):
     async def help(self, intr: discord.Interaction):
         helptext = await self.helpcoll.find_one()
 
-        modules = get_modules(helptext)
+        modules = await self.get_modules(helptext)
         main_embed = mk_embed("What do you need help with?", modules, True)
 
         disclaimer = "\n".join(helptext["general"]["desc"])
@@ -38,6 +38,18 @@ class Help(commands.Cog, name="help"):
                                          view=MainView(helptext, main_embed),
                                          ephemeral=True)
         lg.info(f"{intr.user.name} used /help")
+
+    async def get_modules(self, data):
+        modules = {}
+        cmds = await self.bot.cmds.find_one()
+
+        for k, v in data.items():
+            if k in ["_id", "general"]:
+                continue
+            keys = [cmds.get(key, key) for key in v.keys()]
+            modules[k] = ", ".join(keys)
+
+        return modules
 
 
 class MainView(discord.ui.View):
@@ -123,14 +135,3 @@ def mk_embed(title, fields: dict, inline) -> discord.Embed:
             v = "\n".join(v)
         embed.add_field(name=k, value=v, inline=inline)
     return embed
-
-
-def get_modules(data):
-    modules = {}
-
-    for k, v in data.items():
-        if k in ["_id", "general"]:
-            continue
-        modules[k] = ", ".join(v.keys())
-
-    return modules
