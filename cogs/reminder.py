@@ -14,11 +14,6 @@ from table2ascii import table2ascii as t2a
 
 from bot import Eindjeboss
 
-DATE_PARSER_SETTINGS_AMS = {'PREFER_DATES_FROM': 'future',
-                            'DATE_ORDER': 'DMY',
-                            'TIMEZONE': 'Europe/Amsterdam',
-                            'RETURN_AS_TIMEZONE_AWARE': True}
-
 
 class Reminder(commands.Cog):
     loop = asyncio.get_running_loop()
@@ -40,7 +35,13 @@ class Reminder(commands.Cog):
         rem_id = str(uuid.uuid1())[:5]
         await intr.response.defer()
 
-        tm = dateparser.parse(r_time, settings=DATE_PARSER_SETTINGS_AMS)
+        tz = await self.bot.get_setting("timezone")
+        date_parser_settings = {"PREFER_DATES_FROM": "future",
+                                "DATE_ORDER": "DMY",
+                                "TIMEZONE": tz,
+                                "RETURN_AS_TIMEZONE_AWARE": True}
+
+        tm = dateparser.parse(r_time, settings=date_parser_settings)
 
         if not tm:
             await intr.followup.send(
