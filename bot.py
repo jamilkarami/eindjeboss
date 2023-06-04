@@ -31,10 +31,6 @@ class Eindjeboss(commands.Bot):
         self.file_dir = FILE_DIR
 
     async def setup_hook(self):
-        if hasattr(time, 'tzset'):
-            os.environ['TZ'] = 'Europe/Amsterdam'
-            time.tzset()
-
         if os.path.exists(TEMP) and os.path.isdir(TEMP):
             shutil.rmtree(TEMP)
         shutil.copytree("default_files", FILE_DIR, dirs_exist_ok=True)
@@ -44,6 +40,10 @@ class Eindjeboss(commands.Bot):
         self.cmds = self.dbmanager.get_collection('commands')
         await self.load_extensions()
         await self.load_settings()
+
+        if hasattr(time, 'tzset'):
+            os.environ['TZ'] = self.__getattribute__("timezone")
+            time.tzset()
 
     async def sync_and_update(self):
         cmds = await self.tree.sync()

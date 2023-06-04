@@ -212,10 +212,11 @@ class Periodics(commands.Cog):
     async def check_psv_game(self):
         today = date.today()
 
+        tz = await self.bot.get_setting("timezone")
         season_year = today.year-1 if today.month < 7 else today.year
 
         query_string = {"season": season_year,
-                        "timezone": "Europe/Amsterdam",
+                        "timezone": tz,
                         "date": today.strftime('%Y-%m-%d'),
                         "venue": int(STADION_ID)}
         channel_id = await self.bot.get_setting("lounge_channel_id")

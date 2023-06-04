@@ -21,7 +21,6 @@ SPECIAALBIER. SUSHI. SARCASME. DANSJES. BOULDEREN. TATOEAGES. UITGAAN. \
 TERRASJES."
 OPINION = "The Eindhoven Community Discord's collectively humble opinion on %s"
 TZ = "Europe/Amsterdam"
-MAX_MEMBERS_TAG = 50
 MSG_TOTAL_DESC = "Find out how many messages you (or someone else) \
 have/has sent in total in this server."
 
@@ -96,11 +95,12 @@ class Messages(commands.Cog, name="Messages"):
         if msg.channel.id in CHANNEL_IGNORE_LIST:
             return
 
-        ft_channel_id = self.bot.get_setting("420_channel_id")
+        tz = await self.bot.get_setting("timezone")
+        ft_channel_id = await self.bot.get_setting("420_channel_id")
 
         msg_cont = msg.content.lower()
 
-        cur_time = datetime.now(pytz.timezone(TZ)).strftime("%H:%M")
+        cur_time = datetime.now(pytz.timezone(tz)).strftime("%H:%M")
         times = ["04:20", "4:20", "16:20"]
         times_tt = ["04:22", "4:22", "16:22"]
 
@@ -137,6 +137,7 @@ class Messages(commands.Cog, name="Messages"):
 
     @app_commands.command(name="tagall")
     async def tagall(self, intr: discord.Interaction):
+        max_members_tag = await self.bot.get_setting("max_members_tag")
         if type(intr.channel).__name__ != "Thread":
             await intr.response.send_message(
                 "You can only use this command inside threads.",
@@ -144,9 +145,9 @@ class Messages(commands.Cog, name="Messages"):
             return
 
         users = await intr.channel.fetch_members()
-        if len(users) > MAX_MEMBERS_TAG:
+        if len(users) > max_members_tag:
             await intr.response.send_message(
-                "This thread has too many members. (>%s)" % MAX_MEMBERS_TAG,
+                "This thread has too many members. (>%s)" % max_members_tag,
                 ephemeral=True)
             return
 
@@ -163,20 +164,21 @@ class Messages(commands.Cog, name="Messages"):
                           description=MSG_TOTAL_DESC,)
     async def msgtotal(self, intr: discord.Interaction,
                        user: discord.Member = None):
+        auth_header = await self.bot.get_setting("discord_auth_header")
         guild_id = intr.guild_id
         if not user:
             user = intr.user
-        ttl_msg = self.get_total_messages(guild_id, user.id)
+        ttl_msg = self.get_total_messages(guild_id, user.id, auth_header)
 
         await intr.response.send_message(
             "%s has sent a total of around %s messages in this server."
             % (user.mention, ttl_msg))
         lg.info("Sent message total for %s to %s", user.name, intr.user.name)
 
-    def get_total_messages(self, guild_id, user_id):
+    def get_total_messages(self, guild_id, user_id, auth_header):
         url = MSG_URL.format(guild_id, user_id)
         data = requests.get(url=url, headers={
-            "Authorization": self.bot.get_setting("discord_auth_header")})
+            "Authorization": auth_header})
         return json.loads(data.content)["total_results"]
 
 

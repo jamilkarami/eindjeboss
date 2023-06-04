@@ -23,6 +23,7 @@ class F1(commands.Cog):
 
     @app_commands.command(name="nextf1race")
     async def nextf1race(self, interaction: discord.Interaction):
+        tz = await self.bot.get_setting("timezone")
         next_race = self.get_next_f1_race()
         if not next_race:
             await interaction.response.send_message(
@@ -31,7 +32,7 @@ class F1(commands.Cog):
             return
 
         title = "%s %s" % (next_race['season'], next_race['raceName'])
-        times = self.get_session_times(next_race)
+        times = self.get_session_times(next_race, tz)
 
         embed = discord.Embed(title=title, url=next_race['url'],
                               color=discord.Color.red())
@@ -44,7 +45,7 @@ class F1(commands.Cog):
         lg.info('Sent next F1 race information to %s'
                 % interaction.user.name)
 
-    def get_session_times(self, data):
+    def get_session_times(self, data, tz):
         first_practice = data.get('FirstPractice')
         second_practice = data.get('SecondPractice')
         third_practice = data.get('ThirdPractice')
@@ -58,20 +59,20 @@ class F1(commands.Cog):
                        'Sprint': sprint,
                        'Qualifying': qualifying,
                        'Race': race}
-        times_ams = self.get_times_ams(times_local)
+        times_ams = self.get_times_tz(times_local, tz)
         times_ams = {k: times_ams[k] for k in sorted(times_ams)}
         return times_ams
 
-    def get_times_ams(self, times_local):
+    def get_times_tz(self, times_local, timezone):
         tz_local = pytz.timezone('UTC')
-        tz_ams = pytz.timezone('Europe/Amsterdam')
+        tz_choice = pytz.timezone(timezone)
         times_ams = {}
         for k, v in times_local.items():
             if v:
                 time_str = '%s %s' % (v['date'], v['time'])
                 time_ams = tz_local.localize(
                     datetime.strptime(
-                        time_str, '%Y-%m-%d %H:%M:%SZ')).astimezone(tz_ams)
+                        time_str, '%Y-%m-%d %H:%M:%SZ')).astimezone(tz_choice)
                 times_ams[time_ams] = k
 
         return times_ams
