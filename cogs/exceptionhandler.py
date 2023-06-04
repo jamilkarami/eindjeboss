@@ -22,6 +22,8 @@ class ExceptionHandler(commands.Cog):
         stacktrace = ''.join(traceback.format_exception(None, err, None))
         msg = "Exception in command **/%s**\n```logs\n%s```"
         await user.send(msg % (intr.command.name, stacktrace))
+        await intr.response.send_message(
+            "Something went wrong. Please try again later.", ephemeral=True)
 
 
 async def setup(client: commands.Bot):
