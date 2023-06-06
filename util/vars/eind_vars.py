@@ -111,5 +111,5 @@ CAR_SUBS = [
     "rallyporn",
 ]
 HOT_WHEELS_SUB = "HotWheels"
-TABLE_FLIP = "(╯°□°）╯︵ ┻━┻"
+TABLE_FLIP = "︵ ┻━┻"
 TABLE_FIX = "┬─┬ ノ( ゜-゜ノ)"
