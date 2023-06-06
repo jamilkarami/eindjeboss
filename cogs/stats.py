@@ -1,4 +1,5 @@
 import datetime
+from datetime import timedelta
 import logging as lg
 
 import discord
@@ -44,7 +45,7 @@ class Stats(commands.Cog):
 
     async def sync_stats(self):
         stats = load_json_file(get_file(STATS_FILE_NAME))
-        today = datetime.date.today()
+        today = datetime.date.today() - timedelta(days=1)
         trunc = datetime.datetime(today.year, today.month, today.day)
         data = {
             "_id": today.strftime("%Y/%m/%d"),
