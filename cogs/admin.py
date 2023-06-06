@@ -60,6 +60,12 @@ class Admin(commands.Cog):
         await self.bot.load_settings()
         await intr.followup.send("Settings reloaded", ephemeral=True)
 
+    @app_commands.command(name="now")
+    async def now(self, intr: discord.Interaction):
+        tz = await self.bot.get_setting("timezone")
+        resp = dt.now(tz=tz)
+        await intr.response.send_message(resp, ephemeral=True)
+
     @app_commands.command(name='logs')
     @app_commands.describe(full="Choose true if you want the full log file.",
                            ln="The number of log lines to send.")
