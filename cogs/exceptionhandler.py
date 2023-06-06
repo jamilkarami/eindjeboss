@@ -18,7 +18,7 @@ class ExceptionHandler(commands.Cog):
     @commands.Cog.listener()
     async def on_app_command_error(self, intr: discord.Interaction,
                                    err: discord.app_commands.AppCommandError):
-        user = await intr.guild.fetch_member(self.bot.owner_id)
+        user = await self.bot.fetch_user(self.bot.owner_id)
         stacktrace = ''.join(traceback.format_exception(None, err, None))
         msg = "Exception in command **/%s**\n```logs\n%s```"
         await user.send(msg % (intr.command.name, stacktrace))
