@@ -1,5 +1,6 @@
 import logging as lg
 import os
+import pytz
 import time
 import uuid
 from datetime import datetime as dt
@@ -63,7 +64,7 @@ class Admin(commands.Cog):
     @app_commands.command(name="now")
     async def now(self, intr: discord.Interaction):
         tz = await self.bot.get_setting("timezone")
-        resp = dt.now(tz=tz)
+        resp = dt.now(tz=pytz.timezone(tz))
         await intr.response.send_message(resp, ephemeral=True)
 
     @app_commands.command(name='logs')
