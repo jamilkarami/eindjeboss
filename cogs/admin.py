@@ -143,7 +143,7 @@ class Admin(commands.Cog):
     @app_commands.command(name="modmail")
     async def modmail(self, intr: discord.Interaction):
         await intr.response.send_modal(
-            self.TicketModal(self.tickets, self.bot))
+            TicketModal(self.tickets, self.bot))
         lg.info("Sent ticket modal to %s", intr.user.display_name)
 
     @app_commands.command(name="opentickets")
