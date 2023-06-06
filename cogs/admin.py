@@ -1,12 +1,12 @@
 import logging as lg
 import os
-import pytz
 import time
 import uuid
 from datetime import datetime as dt
 from enum import Enum
 
 import discord
+import pytz
 from discord import app_commands
 from discord.ext import commands
 from discord.ui import Modal, TextInput
@@ -53,9 +53,7 @@ class Admin(commands.Cog):
 
     @app_commands.command(name="reloadsettings")
     async def reload_settings(self, intr: discord.Interaction):
-        if intr.user.id != self.bot.owner_id:
-            await intr.response.send_message(
-                "You are not allowed to use this command.", ephemeral=True)
+        if not await self.validate(intr):
             return
         await intr.response.defer(ephemeral=True)
         await self.bot.load_settings()
@@ -72,16 +70,11 @@ class Admin(commands.Cog):
                            ln="The number of log lines to send.")
     async def logs(self, intr: discord.Interaction, ln: int = 20,
                    full: bool = False):
-        admin_role_id = await self.bot.get_setting("admin_role_id")
-        admin_role = intr.guild.get_role(admin_role_id)
+        role_id = await self.bot.get_setting("admin_role_id")
 
-        if not admin_role or admin_role not in intr.user.roles:
-            await intr.response.send_message(
-                "You are not allowed to use this command.")
-            lg.warn(
-                "%s attempted to use /logs. Check integrations permissions.",
-                intr.user.name)
+        if not await self.validate(intr, role_id):
             return
+
         logging_file_name = f"{self.bot.file_dir}/logs/eindjeboss.log"
 
         if full:
@@ -108,6 +101,9 @@ class Admin(commands.Cog):
     @app_commands.rename(name="setting-name", new_vl="new-value")
     async def set(self, intr: discord.Interaction, name: str = None,
                   new_vl: str = None):
+        if not await self.validate(intr):
+            return
+
         if not name:
             settings = await self.bot.get_settings()
 
@@ -133,6 +129,9 @@ class Admin(commands.Cog):
     @app_commands.rename(setting="setting-name", value="initial-value")
     async def createsetting(self, intr: discord.Interaction, setting: str,
                             description: str, value: str):
+        if not await self.validate(intr):
+            return
+
         if value.isdigit():
             value = int(value)
         await self.bot.add_setting({"_id": setting,
@@ -284,93 +283,110 @@ class Admin(commands.Cog):
         await intr.response.send_message(TICKET_CLOSED, ephemeral=True)
         lg.info('Ticket %s closed by %s', ticket_id, intr.user.name)
 
-    class TicketModal(Modal):
+    async def validate(self, intr: discord.Interaction, role_id: int = None):
+        if intr.user.id == self.bot.owner_id:
+            return True
 
-        def __init__(self, collection, bot: Eindjeboss,
-                     message: discord.Message = None):
-            super().__init__(title="Submit a ticket", timeout=600)
-            self.collection = collection
-            self.message = message
-            self.bot = bot
+        if role_id:
+            role = intr.guild.get_role(role_id)
+            if role in intr.user.roles:
+                return True
 
-        ticket_title = TextInput(
-            label="Subject", style=discord.TextStyle.short,
-            placeholder="Short, descriptive title goes here")
+        await intr.response.send_message(
+            "You are not allowed to use this command.", ephemeral=True)
+        await self.bot.alert_owner(
+            "%s tried to use /%s. Check integration permissions"
+            % (intr.user.name, intr.data.get("name")))
+        return False
 
-        description = TextInput(label="Description",
-                                style=discord.TextStyle.paragraph,
-                                placeholder="Tell us what's up",
-                                max_length=1024)
 
-        async def on_submit(self, intr: discord.Interaction):
-            ticket_channel_id = await self.bot.get_setting(
-                "modmail_channel", None)
-            ticket_id = str(uuid.uuid1())[:5]
+class TicketModal(Modal):
 
-            tick_type = "report" if self.message else "ticket"
-            msg = (f"New {tick_type} submitted by {intr.user.display_name}."
-                   f" Respond to it with /handleticket {ticket_id}")
+    def __init__(self, collection, bot: Eindjeboss,
+                 message: discord.Message = None):
+        super().__init__(title="Submit a ticket", timeout=600)
+        self.collection = collection
+        self.message = message
+        self.bot = bot
 
-            embed_author = f"Ticket by {intr.user.display_name}"
-            embed_title = self.ticket_title.value
-            embed_description = self.description.value
+    ticket_title = TextInput(
+        label="Subject", style=discord.TextStyle.short,
+        placeholder="Short, descriptive title goes here")
 
-            embed = discord.Embed(title=embed_title,
-                                  description=embed_description,
-                                  color=discord.Color.red())
+    description = TextInput(label="Description",
+                            style=discord.TextStyle.paragraph,
+                            placeholder="Tell us what's up",
+                            max_length=1024)
 
-            embed.set_author(name=embed_author)
+    async def on_submit(self, intr: discord.Interaction):
+        ticket_channel_id = await self.bot.get_setting(
+            "modmail_channel", None)
+        ticket_id = str(uuid.uuid1())[:5]
 
-            data = {'_id': ticket_id,
-                    'author': intr.user.display_name,
-                    'author_id': intr.user.id,
-                    'title': self.ticket_title.value,
-                    'description': self.description.value,
-                    'sub_time': int(time.time()),
-                    'status': TicketStatus.OPEN.value}
+        tick_type = "report" if self.message else "ticket"
+        msg = (f"New {tick_type} submitted by {intr.user.display_name}."
+               f" Respond to it with /handleticket {ticket_id}")
 
-            if self.message:
-                data['message_id'] = self.message.id
-                data['message_content'] = await self.get_msg_data(ticket_id,
-                                                                  self.message)
-                msg_url = f"[Link]({self.message.jump_url})"
-                embed.add_field(name="Reference", value=msg_url)
+        embed_author = f"Ticket by {intr.user.display_name}"
+        embed_title = self.ticket_title.value
+        embed_description = self.description.value
 
-            self.collection.insert_one(data)
-            await intr.response.send_message("Ticket submitted.",
-                                             ephemeral=True)
+        embed = discord.Embed(title=embed_title,
+                              description=embed_description,
+                              color=discord.Color.red())
 
-            channel = await intr.guild.fetch_channel(ticket_channel_id)
-            await channel.send(content=msg, embed=embed)
-            lg.info("%s submitted ticket %s", intr.user.name, ticket_id)
+        embed.set_author(name=embed_author)
 
-        async def on_error(self, intr: discord.Interaction,
-                           error: Exception) -> None:
-            await intr.response.send_message(
-                "There was an error with the ticket. Please try again.",
-                ephemeral=True)
-            lg.error(error)
+        data = {'_id': ticket_id,
+                'author': intr.user.display_name,
+                'author_id': intr.user.id,
+                'title': self.ticket_title.value,
+                'description': self.description.value,
+                'sub_time': int(time.time()),
+                'status': TicketStatus.OPEN.value}
 
-        async def on_timeout(self) -> None:
-            return
+        if self.message:
+            data['message_id'] = self.message.id
+            data['message_content'] = await self.get_msg_data(ticket_id,
+                                                              self.message)
+            msg_url = f"[Link]({self.message.jump_url})"
+            embed.add_field(name="Reference", value=msg_url)
 
-        async def get_msg_data(self, ticket: str, message: discord.Message):
-            data = {"url": message.jump_url,
-                    "message_author": message.author.mention}
+        self.collection.insert_one(data)
+        await intr.response.send_message("Ticket submitted.",
+                                         ephemeral=True)
 
-            if message.content:
-                data['content'] = message.content
-            if message.attachments:
-                paths = []
-                for idx, attachment in enumerate(message.attachments, start=1):
-                    report_dir = f"{self.bot.file_dir}/reports/{ticket}/"
-                    path = report_dir + f"{idx}_{attachment.filename}"
-                    os.makedirs(report_dir, exist_ok=True)
-                    await attachment.save(path)
-                    paths.append(path)
-                data['img_paths'] = paths
+        channel = await intr.guild.fetch_channel(ticket_channel_id)
+        await channel.send(content=msg, embed=embed)
+        lg.info("%s submitted ticket %s", intr.user.name, ticket_id)
 
-            return data
+    async def on_error(self, intr: discord.Interaction,
+                       error: Exception) -> None:
+        await intr.response.send_message(
+            "There was an error with the ticket. Please try again.",
+            ephemeral=True)
+        lg.error(error)
+
+    async def on_timeout(self) -> None:
+        return
+
+    async def get_msg_data(self, ticket: str, message: discord.Message):
+        data = {"url": message.jump_url,
+                "message_author": message.author.mention}
+
+        if message.content:
+            data['content'] = message.content
+        if message.attachments:
+            paths = []
+            for idx, attachment in enumerate(message.attachments, start=1):
+                report_dir = f"{self.bot.file_dir}/reports/{ticket}/"
+                path = report_dir + f"{idx}_{attachment.filename}"
+                os.makedirs(report_dir, exist_ok=True)
+                await attachment.save(path)
+                paths.append(path)
+            data['img_paths'] = paths
+
+        return data
 
 
 class TicketStatus(Enum):
