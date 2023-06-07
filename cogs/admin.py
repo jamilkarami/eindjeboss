@@ -101,7 +101,9 @@ class Admin(commands.Cog):
     @app_commands.rename(name="setting-name", new_vl="new-value")
     async def set(self, intr: discord.Interaction, name: str = None,
                   new_vl: str = None):
-        if not await self.validate(intr):
+        role_id = await self.bot.get_setting("admin_role_id")
+
+        if not await self.validate(intr, role_id):
             return
 
         if not name:
@@ -148,6 +150,11 @@ class Admin(commands.Cog):
 
     @app_commands.command(name="opentickets")
     async def opentickets(self, intr: discord.Interaction):
+        role_id = await self.bot.get_setting("admin_role_id")
+
+        if not await self.validate(intr, role_id):
+            return
+
         tickets = await self.tickets.find(
             {'status': TicketStatus.OPEN.value}).to_list(length=88675309)
 
@@ -172,6 +179,11 @@ class Admin(commands.Cog):
     @app_commands.command(name="usertickets")
     async def usertickets(self, intr: discord.Interaction,
                           user: discord.Member):
+        role_id = await self.bot.get_setting("admin_role_id")
+
+        if not await self.validate(intr, role_id):
+            return
+
         tickets = await self.tickets.find(
             {'author_id': user.id}).to_list(length=88675309)
 
@@ -197,6 +209,11 @@ class Admin(commands.Cog):
     @app_commands.command(name="handleticket")
     @app_commands.rename(ticket_id="ticket-id")
     async def handleticket(self, intr: discord.Interaction, ticket_id: str):
+        role_id = await self.bot.get_setting("admin_role_id")
+
+        if not await self.validate(intr, role_id):
+            return
+
         mod_category_id = await self.bot.get_setting("moderator_category_id")
         ticket = await self.tickets.find_one({"_id": ticket_id})
 
@@ -266,6 +283,11 @@ class Admin(commands.Cog):
     @app_commands.rename(ticket_id="ticket-id")
     async def closeticket(self, intr: discord.Interaction,
                           ticket_id: str):
+        role_id = await self.bot.get_setting("admin_role_id")
+
+        if not await self.validate(intr, role_id):
+            return
+
         ticket = await self.tickets.find_one({"_id": ticket_id})
 
         if not ticket:
