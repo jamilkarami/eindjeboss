@@ -100,8 +100,10 @@ class Eindjeboss(commands.Bot):
 
 
 async def main():
-    logging_file_name = f"{FILE_DIR}/logs/eindjeboss.log"
+    logging_dir = f"{FILE_DIR}/logs"
+    logging_file_name = logging_dir + "/eindjeboss.log"
 
+    os.makedirs(logging_dir, exist_ok=True)
     if not Path(logging_file_name).is_file():
         open(logging_file_name, 'a').close()
 
