@@ -105,12 +105,12 @@ class Messages(commands.Cog, name="Messages"):
         times_tt = ["04:22", "4:22", "16:22"]
 
         if '420' in msg_cont and \
-                str(msg.channel.id) == ft_channel_id and cur_time in times:
+                msg.channel.id == ft_channel_id and cur_time in times:
             await msg.reply(f'Blaze it! {HARAM_EMOJI}')
             return
 
         if '422' in msg_cont and \
-                str(msg.channel.id) == ft_channel_id and cur_time in times_tt:
+                msg.channel.id == ft_channel_id and cur_time in times_tt:
             await msg.reply(f'422 is 420 too {HARAM_EMOJI}')
             return
 
