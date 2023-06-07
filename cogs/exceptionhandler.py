@@ -5,6 +5,8 @@ from discord.ext import commands
 
 from bot import Eindjeboss
 
+ERROR_MSG = "Something went wrong. Please try again later."
+
 
 class ExceptionHandler(commands.Cog):
 
@@ -22,8 +24,11 @@ class ExceptionHandler(commands.Cog):
         stacktrace = ''.join(traceback.format_exception(None, err, None))
         msg = "Exception in command **/%s**\n```logs\n%s```"
         await user.send(msg % (intr.command.name, stacktrace))
-        await intr.response.send_message(
-            "Something went wrong. Please try again later.", ephemeral=True)
+
+        if intr.response.is_done():
+            await intr.edit_original_response(content=ERROR_MSG)
+            return
+        await intr.response.send_message(ERROR_MSG, ephemeral=True)
 
 
 async def setup(client: commands.Bot):
