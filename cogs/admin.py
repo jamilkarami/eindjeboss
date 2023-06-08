@@ -12,7 +12,7 @@ from discord.ext import commands
 from discord.ui import Modal, TextInput
 
 from bot import Eindjeboss
-from util.util import tabulate
+from util.util import download_img_from_url, tabulate
 
 TICKET_NOT_FOUND = ("Failed to find a ticket with this ID"
                     " or the channel you're in isn't a ticket channel."
@@ -320,6 +320,40 @@ class Admin(commands.Cog):
             "%s tried to use /%s. Check integration permissions"
             % (intr.user.name, intr.data.get("name")))
         return False
+
+    @app_commands.command(name="copyemoji")
+    @app_commands.rename(emoji_str="emoji")
+    async def copyemoji(self, intr: discord.Interaction,
+                        emoji_str: str, name: str = None):
+        await intr.response.defer(ephemeral=True)
+        emoji = discord.PartialEmoji.from_str(emoji_str)
+
+        if not emoji.url or not emoji.id:
+            await intr.followup.send("Invalid emoji", ephemeral=True)
+            return
+
+        try:
+            await intr.guild.fetch_emoji(emoji.id)
+        except Exception:
+            pass
+        else:
+            await intr.followup.send("This emoji is from this server.",
+                                     ephemeral=True)
+            return
+
+        if not name:
+            name = emoji.name
+
+        img_name = emoji.url.split("/")[-1]
+        img_path = f"temp/{uuid.uuid4()}_{img_name}"
+        img_file = download_img_from_url(
+            emoji.url + "?size=96&quality=lossless", img_path)
+
+        with open(img_file, 'rb') as ef:
+            await intr.guild.create_custom_emoji(
+                name=name, image=ef.read(), reason="Copied Emoji")
+        await intr.followup.send("Done", ephemeral=True)
+        os.remove(img_file)
 
 
 class TicketModal(Modal):
