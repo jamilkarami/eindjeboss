@@ -124,6 +124,9 @@ class Admin(commands.Cog):
             await intr.response.send_message(msg, ephemeral=True)
             return
 
+        if new_vl.isdigit():
+            new_vl = int(new_vl)
+
         old_doc = await self.bot.update_setting({"_id": name, "value": new_vl})
         if not old_doc:
             await intr.response.send_message(
