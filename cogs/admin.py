@@ -122,6 +122,7 @@ class Admin(commands.Cog):
             msg = "%s | %s | %s" % (setting['_id'], setting['value'],
                                     setting['description'])
             await intr.response.send_message(msg, ephemeral=True)
+            return
 
         old_doc = await self.bot.update_setting({"_id": name, "value": new_vl})
         if not old_doc:
