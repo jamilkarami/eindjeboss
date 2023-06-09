@@ -43,6 +43,13 @@ class Stats(commands.Cog):
         stats_file[name] = stats_file.get(name, 0) + 1
         save_json_file(stats_file, get_file(STATS_FILE_NAME))
 
+    @commands.Cog.listener()
+    async def on_command_completion(self, ctx: commands.Context):
+        cmd_name = ctx.command.name
+        if cmd_name in STATS_BLACKLIST:
+            return
+        self.update_stats(f"!{cmd_name}")
+
     async def sync_stats(self):
         stats = load_json_file(get_file(STATS_FILE_NAME))
         today = datetime.date.today() - timedelta(days=1)
