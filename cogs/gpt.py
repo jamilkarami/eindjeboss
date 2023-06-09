@@ -94,6 +94,7 @@ class GPT(commands.Cog, name="gpt"):
 
                 response = completion.choices[0].text.strip()
 
+            response = response.replace("As an AI language model, ", "")
             em.description = response
             em.color = discord.Color.green()
             await intr.edit_original_response(embed=em)
