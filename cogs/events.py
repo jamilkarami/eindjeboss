@@ -55,10 +55,15 @@ class Events(commands.Cog):
         await self.announce_event(thread)
 
     @app_commands.command(name="announceevent")
+    @app_commands.rename(thread_id="thread")
     async def announceevent(self, intr: discord.Interaction,
-                            thread: discord.Thread,
-                            img_override: str = None):
+                            thread_id: str, img_override: str = None):
         await intr.response.defer(ephemeral=True)
+        thread = await self.bot.fetch_channel(int(thread_id))
+        if not isinstance(thread, discord.Thread):
+            await intr.followup.send(
+                f"Cannot find a thread with ID {thread_id}", ephemeral=True)
+            return
         if thread.parent_id != await self.bot.get_setting("events_forum_id"):
             await intr.followup.send(
                 "This thread is not in the events forum", ephemeral=True)
