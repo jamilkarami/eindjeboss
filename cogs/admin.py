@@ -58,12 +58,14 @@ class Admin(commands.Cog):
         await intr.response.defer(ephemeral=True)
         await self.bot.load_settings()
         await intr.followup.send("Settings reloaded", ephemeral=True)
+        lg.info("Reloaded settings")
 
     @app_commands.command(name="now")
     async def now(self, intr: discord.Interaction):
         tz = await self.bot.get_setting("timezone")
         resp = dt.now(tz=pytz.timezone(tz))
         await intr.response.send_message(resp, ephemeral=True)
+        lg.info("%s used /now")
 
     @app_commands.command(name='logs')
     @app_commands.describe(full="Choose true if you want the full log file.",
@@ -136,6 +138,8 @@ class Admin(commands.Cog):
         old_val = old_doc["value"]
         msg = f"Updated setting {name} with value {new_vl} (was {old_val})"
         await intr.response.send_message(msg, ephemeral=True)
+        lg.info("%s changed setting %s from %s to %s", intr.user.name, name,
+                old_val, new_vl)
 
     @app_commands.command(name="createsetting")
     @app_commands.rename(setting="setting-name", value="initial-value")
@@ -151,6 +155,8 @@ class Admin(commands.Cog):
                                     "value": value})
         msg = f"Created setting **{setting}** with initial value **{value}**"
         await intr.response.send_message(msg, ephemeral=True)
+        lg.info("%s created setting %s with value %s", intr.user.name, setting,
+                value)
 
     @app_commands.command(name="modmail")
     async def modmail(self, intr: discord.Interaction):
@@ -259,6 +265,7 @@ class Admin(commands.Cog):
                                    "status": TicketStatus.IN_PROGESS.value,
                                    "updated": int(time.time())}}])
 
+        lg.info("%s started handling ticket %s", intr.user.name, ticket_id)
         msg = f"**Ticket submitted by {user.mention}**\n\n"
         embed = discord.Embed(title=ticket_title, description=description)
         await rep_channel.send(msg, embed=embed)
@@ -363,6 +370,7 @@ class Admin(commands.Cog):
             await intr.guild.create_custom_emoji(
                 name=name, image=ef.read(), reason="Copied Emoji")
         await intr.followup.send("Done", ephemeral=True)
+        lg.info("%s copied an emoji", intr.user.name)
         os.remove(img_file)
 
 
