@@ -20,4 +20,4 @@ python-dotenv==0.21.0
 requests==2.31.0
 spotipy==2.23.0
 table2ascii==1.1.0
-wikipediasummary
+wikipediasummary==1.1.4
