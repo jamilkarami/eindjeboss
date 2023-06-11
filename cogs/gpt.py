@@ -121,34 +121,10 @@ class GPT(commands.Cog, name="gpt"):
             context = default_context
         context.append({"role": "user", "content": query})
 
-        response = await self.get_response(model_engine, context, query,
-                                           max_tokens)
-        if model_engine.startswith("gpt"):
-            completion = await openai.ChatCompletion.acreate(
-                model=model_engine,
-                messages=context,
-                max_tokens=max_tokens,
-                n=1,
-                stop=None,
-                temperature=0.5,
-            )
-
-            response = completion.choices[0].message.content
-        else:
-            completion = await openai.Completion.acreate(
-                engine=model_engine,
-                prompt=query,
-                max_tokens=max_tokens,
-                n=1,
-                stop=None,
-                temperature=0.5
-            )
-
-            response = completion.choices[0].text.strip()
+        response, ttl_tok = await self.get_response(
+            model_engine, context, query, max_tokens)
 
         em.description = response.replace("As an AI language model, ", "")
-        ttl_tok = max(int(completion.usage.total_tokens *
-                          multipliers.get(model_engine)), 1)
         response_msg = {
             "role": "assistant",
             "content": response
@@ -160,29 +136,20 @@ class GPT(commands.Cog, name="gpt"):
             f"GPT used by {user.name}. ({ttl_tok} tokens)")
         return response
 
-    async def get_response(self, model_engine, context, query, max_tokens):
-        if model_engine.startswith("gpt"):
-            completion = await openai.ChatCompletion.acreate(
-                model=model_engine,
-                messages=context,
-                max_tokens=max_tokens,
-                n=1,
-                stop=None,
-                temperature=0.5,
-            )
+    async def get_response(self, model_engine, context, max_tokens):
+        completion = await openai.ChatCompletion.acreate(
+            model=model_engine,
+            messages=context,
+            max_tokens=max_tokens,
+            n=1,
+            stop=None,
+            temperature=0.5,
+        )
 
-            return completion.choices[0].message.content
-        else:
-            completion = await openai.Completion.acreate(
-                engine=model_engine,
-                prompt=query,
-                max_tokens=max_tokens,
-                n=1,
-                stop=None,
-                temperature=0.5
-            )
+        ttl_tok = max(int(completion.usage.total_tokens *
+                          multipliers.get(model_engine)), 1)
 
-            return completion.choices[0].text.strip()
+        return completion.choices[0].message.content, ttl_tok
 
     async def save_gpt_settings(self, user_settings):
         await self.gptset.update_one({"_id": user_settings.get("_id")},
