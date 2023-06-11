@@ -112,9 +112,6 @@ class GPT(commands.Cog, name="gpt"):
             model_engine = settings["model"]
             max_tokens = settings["max_tokens"]
 
-        em = discord.Embed(title=query, description="Asking ChatGPT...",
-                           color=discord.Color.yellow())
-
         if usage:
             context = usage.get("context", default_context)
         else:
@@ -124,7 +121,6 @@ class GPT(commands.Cog, name="gpt"):
         response, ttl_tok = await self.get_response(
             model_engine, context, max_tokens)
 
-        em.description = response.replace("As an AI language model, ", "")
         response_msg = {
             "role": "assistant",
             "content": response
@@ -134,7 +130,7 @@ class GPT(commands.Cog, name="gpt"):
         await self.add_usage(user.id, ttl_tok, context)
         lg.info(
             f"GPT used by {user.name}. ({ttl_tok} tokens)")
-        return response
+        return response.replace("As an AI language model, ", "")
 
     async def get_response(self, model_engine, context, max_tokens):
         completion = await openai.ChatCompletion.acreate(
