@@ -24,9 +24,6 @@ multipliers = {
     "gpt-3.5-turbo": 0.1
 }
 
-default_context = [{"role": "system",
-                    "content": "You are a helpful assistant."}]
-
 model_engines_choices = [app_commands.Choice(name=k, value=v)
                          for k, v in model_engines.items()]
 
@@ -92,6 +89,9 @@ class GPT(commands.Cog, name="gpt"):
         await int.response.send_message("GPT Settings saved.", ephemeral=True)
 
     async def query_gpt(self, user, query):
+        default_context = [{"role": "system",
+                            "content": "You're with user %s." % user.id}]
+
         max_tokens = await self.bot.get_setting("gpt_max_token", 1024)
         default_model = await self.bot.get_setting("gpt_default_model",
                                                    "3.5-turbo")
