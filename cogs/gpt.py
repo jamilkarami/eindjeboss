@@ -122,7 +122,7 @@ class GPT(commands.Cog, name="gpt"):
         context.append({"role": "user", "content": query})
 
         response, ttl_tok = await self.get_response(
-            model_engine, context, query, max_tokens)
+            model_engine, context, max_tokens)
 
         em.description = response.replace("As an AI language model, ", "")
         response_msg = {
