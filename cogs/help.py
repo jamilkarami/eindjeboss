@@ -46,7 +46,14 @@ class Help(commands.Cog, name="help"):
         for k, v in data.items():
             if k in ["_id", "general"]:
                 continue
-            keys = [cmds.get(key, key) for key in v.keys()]
+
+            if "isGroup" in v:
+                group_name = v["isGroup"]
+                keys = [cmds.get(group_name)
+                        .replace(group_name, group_name + " " + key[1:])
+                        for key in v.keys() if key != "isGroup"]
+            else:
+                keys = [cmds.get(key, key) for key in v.keys()]
             modules[k] = ", ".join(keys)
 
         return modules
