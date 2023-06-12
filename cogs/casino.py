@@ -106,5 +106,5 @@ class Casino(commands.Cog):
         lg.info("%s asked Arnol to choose", intr.user.name)
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Casino(client))

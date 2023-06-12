@@ -68,5 +68,5 @@ def eval_(node):
         raise TypeError(node)
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Utilities(client))

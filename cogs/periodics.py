@@ -246,5 +246,5 @@ class Periodics(commands.Cog):
         await channel.send(warning_msg)
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Periodics(client))

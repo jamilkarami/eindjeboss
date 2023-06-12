@@ -228,5 +228,5 @@ def mk_embed(title, emb_url, description=None):
     return embed
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Reddit(client))

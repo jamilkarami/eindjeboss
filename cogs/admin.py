@@ -479,5 +479,5 @@ def make_overwrites(guild: discord.Guild, user: discord.Member, roles):
     return overwrites
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Admin(client))

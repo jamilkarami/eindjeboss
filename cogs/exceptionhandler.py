@@ -31,5 +31,5 @@ class ExceptionHandler(commands.Cog):
         await intr.response.send_message(ERROR_MSG, ephemeral=True)
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(ExceptionHandler(client))

@@ -88,5 +88,5 @@ class F1(commands.Cog):
         return None
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(F1(client))

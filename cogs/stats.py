@@ -63,5 +63,5 @@ class Stats(commands.Cog):
         save_json_file({}, get_file(STATS_FILE_NAME))
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Stats(client))

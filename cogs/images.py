@@ -37,5 +37,5 @@ class Images(commands.Cog, name="Images"):
         lg.info("Sent image to %s for query \"%s\"", intr.user.name, query)
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Images(client))

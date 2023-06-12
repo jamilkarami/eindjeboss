@@ -76,5 +76,5 @@ class Polls(commands.Cog):
         lg.info("Sent yes/no poll to %s", intr.user.name)
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Polls(client))

@@ -239,5 +239,5 @@ def mk_reminder(rem_id, timestamp, msg, guild_id, daily, user, msg_id):
     }
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Reminder(client))

@@ -35,5 +35,5 @@ class Facts(commands.Cog):
             lg.error(e)
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Facts(client))

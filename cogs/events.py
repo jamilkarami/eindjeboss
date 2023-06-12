@@ -406,5 +406,5 @@ def get_frames(img: Image.Image, text, y, min_x, max_x, fill, height):
     return frames
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Events(client))

@@ -172,5 +172,5 @@ class TranslateUtil:
         return text
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Translate(client))

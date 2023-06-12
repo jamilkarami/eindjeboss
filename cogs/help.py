@@ -124,7 +124,7 @@ class CategoryView(discord.ui.View):
                                         view=self.parent)
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Help(client))
 
 

@@ -34,5 +34,5 @@ class IMDB(commands.Cog):
         lg.info("Sent movie to %s", intr.user.name)
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(IMDB(client))

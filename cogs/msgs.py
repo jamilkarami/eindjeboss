@@ -182,5 +182,5 @@ class Messages(commands.Cog, name="Messages"):
         return json.loads(data.content)["total_results"]
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Messages(client))

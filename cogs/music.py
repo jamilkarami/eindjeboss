@@ -177,5 +177,5 @@ def mk_spc_embed(spotify_act: discord.Spotify,
     return embed
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(Music(client))

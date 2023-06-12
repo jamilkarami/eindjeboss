@@ -175,5 +175,5 @@ class GPT(commands.Cog, name="gpt"):
         return await self.gptusage.update_many({}, {"$unset": {"context": ""}})
 
 
-async def setup(client: commands.Bot):
+async def setup(client: Eindjeboss):
     await client.add_cog(GPT(client))
