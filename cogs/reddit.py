@@ -67,6 +67,8 @@ class Reddit(commands.Cog):
         crontab(REDDIT_EINDHOVEN_DT, self.monitor_feed, start=True)
 
     async def monitor_feed(self):
+        if not await self.bot.get_setting("monitor_reddit"):
+            return
         guild_id = await self.bot.get_setting("guild_id")
         reddit_channel_id = await self.bot.get_setting("reddit_channel_id")
         guild = await self.bot.fetch_guild(guild_id)
