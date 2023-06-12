@@ -122,6 +122,16 @@ class Reminder(commands.Cog):
             ephemeral=True
         )
 
+    @deletereminder.autocomplete("rem_id")
+    async def delete_reminder_autocomplete(self, intr: discord.Interaction,
+                                           current: str):
+        user_reminders = await self.get_user_reminders(intr.user.id)
+
+        return [
+            app_commands.Choice(name=rem["msg"], value=rem["_id"])
+            for rem in user_reminders if current.lower() in rem["msg"].lower()
+        ]
+
     # helper functions
     async def startup_reminders(self):
         rems = await self.reminders.find().to_list(length=88675309)
