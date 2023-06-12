@@ -1,14 +1,17 @@
 import logging as lg
 import os
-import shutil
-import uuid
 
 import discord
-from bing_image_downloader import downloader
+import requests
 from discord import app_commands
 from discord.ext import commands
 
 from bot import Eindjeboss
+
+API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY")
+
+url = ("https://www.googleapis.com/customsearch/v1?key=%s"
+       "&cx=%s&q=%s&num=1&searchType=image&safe=active")
 
 
 class Images(commands.Cog, name="Images"):
@@ -20,21 +23,21 @@ class Images(commands.Cog, name="Images"):
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
 
-    @app_commands.command()
+    @app_commands.command(name="img")
     async def img(self, intr: discord.Interaction, query: str):
-        await intr.response.defer()
-        temp_folder = "temp/%s" % (uuid.uuid4())
-        output_folder = "%s/%s" % (temp_folder, query)
-        downloader.download(query, limit=1,  output_dir=temp_folder,
-                            adult_filter_off=False, force_replace=False,
-                            timeout=60, verbose=False)
-        img_file = discord.File(os.path.join(output_folder,
-                                             os.listdir(output_folder)[0]))
+        search_engine_id = await self.bot.get_setting("gc_search_engine_id")
+        req_url = url % (API_KEY, search_engine_id, query)
 
-        await intr.followup.send(file=img_file)
-        img_file.close()
-        shutil.rmtree(temp_folder)
-        lg.info("Sent image to %s for query \"%s\"", intr.user.name, query)
+        data = requests.get(req_url).json()
+        if "items" not in data:
+            await intr.response.send_message(
+                "No result found.", ephemeral=True)
+            return
+
+        results = data.get("items")
+
+        msg = '\n'.join([res.get("link") for res in results])
+        await intr.response.send_message(msg)
 
 
 async def setup(client: Eindjeboss):
