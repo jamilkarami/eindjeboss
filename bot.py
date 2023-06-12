@@ -82,7 +82,7 @@ class Eindjeboss(commands.Bot):
                 f"Setting {setting} does not match expected fields")
 
         self.__setattr__(setting["_id"], setting["value"])
-        self.settings.insert_one(setting)
+        await self.settings.insert_one(setting)
         logging.info("Added setting %s with value %s", setting["_id"],
                      setting["value"])
 
