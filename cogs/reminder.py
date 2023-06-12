@@ -110,7 +110,7 @@ class Reminder(commands.Cog):
 
     @app_commands.command(name="deletereminder",
                           description="Don't get notified for a reminder.")
-    @app_commands.rename(rem_id="reminder-id")
+    @app_commands.rename(rem_id="reminder")
     async def deletereminder(self, intr: discord.Interaction, rem_id: str):
         removed = await self.remove_user_from_reminder(rem_id, intr.user.id)
         if removed:

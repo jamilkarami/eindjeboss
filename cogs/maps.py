@@ -38,21 +38,25 @@ class Maps(commands.Cog, name="maps"):
                         params={'key': api_key,
                                 'place_id': place_id}).json()['result']
 
-        open_now = pl_det.get('opening_hours').get('open_now')
-        title = pl_det.get('name') + (' (Open)' if open_now else ' (Closed)')
+        title = pl_det.get('name')
         url = pl_det.get('url')
-        opening_hours = '\n'.join(
-            [x.replace('\u2009', ' ')
-             for x in pl_det.get('opening_hours').get('weekday_text')])
 
         details = {
-            'Address': pl_det.get('formatted_address'),
-            'Phone Number': pl_det.get('international_phone_number'),
-            'Rating': '%s (%s ratings)' % (pl_det.get('rating'),
-                                           pl_det.get('user_ratings_total')),
-            'Opening Hours': opening_hours,
-            'Website': pl_det.get('website'),
+            "Address": pl_det.get("formatted_address"),
+            "Phone Number": pl_det.get("international_phone_number"),
+            "Rating": '%s (%s ratings)' % (
+                pl_det.get("rating"), pl_det.get("user_ratings_total"))
         }
+
+        if "opening_hours" in pl_det:
+            open_now = pl_det.get('opening_hours').get('open_now')
+            opening_hours = '\n'.join(
+                [x.replace('\u2009', ' ')
+                 for x in pl_det.get('opening_hours').get('weekday_text')])
+            details["Opening Hours"] = opening_hours
+            title = title + (' (Open)' if open_now else ' (Closed)')
+
+        details["Website"] = pl_det.get('website')
 
         embed = self.make_embed(title, url, details, discord.Color.blue())
 
