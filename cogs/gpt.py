@@ -45,7 +45,9 @@ class GPT(commands.GroupCog, name="gpt"):
 
     @app_commands.command(name="chat",
                           description="Prompt the OpenAI GPT chat")
-    async def chat(self, intr: discord.Interaction, query: str):
+    @app_commands.rename(keep_context="keep context")
+    async def chat(self, intr: discord.Interaction, query: str,
+                   keep_context: bool = False):
         gpt_usage_limit = await self.bot.get_setting("gpt_token_limit", 25000)
 
         em = discord.Embed(title=query, description="Asking ChatGPT...",
@@ -53,7 +55,7 @@ class GPT(commands.GroupCog, name="gpt"):
         try:
             await intr.response.send_message(embed=em)
             response, tokens, total_usage = await self.query_gpt(
-                intr.user, query, gpt_usage_limit)
+                intr.user, query, gpt_usage_limit, keep_context)
 
             if response is GptError.CONTEXT_TOO_LARGE:
                 em.color = discord.Color.red()
@@ -118,7 +120,8 @@ class GPT(commands.GroupCog, name="gpt"):
             "context": ""
         }})
 
-    async def query_gpt(self, user, query, gpt_usage_limit):
+    async def query_gpt(self, user, query, gpt_usage_limit,
+                        keep_context=False):
         default_context = [{"role": "system",
                             "content": "You're with user %s." % user.id}]
 
@@ -141,16 +144,15 @@ class GPT(commands.GroupCog, name="gpt"):
             model_engine = settings["model"]
             max_tokens = settings["max_tokens"]
 
-        if usage:
+        if usage and keep_context:
             context = usage.get("context", default_context)
+            token_size = sum([len(msg["content"]) for msg in context])
+            if token_size > 3600:
+                return GptError.CONTEXT_TOO_LARGE
         else:
             context = default_context
+
         context.append({"role": "user", "content": query})
-
-        token_size = sum([len(msg["content"]) for msg in context])
-
-        if token_size > 3600:
-            return GptError.CONTEXT_TOO_LARGE
 
         response, ttl_tok = await self.get_response(
             model_engine, context, max_tokens)
