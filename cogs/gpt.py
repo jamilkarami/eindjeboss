@@ -108,7 +108,7 @@ class GPT(commands.GroupCog, name="gpt"):
                        max_tokens: int = 256):
         if max_tokens > 2048 or max_tokens < 128:
             await int.response.send_message(
-                "Max tokens can be between 128 and 1024. Please try again")
+                "Max tokens can be between 128 and 2048. Please try again")
             return
         user_settings = {"_id": int.user.id, "model": model.value,
                          "max_tokens": max_tokens}
@@ -119,6 +119,15 @@ class GPT(commands.GroupCog, name="gpt"):
         await self.gptusage.update_one({"_id": id}, {"$unset": {
             "context": ""
         }})
+
+    @app_commands.command(name="usage",
+                          description="Check your total GPT token usage")
+    async def usage(self, intr: discord.Interaction):
+        limit = await self.bot.get_setting("gpt_token_limit", 25000)
+        user_usage = await self.gptusage.find_one({"_id": intr.user.id})
+
+        msg = f"You've used {user_usage['usage']} tokens out of {limit}"
+        await intr.response.send_message(msg, ephemeral=True)
 
     async def query_gpt(self, user, query, gpt_usage_limit,
                         keep_context=False):
