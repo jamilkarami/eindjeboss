@@ -29,7 +29,7 @@ class Stats(commands.Cog):
     @commands.Cog.listener()
     async def on_app_command_completion(self, intr: discord.Interaction,
                                         command):
-        aliases = self.bot.get_setting("command_aliases")
+        aliases = await self.bot.get_setting("command_aliases")
         if command.name in STATS_BLACKLIST:
             return
         name = aliases.get(command.name, command.name)
