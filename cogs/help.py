@@ -49,9 +49,10 @@ class Help(commands.Cog, name="help"):
 
             if "isGroup" in v:
                 group_name = v["isGroup"]
+                valid_keys = [key for key in v.keys() if key != "isGroup"]
                 keys = [cmds.get(group_name)
                         .replace(group_name, group_name + " " + key[1:])
-                        for key in v.keys() if key != "isGroup"]
+                        for key in valid_keys]
             else:
                 keys = [cmds.get(key, key) for key in v.keys()]
             modules[k] = ", ".join(keys)
@@ -92,6 +93,32 @@ class CategoryButton(discord.ui.Button):
                               self.parent_embed))
 
 
+class CategoryView(discord.ui.View):
+
+    def __init__(self, label: str, helptext, parent: discord.ui.View,
+                 parent_embed: discord.Embed):
+        super().__init__()
+        self.label = label
+        self.helptext = helptext
+        self.parent = parent
+        self.parent_embed = parent_embed
+
+        for k, v in helptext.items():
+            if k == "isGroup":
+                continue
+            btn = CommandButton(k, v)
+            self.add_item(btn)
+
+        back_btn = discord.ui.Button(label="Go back", style=BK_STYLE,
+                                     row=len(self._children) // 5)
+        back_btn.callback = self.go_back
+        self.add_item(back_btn)
+
+    async def go_back(self, int: discord.Interaction):
+        await int.response.edit_message(content=None, embed=self.parent_embed,
+                                        view=self.parent)
+
+
 class CommandButton(discord.ui.Button):
 
     def __init__(self, label, data):
@@ -105,30 +132,6 @@ class CommandButton(discord.ui.Button):
                                                 embed=mk_embed(self.label,
                                                                self.data,
                                                                False))
-
-
-class CategoryView(discord.ui.View):
-
-    def __init__(self, label: str, helptext, parent: discord.ui.View,
-                 parent_embed: discord.Embed):
-        super().__init__()
-        self.label = label
-        self.helptext = helptext
-        self.parent = parent
-        self.parent_embed = parent_embed
-
-        for k, v in helptext.items():
-            btn = CommandButton(k, v)
-            self.add_item(btn)
-
-        back_btn = discord.ui.Button(label="Go back", style=BK_STYLE,
-                                     row=len(self._children) // 5)
-        back_btn.callback = self.go_back
-        self.add_item(back_btn)
-
-    async def go_back(self, int: discord.Interaction):
-        await int.response.edit_message(content=None, embed=self.parent_embed,
-                                        view=self.parent)
 
 
 async def setup(client: Eindjeboss):
