@@ -29,13 +29,10 @@ class Stats(commands.Cog):
     @commands.Cog.listener()
     async def on_app_command_completion(self, intr: discord.Interaction,
                                         command):
+        aliases = self.bot.get_setting("command_aliases")
         if command.name in STATS_BLACKLIST:
             return
-        name = command.name
-        if command.name == "Translate Message":
-            name = "translate (context)"
-        if command.name == "Report Message":
-            name = "modmail (context)"
+        name = aliases.get(command.name, command.name)
         self.update_stats(f"/{name}")
 
     def update_stats(self, name):
