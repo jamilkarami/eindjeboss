@@ -159,7 +159,7 @@ class GPT(commands.GroupCog, name="gpt"):
             if token_size > 3600:
                 return GptError.CONTEXT_TOO_LARGE
         else:
-            context = {"role": "user", "content": query}
+            context = [{"role": "user", "content": query}]
 
         response, ttl_tok = await self.get_response(
             model_engine, context, max_tokens)
