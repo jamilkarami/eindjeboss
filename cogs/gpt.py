@@ -45,7 +45,7 @@ class GPT(commands.GroupCog, name="gpt"):
 
     @app_commands.command(name="chat",
                           description="Prompt the OpenAI GPT chat")
-    @app_commands.rename(keep_context="keep context")
+    @app_commands.rename(keep_context="keep-context")
     async def chat(self, intr: discord.Interaction, query: str,
                    keep_context: bool = False):
         gpt_usage_limit = await self.bot.get_setting("gpt_token_limit", 25000)
