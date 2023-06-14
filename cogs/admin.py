@@ -132,7 +132,7 @@ class Admin(commands.Cog):
         old_doc = await self.bot.update_setting({"_id": name, "value": new_vl})
         if not old_doc:
             await intr.response.send_message(
-                "Could not find setting with name %s" % name)
+                "Could not find setting with name %s" % name, ephemeral=True)
             return
 
         old_val = old_doc["value"]
@@ -140,6 +140,15 @@ class Admin(commands.Cog):
         await intr.response.send_message(msg, ephemeral=True)
         lg.info("%s changed setting %s from %s to %s", intr.user.name, name,
                 old_val, new_vl)
+
+    @set.autocomplete("name")
+    async def set_autocomplete(self, intr: discord.Interaction, curr: str):
+        settings = await self.bot.get_settings()
+
+        return [
+            app_commands.Choice(name=setting["_id"], value=setting["_id"])
+            for setting in settings if curr.lower() in setting["_id"].lower()
+        ]
 
     @app_commands.command(name="createsetting")
     @app_commands.rename(setting="setting-name", value="initial-value")
