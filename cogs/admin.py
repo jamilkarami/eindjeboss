@@ -337,8 +337,9 @@ class Admin(commands.Cog):
     @closeticket.autocomplete("ticket_id")
     async def closeticket_autocomplete(self, intr: discord.Interaction,
                                        current: str):
-        tickets = await self.tickets.find({"status": {"$ne": 3},
-                                           "title": {"$regex": current}})
+        tickets = await self.tickets.find(
+            {"status": {"$ne": 3},
+             "title": {"$regex": current}}).to_list(length=88675309)
 
         return [
             app_commands.Choice(name=ticket["title"], value=ticket["_id"])
