@@ -334,6 +334,17 @@ class Admin(commands.Cog):
         await intr.response.send_message(TICKET_CLOSED, ephemeral=True)
         lg.info("Ticket %s closed by %s", ticket_id, intr.user.name)
 
+    @closeticket.autocomplete("ticket_id")
+    async def closeticket_autocomplete(self, intr: discord.Interaction,
+                                       current: str):
+        tickets = await self.tickets.find({"status": {"$ne": 3},
+                                           "title": {"$regex": current}})
+
+        return [
+            app_commands.Choice(name=ticket["title"], value=ticket["_id"])
+            for ticket in tickets
+        ]
+
     async def validate(self, intr: discord.Interaction, role_id: int = None):
         if intr.user.id == self.bot.owner_id:
             return True
