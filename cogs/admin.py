@@ -319,17 +319,20 @@ class Admin(commands.Cog):
         if not ticket:
             await intr.response.send_message(TICKET_NOT_FOUND, ephemeral=True)
             return
-        if TicketStatus.CLOSED.value == ticket['status']:
+        if TicketStatus.CLOSED.value == ticket["status"]:
             await intr.response.send_message(ALREADY_CLOSED, ephemeral=True)
             return
 
-        ticket['status'] = TicketStatus.CLOSED.value
-        ticket['updated'] = int(time.time())
-        channel = await intr.guild.fetch_channel(ticket['channel'])
-        await channel.delete()
+        ticket["status"] = TicketStatus.CLOSED.value
+        ticket["updated"] = int(time.time())
+
+        if "channel" in ticket:
+            channel = await intr.guild.fetch_channel(ticket['channel'])
+            await channel.delete()
+
         await self.tickets.update_one({"_id": ticket_id}, {"$set": ticket})
         await intr.response.send_message(TICKET_CLOSED, ephemeral=True)
-        lg.info('Ticket %s closed by %s', ticket_id, intr.user.name)
+        lg.info("Ticket %s closed by %s", ticket_id, intr.user.name)
 
     async def validate(self, intr: discord.Interaction, role_id: int = None):
         if intr.user.id == self.bot.owner_id:
