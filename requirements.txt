@@ -4,7 +4,7 @@ beautifulsoup4==4.11.1
 bing-image-downloader==1.1.2
 colorthief==0.2.1
 dateparser==1.1.5
-discord.py==2.1.0
+discord.py==2.3.0
 cinemagoer
 Google_Images_Search==1.4.6
 googletrans==3.1.0a0
