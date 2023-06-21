@@ -181,6 +181,11 @@ class Ticket(commands.GroupCog):
 
         await intr.response.send_message(resp, ephemeral=True)
 
+        d_name = intr.user.display_name
+        title = ticket["title"]
+        await self.alert_mods(
+            f"**{d_name}** started handling ticket {ticket_id} ({title})")
+
     @app_commands.command(name="close")
     @app_commands.rename(ticket_id="ticket")
     async def closeticket(self, intr: discord.Interaction,
@@ -209,6 +214,11 @@ class Ticket(commands.GroupCog):
         await self.tickets.update_one({"_id": ticket_id}, {"$set": ticket})
         await intr.response.send_message(TICKET_CLOSED, ephemeral=True)
         lg.info("Ticket %s closed by %s", ticket_id, intr.user.name)
+
+        d_name = intr.user.display_name
+        title = ticket["title"]
+        await self.alert_mods(
+            f"**{d_name}** closed ticket {ticket_id} ({title})")
 
     @app_commands.command(name="note")
     @app_commands.rename(ticket_id="ticket")
@@ -252,6 +262,7 @@ class Ticket(commands.GroupCog):
         ticket["notes"] = notes
 
         await self.tickets.update_one({"_id": ticket_id}, {"$set": ticket})
+        await intr.response.send_message("Ticket updated.", ephemeral=True)
 
     @noteticket.autocomplete("ticket_id")
     async def noteticket_autocomplete(self, intr: discord.Interaction,
@@ -291,6 +302,13 @@ class Ticket(commands.GroupCog):
             "%s tried to use /%s. Check integration permissions"
             % (intr.user.name, intr.data.get("name")))
         return False
+
+    async def alert_mods(self, message):
+        ticket_channel_id = await self.bot.get_setting(
+            "modmail_channel", None)
+        channel = await self.bot.fetch_channel(ticket_channel_id)
+
+        await channel.send(message)
 
 
 class TicketModal(Modal):
