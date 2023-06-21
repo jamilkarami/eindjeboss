@@ -49,7 +49,7 @@ class Ticket(commands.GroupCog):
             TicketModal(self.tickets, self.bot))
         lg.info("Sent ticket modal to %s", intr.user.display_name)
 
-    @app_commands.command(name="opentickets")
+    @app_commands.command(name="pending")
     async def opentickets(self, intr: discord.Interaction):
         role_id = await self.bot.get_setting("admin_role_id")
 
@@ -77,7 +77,7 @@ class Ticket(commands.GroupCog):
         await intr.response.send_message(msg, ephemeral=True)
         lg.info("%s checked open tickets", intr.user.name)
 
-    @app_commands.command(name="usertickets")
+    @app_commands.command(name="fromuser")
     async def usertickets(self, intr: discord.Interaction,
                           user: discord.Member):
         role_id = await self.bot.get_setting("admin_role_id")
@@ -107,7 +107,7 @@ class Ticket(commands.GroupCog):
         lg.info("%s checked user tickets from %s", intr.user.name,
                 user.name)
 
-    @app_commands.command(name="handleticket")
+    @app_commands.command(name="handle")
     @app_commands.rename(ticket_id="ticket-id")
     async def handleticket(self, intr: discord.Interaction, ticket_id: str):
         role_id = await self.bot.get_setting("admin_role_id")
@@ -181,7 +181,7 @@ class Ticket(commands.GroupCog):
 
         await intr.response.send_message(resp, ephemeral=True)
 
-    @app_commands.command(name="closeticket")
+    @app_commands.command(name="close")
     @app_commands.rename(ticket_id="ticket-id")
     async def closeticket(self, intr: discord.Interaction,
                           ticket_id: str):
