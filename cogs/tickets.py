@@ -182,7 +182,7 @@ class Ticket(commands.GroupCog):
         await intr.response.send_message(resp, ephemeral=True)
 
     @app_commands.command(name="close")
-    @app_commands.rename(ticket_id="ticket-id")
+    @app_commands.rename(ticket_id="ticket")
     async def closeticket(self, intr: discord.Interaction,
                           ticket_id: str):
         role_id = await self.bot.get_setting("admin_role_id")
@@ -209,6 +209,60 @@ class Ticket(commands.GroupCog):
         await self.tickets.update_one({"_id": ticket_id}, {"$set": ticket})
         await intr.response.send_message(TICKET_CLOSED, ephemeral=True)
         lg.info("Ticket %s closed by %s", ticket_id, intr.user.name)
+
+    @app_commands.command(name="note")
+    @app_commands.rename(ticket_id="ticket")
+    async def noteticket(self, intr: discord.Interaction,
+                         ticket_id: str, text: str = None):
+        role_id = await self.bot.get_setting("admin_role_id")
+
+        if not await self.validate(intr, role_id):
+            return
+
+        ticket = await self.tickets.find_one({"_id": ticket_id})
+        notes = ticket.get("notes")
+
+        if not text:
+            if not notes:
+                await intr.response.send_message(
+                    "This ticket doesn't have any notes yet.", ephemeral=True)
+                return
+
+            headers = ['Added By', 'Note', 'Time']
+            fields = ['added_by', 'text', 'time_added']
+
+            output = tabulate(headers, notes, fields)
+            msg = f"Notes for ticket **{ticket_id}**\n```{output}```"
+
+            await intr.response.send_message(msg, ephemeral=True)
+            return
+
+        submitter = intr.user.display_name
+        submitted_time = dt.fromtimestamp(time.time()).strftime(D_FMT)
+
+        note = {
+            "added_by": submitter,
+            "text": text,
+            "time_added": submitted_time
+        }
+
+        if not notes:
+            notes = []
+        notes.append(note)
+        ticket["notes"] = notes
+
+        await self.tickets.update_one({"_id": ticket_id}, {"$set": ticket})
+
+    @noteticket.autocomplete("ticket_id")
+    async def noteticket_autocomplete(self, intr: discord.Interaction,
+                                      current: str):
+        tickets = await self.tickets.find(
+            {"title": {"$regex": current}}).to_list(length=88675309)
+
+        return [
+            app_commands.Choice(name=ticket["title"], value=ticket["_id"])
+            for ticket in tickets
+        ]
 
     @closeticket.autocomplete("ticket_id")
     async def closeticket_autocomplete(self, intr: discord.Interaction,
