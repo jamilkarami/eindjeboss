@@ -87,6 +87,7 @@ class Eindjeboss(commands.Bot):
                      setting["value"])
 
     async def update_setting(self, setting):
+        self.__setattr__(setting["_id"], setting["value"])
         return await self.settings.find_one_and_update(
             {"_id": setting["_id"]}, {"$set": {"value": setting["value"]}})
 
