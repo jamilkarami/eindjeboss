@@ -39,6 +39,7 @@ class Utilities(commands.Cog):
         if (matches):
             try:
                 expression = matches.group(1)
+                expression = make_replacements(expression)
                 result = '{0:.2f}'.format(calculate(expression))
                 lg.info("Calculated expression for %s", message.author.name)
             except TypeError as te:
@@ -50,6 +51,18 @@ class Utilities(commands.Cog):
                     ' Please check your formatting.')
             else:
                 await message.reply(f"{result}")
+
+
+def make_replacements(expression: str):
+    replacements = {
+        "÷": "/",
+        "x": "*"
+    }
+
+    for k, v in replacements.items():
+        expression = expression.replace(k, v)
+
+    return expression
 
 
 def calculate(expression: str):
