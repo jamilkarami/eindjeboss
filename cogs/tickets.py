@@ -208,7 +208,7 @@ class Ticket(commands.GroupCog):
         ticket["updated"] = int(time.time())
 
         if "channel" in ticket:
-            channel = await intr.guild.get_channel(ticket['channel'])
+            channel = intr.guild.get_channel(ticket['channel'])
             if channel:
                 await channel.delete()
 
