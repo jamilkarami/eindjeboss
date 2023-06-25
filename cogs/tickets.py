@@ -208,8 +208,9 @@ class Ticket(commands.GroupCog):
         ticket["updated"] = int(time.time())
 
         if "channel" in ticket:
-            channel = await intr.guild.fetch_channel(ticket['channel'])
-            await channel.delete()
+            channel = await intr.guild.get_channel(ticket['channel'])
+            if channel:
+                await channel.delete()
 
         await self.tickets.update_one({"_id": ticket_id}, {"$set": ticket})
         await intr.response.send_message(TICKET_CLOSED, ephemeral=True)
