@@ -51,6 +51,18 @@ class Admin(commands.Cog):
         await intr.response.send_message(resp, ephemeral=True)
         lg.info("%s used /now")
 
+    @app_commands.command(name="nuke")
+    async def nuke(self, intr: discord.Interaction, number: int):
+        role_id = await self.bot.get_setting("admin_role_id")
+
+        if not await self.validate(intr, role_id):
+            return
+
+        await intr.channel.purge(limit=number)
+        await intr.response.send_message("Done", ephemeral=True)
+        lg.info("%s purged %s messages in channel %s", intr.user.name, number,
+                intr.channel.name)
+
     @app_commands.command(name='logs')
     @app_commands.describe(full="Choose true if you want the full log file.",
                            ln="The number of log lines to send.")
