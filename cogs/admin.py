@@ -58,8 +58,13 @@ class Admin(commands.Cog):
         if not await self.validate(intr, role_id):
             return
 
+        if number > 50 or number < 5:
+            await intr.response.send_message("Number must be between 5 and 50")
+            return
+
+        await intr.response.defer(ephemeral=True)
         await intr.channel.purge(limit=number)
-        await intr.response.send_message("Done", ephemeral=True)
+        await intr.followup.send("Done", ephemeral=True)
         lg.info("%s purged %s messages in channel %s", intr.user.name, number,
                 intr.channel.name)
 
