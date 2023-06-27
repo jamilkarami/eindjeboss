@@ -140,7 +140,7 @@ class Reminder(commands.Cog):
             if not reminder['daily'] and reminder['time'] < time.time():
                 await self.delete_reminder(reminder['_id'])
             self.loop.create_task(self.start_reminder(reminder))
-            if reminder.get("message_id"):
+            if reminder.get("message_id") and reminder['time'] < time.time():
                 self.bot.add_view(ReminderView(reminder["_id"], self),
                                   message_id=reminder["message_id"])
 
