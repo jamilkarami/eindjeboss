@@ -51,7 +51,7 @@ reddit = asyncpraw.Reddit(
     )
 
 
-class Reddit(commands.Cog):
+class Reddit(commands.GroupCog, group_name="random"):
 
     def __init__(self, bot: Eindjeboss):
         self.bot = bot
@@ -136,14 +136,14 @@ class Reddit(commands.Cog):
         if matches:
             await self.handle_reddit_matches(matches, message)
 
-    @app_commands.command(name="randomcat",
+    @app_commands.command(name="cat",
                           description=RANDOM_STR % "cat")
     async def send_random_cat(self, intr: discord.Interaction):
         await intr.response.defer()
         await intr.followup.send(
             await self.get_red_post(random.choice(CAT_SUBS), 50))
 
-    @app_commands.command(name="randomdog",
+    @app_commands.command(name="dog",
                           description=RANDOM_STR % "dog")
     async def send_random_dog(self, intr: discord.Interaction):
         await intr.response.defer()
