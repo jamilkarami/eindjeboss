@@ -1,10 +1,8 @@
-import json
 import logging as lg
 from datetime import datetime
 
 import discord
 import pytz
-import requests
 from discord import app_commands
 from discord.ext import commands
 
@@ -14,18 +12,14 @@ from util.vars.eind_vars import (ASS_EMOJI, CHANNEL_IGNORE_LIST,
                                  QUESTION_EMOJI, TABLE_FIX, TABLE_FLIP,
                                  WICKED_EMOJI)
 
-MSG_URL = "https://discord.com/api/v9/guilds/{}/messages/search?author_id={}"
-
 SPONTAAN_STR = "SPONTAAN. REIZEN. DRANKJES MET DE MEIDEN. SHOPPEN. \
 SPECIAALBIER. SUSHI. SARCASME. DANSJES. BOULDEREN. TATOEAGES. UITGAAN. \
 TERRASJES."
 OPINION = "The Eindhoven Community Discord's collectively humble opinion on %s"
 TZ = "Europe/Amsterdam"
-MSG_TOTAL_DESC = "Find out how many messages you (or someone else) \
-have/has sent in total in this server."
 
 
-class Messages(commands.Cog, name="Messages"):
+class Messages(commands.GroupCog, name="msg"):
 
     def __init__(self, bot: Eindjeboss):
         self.bot = bot
@@ -75,6 +69,11 @@ class Messages(commands.Cog, name="Messages"):
                           description=OPINION % "Solutio365")
     async def solutio365(self, interaction: discord.Interaction):
         await interaction.response.send_message("#FuckSolutio365")
+
+    @app_commands.command(name="dhl",
+                          description=OPINION % "DHL")
+    async def dhl(self, interaction: discord.Interaction):
+        await interaction.response.send_message("#FuckDHL")
 
     @app_commands.command(name="spontaan")
     async def spontaan(self, interaction: discord.Interaction):
@@ -134,52 +133,6 @@ class Messages(commands.Cog, name="Messages"):
 
         if msg_cont == "ass":
             await msg.add_reaction(ASS_EMOJI)
-
-    @app_commands.command(name="tagall")
-    async def tagall(self, intr: discord.Interaction):
-        max_members_tag = await self.bot.get_setting("max_members_tag")
-        if type(intr.channel).__name__ != "Thread":
-            await intr.response.send_message(
-                "You can only use this command inside threads.",
-                ephemeral=True)
-            return
-
-        users = await intr.channel.fetch_members()
-        if len(users) > max_members_tag:
-            await intr.response.send_message(
-                "This thread has too many members. (>%s)" % max_members_tag,
-                ephemeral=True)
-            return
-
-        message = ""
-
-        for user in users:
-            if user.id != self.bot.user.id:
-                message = message + f"<@{user.id}> "
-        await intr.response.send_message(message)
-        lg.info("Tagged everyone in thread %s on behalf of %s",
-                intr.channel.name, intr.user.name)
-
-    @app_commands.command(name="mymsgtotal",
-                          description=MSG_TOTAL_DESC,)
-    async def msgtotal(self, intr: discord.Interaction,
-                       user: discord.Member = None):
-        auth_header = await self.bot.get_setting("discord_auth_header")
-        guild_id = intr.guild_id
-        if not user:
-            user = intr.user
-        ttl_msg = self.get_total_messages(guild_id, user.id, auth_header)
-
-        await intr.response.send_message(
-            "%s has sent a total of around %s messages in this server."
-            % (user.mention, ttl_msg))
-        lg.info("Sent message total for %s to %s", user.name, intr.user.name)
-
-    def get_total_messages(self, guild_id, user_id, auth_header):
-        url = MSG_URL.format(guild_id, user_id)
-        data = requests.get(url=url, headers={
-            "Authorization": auth_header})
-        return json.loads(data.content)["total_results"]
 
 
 async def setup(client: Eindjeboss):
