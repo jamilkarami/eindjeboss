@@ -34,12 +34,15 @@ class Bard(commands.Cog):
         bard_output = bd(token=token).get_answer(query)['content']
 
         if len(bard_output) > 1024:
+            em.color = discord.Color.green()
             em.description = textwrap.shorten(bard_output, 1024)
             em.set_footer(text=FTD)
             og_msg = await intr.original_response()
             view = BardView(bard_output, og_msg.jump_url)
             await intr.edit_original_response(embed=em, view=view)
         else:
+            em.color = discord.Color.green()
+            em.description = bard_output
             await intr.edit_original_response(content=bard_output)
 
         lg.info("Bard responsed to %s (query: %s)", intr.user.name, query)
