@@ -31,6 +31,7 @@ class Bard(commands.Cog):
         lg.info("%s asked Bard (query: %s)", intr.user.name, query)
 
         bard_output = bd(token=token).get_answer(query)['content']
+        em.color = discord.Color.green()
 
         if len(bard_output) > 1024:
 
@@ -49,7 +50,8 @@ class Bard(commands.Cog):
             view = BardView(bard_output, og_msg.jump_url)
             await intr.edit_original_response(embed=em, view=view)
         else:
-            await intr.edit_original_response(content=bard_output)
+            em.description = bard_output
+            await intr.edit_original_response(embed=em)
 
         lg.info("Bard responsed to %s (query: %s)", intr.user.name, query)
 
