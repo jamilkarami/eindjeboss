@@ -22,7 +22,9 @@ class Bard(commands.Cog):
 
     @app_commands.command(name="bard",
                           description="Chat with the Google Bard AI Chatbot")
-    async def bard(self, intr: discord.Interaction, query: str):
+    @app_commands.rename(keep_context="keep-context")
+    async def bard(self, intr: discord.Interaction, query: str,
+                   keep_context: bool = False):
         token = await self.bot.get_setting("bard_token")
         em = discord.Embed(title=query, description="Asking Bard...",
                            color=discord.Color.yellow())
@@ -30,7 +32,12 @@ class Bard(commands.Cog):
         await intr.response.send_message(embed=em)
         lg.info("%s asked Bard (query: %s)", intr.user.name, query)
 
-        bard_output = bd(token=token).get_answer(query)['content']
+        if keep_context:
+            bard = bd(token=token, conversation_id=str(intr.user.id))
+        else:
+            bard = bd(token=token)
+
+        bard_output = bard.get_answer(query)['content']
         em.color = discord.Color.green()
 
         if len(bard_output) > 1024:
