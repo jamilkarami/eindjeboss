@@ -42,10 +42,7 @@ class Bard(commands.Cog):
                 description = description + lines[idx] + "\n"
                 idx += 1
 
-            if len(description) > 1020:
-                em.description = description[:1020] + "\n..."
-            else:
-                em.description = description
+            em.description = description[:1020] + "\n..."
 
             em.set_footer(text=FTD)
             og_msg = await intr.original_response()
