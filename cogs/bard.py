@@ -1,5 +1,4 @@
 import logging as lg
-import textwrap
 
 import discord
 from bardapi import Bard as bd
@@ -34,15 +33,25 @@ class Bard(commands.Cog):
         bard_output = bd(token=token).get_answer(query)['content']
 
         if len(bard_output) > 1024:
-            em.color = discord.Color.green()
-            em.description = textwrap.shorten(bard_output, 1024)
+
+            lines = bard_output.split("\n")
+
+            description = ""
+            idx = 0
+            while len(lines[idx]) + len(description) < 1024:
+                description = description + lines[idx] + "\n"
+                idx += 1
+
+            if len(description) > 1020:
+                em.description = description[:1020] + "\n..."
+            else:
+                em.description = description
+
             em.set_footer(text=FTD)
             og_msg = await intr.original_response()
             view = BardView(bard_output, og_msg.jump_url)
             await intr.edit_original_response(embed=em, view=view)
         else:
-            em.color = discord.Color.green()
-            em.description = bard_output
             await intr.edit_original_response(content=bard_output)
 
         lg.info("Bard responsed to %s (query: %s)", intr.user.name, query)
