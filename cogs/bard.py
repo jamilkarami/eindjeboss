@@ -62,9 +62,8 @@ class Bard(commands.Cog):
         else:
             em.description = bard_output
 
-        embeds = []
+        embeds = [em]
         if img_links:
-            embeds = [em]
             em.url = random.choice(answer.get("links"))
             for _, link in enumerate(itertools.islice(img_links, 3)):
                 em_cp = em.copy()
