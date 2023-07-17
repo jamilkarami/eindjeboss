@@ -1,4 +1,7 @@
+import itertools
 import logging as lg
+import random
+import re
 
 import discord
 from bardapi import Bard as bd
@@ -7,7 +10,7 @@ from discord.ext import commands
 
 from bot import Eindjeboss
 
-FTD = "Click the button to receive the full text. This expires in 3 minutes"
+FTD = "Click the button to receive the full text."
 
 
 class Bard(commands.Cog):
@@ -22,9 +25,7 @@ class Bard(commands.Cog):
 
     @app_commands.command(name="bard",
                           description="Chat with the Google Bard AI Chatbot")
-    @app_commands.rename(keep_context="keep-context")
-    async def bard(self, intr: discord.Interaction, query: str,
-                   keep_context: bool = False):
+    async def bard(self, intr: discord.Interaction, query: str):
         token = await self.bot.get_setting("bard_token")
         em = discord.Embed(title=query, description="Asking Bard...",
                            color=discord.Color.yellow())
@@ -32,33 +33,45 @@ class Bard(commands.Cog):
         await intr.response.send_message(embed=em)
         lg.info("%s asked Bard (query: %s)", intr.user.name, query)
 
-        if keep_context:
-            bard = bd(token=token, conversation_id=str(intr.user.id))
-        else:
-            bard = bd(token=token)
+        bard = bd(token=token)
 
-        bard_output = bard.get_answer(query)['content']
+        answer = bard.get_answer(query)
+        bard_output: str = answer['content']
         em.color = discord.Color.green()
 
-        if len(bard_output) > 1024:
+        view = None
+        img_links = answer.get("images")
 
+        bard_output = re.sub(r"\[Images? of.*]\n", "", bard_output)
+        bard_output = bard_output.replace("\n\n\n", "\n\n")
+
+        if len(bard_output) > 1024:
             lines = bard_output.split("\n")
 
-            description = ""
+            desc = ""
             idx = 0
-            while len(lines[idx]) + len(description) < 1024:
-                description = description + lines[idx] + "\n"
+            while idx < len(lines) and len(lines[idx]) + len(desc) < 1024:
+                desc = desc + lines[idx] + "\n"
                 idx += 1
 
-            em.description = description[:1020] + "\n..."
+            em.description = desc[:1020] + "\n..."
 
             em.set_footer(text=FTD)
             og_msg = await intr.original_response()
             view = BardView(bard_output, og_msg.jump_url)
-            await intr.edit_original_response(embed=em, view=view)
         else:
             em.description = bard_output
-            await intr.edit_original_response(embed=em)
+
+        if img_links:
+            embeds = [em]
+            em.url = random.choice(answer.get("links"))
+            for _, link in enumerate(itertools.islice(img_links, 3)):
+                em_cp = em.copy()
+                em_cp.set_image(url=link)
+                # discord.File(data, f"{str(uuid4())[:5]}.jpg"))
+                embeds.append(em_cp)
+
+        await intr.edit_original_response(embeds=embeds, view=view)
 
         lg.info("Bard responsed to %s (query: %s)", intr.user.name, query)
 
