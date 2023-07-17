@@ -62,6 +62,7 @@ class Bard(commands.Cog):
         else:
             em.description = bard_output
 
+        embeds = []
         if img_links:
             embeds = [em]
             em.url = random.choice(answer.get("links"))
