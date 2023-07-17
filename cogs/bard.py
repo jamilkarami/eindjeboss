@@ -66,7 +66,7 @@ class Bard(commands.Cog):
 class BardView(discord.ui.View):
 
     def __init__(self, full_text: str, jump_url: str):
-        super().__init__(timeout=180)
+        super().__init__(timeout=None)
         self.full_text = full_text
         self.jump_url = jump_url
 
@@ -77,7 +77,7 @@ class BardView(discord.ui.View):
         lines = self.full_text.split("\n")
 
         header = f"Here is the full text you asked for ({self.jump_url}):"
-        await intr.user.send(header)
+        await intr.user.send(header, suppress_embeds=True)
         msg = ""
         for line in lines:
             if len(msg) + len(line) > 2000:
