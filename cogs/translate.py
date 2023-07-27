@@ -8,7 +8,6 @@ from discord import app_commands
 from discord.ext import commands
 from googletrans import Translator
 from googletrans.constants import LANGUAGES
-from paddleocr import PaddleOCR
 
 from bot import Eindjeboss
 from util.vars.eind_vars import CHANNEL_IGNORE_LIST
@@ -42,14 +41,6 @@ class Translate(commands.Cog):
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
 
-        file_dir = os.getenv('FILE_DIR')
-        ocr_dir = f"{file_dir}/ocr"
-
-        # prepare OCR models pre-emptively
-        self.ocr = PaddleOCR(use_angle_cls=True, lang='en',
-                             det_model_dir=ocr_dir)
-        await self.bot.loop.run_in_executor(None, self.prepare_ocr)
-
     @commands.Cog.listener()
     async def on_message(self, msg: discord.Message):
         if msg.author == self.bot.user:
@@ -77,9 +68,6 @@ class Translate(commands.Cog):
                 await msg.reply(f"{translated.text}")
                 lg.info("Translated text for %s", msg.author.name)
 
-    def prepare_ocr(self):
-        self.ocr.ocr("default_files/images/ehv_badge.png")
-
     async def translate_context(self, intr: discord.Interaction,
                                 msg: discord.Message):
         tr = TranslateUtil.translate_text(msg.content, None)
@@ -95,50 +83,10 @@ class Translate(commands.Cog):
         lg.info(log_msg % (intr.user.name, msg.content, msg.author.name))
 
     @commands.command(aliases=[])
-    async def tr(self, ctx, *args):
-        src = None if not args else args[0]
-
-        if ctx.message.reference:
-            translated = TranslateUtil.translate_text(
-                ctx.message.reference.resolved.content, src)
-            lang = LANGUAGES[translated.src].capitalize()
-            payload = f"Translated from ({lang}): {translated.text}"
-            await ctx.message.reference.resolved.reply(payload)
-            lg.info('Sent translation to %s', ctx.message.author.name)
-            return
+    async def tr(self, ctx):
         await ctx.message.reply(
-            "\"!tr\" can only be used as a reply to another message")
-
-    @commands.command(aliases=[])
-    async def trimg(self, ctx, *args):
-        src = None if not args else args[0]
-
-        if ctx.message.reference:
-            imgs = []
-            msg = ""
-            for attachment in ctx.message.reference.resolved.attachments:
-                if "image" in attachment.content_type:
-                    imgname = f"temp/{uuid.uuid4()}{attachment.filename}"
-                    os.makedirs(os.path.dirname(imgname), exist_ok=True)
-                    await attachment.save(imgname)
-                    imgs.append(imgname)
-            for idx, img in enumerate(imgs, start=1):
-                result = self.ocr.ocr(img, cls=True)
-                lines = []
-
-                for idxres, res in enumerate(result):
-                    res = result[idxres]
-                    img_txt = '\n'.join(["> " + x[1][0] for x in res])
-                    translated = TranslateUtil.translate_text(img_txt, src)
-                    lines.append(translated.text)
-
-                lang = LANGUAGES[translated.src].capitalize()
-                img_msg = "**Image %s (translated from %s)**\n\n%s\n\n"
-                msg += img_msg % (idx, lang, '\n'.join(lines))
-                os.remove(img)
-
-            await ctx.message.reference.resolved.reply(msg)
-            lg.info("Sent image translation to %s", ctx.message.author.name)
+            ["!tr is RIP. Please right-click/hold the message you wish to"
+             " you wish to translate, click on apps -> Translate Message"])
 
     @app_commands.command(name="translate",
                           description="Translate a specific text.")
