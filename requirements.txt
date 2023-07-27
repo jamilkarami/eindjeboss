@@ -10,6 +10,7 @@ dnspython==2.4.0
 cinemagoer
 Google_Images_Search==1.4.6
 googletrans==3.1.0a0
+httpcore==0.17.2
 matplotlib==3.6.2
 motor==3.1.2
 openai
