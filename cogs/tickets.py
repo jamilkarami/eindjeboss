@@ -137,8 +137,10 @@ class Ticket(commands.GroupCog):
         moderation_category = await intr.guild.fetch_channel(mod_category_id)
         user = await intr.guild.fetch_member(author_id)
 
-        mod_role = discord.utils.get(intr.guild.roles, name="Moderator")
-        admin_role = discord.utils.get(intr.guild.roles, name="Admin")
+        mod_role_id = await self.bot.get_setting("mod_role_id")
+        admin_role_id = await self.bot.get_setting("admin_role_id")
+        mod_role = discord.utils.get(intr.guild.roles, id=mod_role_id)
+        admin_role = discord.utils.get(intr.guild.roles, name=admin_role_id)
         overwrites = make_overwrites(intr.guild, user, [mod_role, admin_role])
         channel_name = f"{user.name}-{ticket_id}"
         rep_channel = await moderation_category.create_text_channel(
