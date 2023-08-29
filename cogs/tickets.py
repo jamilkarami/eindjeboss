@@ -51,9 +51,10 @@ class Ticket(commands.GroupCog):
 
     @app_commands.command(name="pending")
     async def opentickets(self, intr: discord.Interaction):
-        role_id = await self.bot.get_setting("admin_role_id")
+        admin_role_id = await self.bot.get_setting("admin_role_id")
+        mod_role_id = await self.bot.get_setting("mod_role_id")
 
-        if not await self.validate(intr, role_id):
+        if not await self.validate(intr, [admin_role_id, mod_role_id]):
             return
 
         tickets = await self.tickets.find(
@@ -80,9 +81,10 @@ class Ticket(commands.GroupCog):
     @app_commands.command(name="fromuser")
     async def usertickets(self, intr: discord.Interaction,
                           user: discord.Member):
-        role_id = await self.bot.get_setting("admin_role_id")
+        admin_role_id = await self.bot.get_setting("admin_role_id")
+        mod_role_id = await self.bot.get_setting("mod_role_id")
 
-        if not await self.validate(intr, role_id):
+        if not await self.validate(intr, [admin_role_id, mod_role_id]):
             return
 
         tickets = await self.tickets.find(
@@ -110,9 +112,10 @@ class Ticket(commands.GroupCog):
     @app_commands.command(name="handle")
     @app_commands.rename(ticket_id="ticket-id")
     async def handleticket(self, intr: discord.Interaction, ticket_id: str):
-        role_id = await self.bot.get_setting("admin_role_id")
+        admin_role_id = await self.bot.get_setting("admin_role_id")
+        mod_role_id = await self.bot.get_setting("mod_role_id")
 
-        if not await self.validate(intr, role_id):
+        if not await self.validate(intr, [admin_role_id, mod_role_id]):
             return
 
         mod_category_id = await self.bot.get_setting("moderator_category_id")
@@ -192,9 +195,10 @@ class Ticket(commands.GroupCog):
     @app_commands.rename(ticket_id="ticket")
     async def closeticket(self, intr: discord.Interaction,
                           ticket_id: str):
-        role_id = await self.bot.get_setting("admin_role_id")
+        admin_role_id = await self.bot.get_setting("admin_role_id")
+        mod_role_id = await self.bot.get_setting("mod_role_id")
 
-        if not await self.validate(intr, role_id):
+        if not await self.validate(intr, [admin_role_id, mod_role_id]):
             return
 
         ticket = await self.tickets.find_one({"_id": ticket_id})
@@ -227,9 +231,10 @@ class Ticket(commands.GroupCog):
     @app_commands.rename(ticket_id="ticket")
     async def noteticket(self, intr: discord.Interaction,
                          ticket_id: str, text: str = None):
-        role_id = await self.bot.get_setting("admin_role_id")
+        admin_role_id = await self.bot.get_setting("admin_role_id")
+        mod_role_id = await self.bot.get_setting("mod_role_id")
 
-        if not await self.validate(intr, role_id):
+        if not await self.validate(intr, [admin_role_id, mod_role_id]):
             return
 
         ticket = await self.tickets.find_one({"_id": ticket_id})
@@ -290,14 +295,15 @@ class Ticket(commands.GroupCog):
             for ticket in tickets
         ]
 
-    async def validate(self, intr: discord.Interaction, role_id: int = None):
+    async def validate(self, intr: discord.Interaction, role_ids = None):
         if intr.user.id == self.bot.owner_id:
             return True
 
-        if role_id:
-            role = intr.guild.get_role(role_id)
-            if role in intr.user.roles:
-                return True
+        if role_ids:
+            for role_id in role_ids:
+                role = intr.guild.get_role(role_id)
+                if role in intr.user.roles:
+                    return True
 
         await intr.response.send_message(
             "You are not allowed to use this command.", ephemeral=True)
