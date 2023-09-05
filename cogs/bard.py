@@ -5,7 +5,7 @@ import re
 
 import discord
 from bardapi import Bard as bd
-from discord import app_commands
+# from discord import app_commands
 from discord.ext import commands
 
 from bot import Eindjeboss
@@ -23,8 +23,8 @@ class Bard(commands.Cog):
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
 
-    @app_commands.command(name="bard",
-                          description="Chat with the Google Bard AI Chatbot")
+    # @app_commands.command(name="bard",
+    #                       description="Chat with the Google Bard AI Chatbot")
     async def bard(self, intr: discord.Interaction, query: str):
         token = await self.bot.get_setting("bard_token")
         em = discord.Embed(title=query, description="Asking Bard...",

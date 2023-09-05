@@ -295,7 +295,7 @@ class Ticket(commands.GroupCog):
             for ticket in tickets
         ]
 
-    async def validate(self, intr: discord.Interaction, role_ids = None):
+    async def validate(self, intr: discord.Interaction, role_ids=None):
         if intr.user.id == self.bot.owner_id:
             return True
 
