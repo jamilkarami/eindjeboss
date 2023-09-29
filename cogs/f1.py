@@ -1,5 +1,6 @@
 import logging as lg
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Any
 
 import discord
 import pytz
@@ -10,6 +11,7 @@ from discord.ext import commands
 from bot import Eindjeboss
 
 CURRENT_F1 = "http://ergast.com/api/f1/current.json"
+CURRENT_ROUND = "https://ergast.com/api/f1/current/next.json"
 
 
 class F1(commands.Cog):
@@ -23,69 +25,97 @@ class F1(commands.Cog):
 
     @app_commands.command(name="nextf1race")
     async def nextf1race(self, interaction: discord.Interaction):
-        tz = await self.bot.get_setting("timezone")
-        next_race = self.get_next_f1_race()
-        if not next_race:
-            await interaction.response.send_message(
-                "The %s F1 season is over. Wait for the next one."
-                % datetime.now().strftime('%Y'), ephemeral=True)
-            return
+        current_round = get_current_round() - 1
+        races = get_races()
+        embed = F1Embed(races[current_round])
+        await interaction.response.send_message(embed=embed, view=F1View(
+            get_races(), current_round))
 
-        title = "%s %s" % (next_race['season'], next_race['raceName'])
-        times = self.get_session_times(next_race, tz)
 
-        embed = discord.Embed(title=title, url=next_race['url'],
-                              color=discord.Color.red())
-        for time in times:
-            embed.add_field(name=times[time],
-                            value=time.strftime('%d/%m at %H:%M'),
-                            inline=False)
+class F1View(discord.ui.View):
 
-        await interaction.response.send_message(embed=embed)
-        lg.info('Sent next F1 race information to %s'
-                % interaction.user.name)
+    def __init__(self, races, idx: int):
+        super().__init__(timeout=300.0)
+        self.races = races
+        self.idx = idx
+        self.add_item(MoveButton(discord.ButtonStyle.red, "Previous", -1))
+        self.add_item(MoveButton(discord.ButtonStyle.green, "Next", 1))
 
-    def get_session_times(self, data, tz):
-        first_practice = data.get('FirstPractice')
-        second_practice = data.get('SecondPractice')
-        third_practice = data.get('ThirdPractice')
-        sprint = data.get('Sprint')
-        qualifying = data.get('Qualifying')
-        race = {'date': data['date'], 'time': data['time']}
+    def get_race_at_idx(self):
+        return self.races[self.idx]
 
-        times_local = {'First Practice': first_practice,
-                       'Second Practice': second_practice,
-                       'Third Practice': third_practice,
-                       'Sprint': sprint,
-                       'Qualifying': qualifying,
-                       'Race': race}
-        times_ams = self.get_times_tz(times_local, tz)
-        times_ams = {k: times_ams[k] for k in sorted(times_ams)}
-        return times_ams
+    def update_idx(self, update):
+        self.idx = (self.idx + update) % len(self.races)
 
-    def get_times_tz(self, times_local, timezone):
-        tz_local = pytz.timezone('UTC')
-        tz_choice = pytz.timezone(timezone)
-        times_ams = {}
-        for k, v in times_local.items():
-            if v:
-                time_str = '%s %s' % (v['date'], v['time'])
-                time_ams = tz_local.localize(
-                    datetime.strptime(
-                        time_str, '%Y-%m-%d %H:%M:%SZ')).astimezone(tz_choice)
-                times_ams[time_ams] = k
+    async def update_msg(self, interaction: discord.Interaction):
+        await interaction.response.edit_message(
+            embed=F1Embed(self.get_race_at_idx()))
 
-        return times_ams
 
-    def get_next_f1_race(self):
-        data = requests.get(CURRENT_F1).json()
-        for race in data['MRData']['RaceTable']['Races']:
-            rc_tm = f"{race['date']} {race['time']}"
-            rc_tm_dt = datetime.strptime(rc_tm, "%Y-%m-%d %H:%M:%SZ")
-            now = datetime.now()
-            if rc_tm_dt + timedelta(hours=2) > now:
-                return race
-        return None
+class F1Embed(discord.Embed):
+
+    def __init__(self, race):
+        super().__init__(color=discord.Color.red(), 
+                         title=f"{race['raceName']} ({datetime.now().year})")
+        details = get_times(race)
+        for k, v in details.items():
+            self.add_field(name=v, 
+                           value=k.strftime("%d/%m at %H:%M"), inline=False)
+
+
+class MoveButton(discord.ui.Button):
+
+    def __init__(self, style, label, update):
+        super().__init__(style=style, label=label)
+        self.update = update
+
+    async def callback(self, interaction: discord.Interaction) -> Any:
+        self.view.update_idx(self.update)
+        await self.view.update_msg(interaction)
+
+
+def get_races():
+    data = requests.get(CURRENT_F1).json()
+    return data['MRData']['RaceTable']['Races']
+
+
+def get_current_round() -> int:
+    data = requests.get(CURRENT_ROUND).json()
+    return int(data['MRData']['RaceTable']['Races'][0]["round"])
+
+
+def get_times(race_data):
+    first_practice = race_data.get('FirstPractice')
+    second_practice = race_data.get('SecondPractice')
+    third_practice = race_data.get('ThirdPractice')
+    sprint = race_data.get('Sprint')
+    qualifying = race_data.get('Qualifying')
+    race = {'date': race_data['date'], 'time': race_data['time']}
+
+    times_local = {'First Practice': first_practice,
+                   'Second Practice': second_practice,
+                   'Third Practice': third_practice,
+                   'Sprint': sprint,
+                   'Qualifying': qualifying,
+                   'Race': race}
+    times_ams = get_times_tz(times_local)
+    times_ams = {k: times_ams[k] for k in sorted(times_ams)}
+    return times_ams
+
+
+def get_times_tz(times_local):
+    tz_local = pytz.timezone('UTC')
+    tz_choice = pytz.timezone("Europe/Amsterdam")
+    times_ams = {}
+    for k, v in times_local.items():
+        if v:
+            time_str = '%s %s' % (v['date'], v['time'])
+            time_ams = tz_local.localize(
+                datetime.strptime(
+                    time_str, '%Y-%m-%d %H:%M:%SZ')).astimezone(tz_choice)
+            times_ams[time_ams] = k
+
+    return times_ams
 
 
 async def setup(client: Eindjeboss):
