@@ -27,7 +27,7 @@ class F1(commands.Cog):
     async def nextf1race(self, interaction: discord.Interaction):
         current_round = get_current_round() - 1
         races = get_races()
-        embed = F1Embed(races[current_round])
+        embed = F1Embed(races[current_round], is_current=True)
         await interaction.response.send_message(embed=embed, view=F1View(
             get_races(), current_round))
 
@@ -38,7 +38,7 @@ class F1View(discord.ui.View):
         super().__init__(timeout=300.0)
         self.races = races
         self.idx = idx
-        self.add_item(MoveButton(discord.ButtonStyle.red, "Previous", -1))
+        self.add_item(MoveButton(discord.ButtonStyle.red, "Prev", -1))
         self.add_item(MoveButton(discord.ButtonStyle.green, "Next", 1))
 
     def get_race_at_idx(self):
@@ -49,17 +49,19 @@ class F1View(discord.ui.View):
 
     async def update_msg(self, interaction: discord.Interaction):
         await interaction.response.edit_message(
-            embed=F1Embed(self.get_race_at_idx()))
+            embed=F1Embed(self.get_race_at_idx(),
+                          is_current=(self.idx == get_current_round() - 1)))
 
 
 class F1Embed(discord.Embed):
 
-    def __init__(self, race):
-        super().__init__(color=discord.Color.red(), 
+    def __init__(self, race, is_current: bool = False):
+        color = discord.Color.red() if not is_current else discord.Color.green()
+        super().__init__(color=color,
                          title=f"{race['raceName']} ({datetime.now().year})")
         details = get_times(race)
         for k, v in details.items():
-            self.add_field(name=v, 
+            self.add_field(name=v,
                            value=k.strftime("%d/%m at %H:%M"), inline=False)
 
 
