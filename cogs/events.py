@@ -244,7 +244,8 @@ def draw_tag_bubbles(img, tags, fill, text_color, font):
         tags = tags[:3] + [f"+{add}"]
 
     for tag in tags:
-        text_width, _ = font.getsize(tag)
+        left, _, right, _ = font.getbbox(tag)
+        text_width = right - left
         x1 = start
         x2 = x1 + text_width + 70  # higher hard-coded value -> wider tags
         y1 = high_point
