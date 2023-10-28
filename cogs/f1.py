@@ -47,6 +47,9 @@ class F1View(discord.ui.View):
     def update_idx(self, update):
         self.idx = (self.idx + update) % len(self.races)
 
+    async def on_timeout(self) -> None:
+        self.clear_items()
+
     async def update_msg(self, interaction: discord.Interaction):
         await interaction.response.edit_message(
             embed=F1Embed(self.get_race_at_idx(),
