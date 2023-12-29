@@ -74,13 +74,19 @@ class Reddit(commands.GroupCog, group_name="random"):
         guild = await self.bot.fetch_guild(guild_id)
         channel = await guild.fetch_channel(reddit_channel_id)
 
-        posts = requests.get(
-            f'https://www.reddit.com/r/{EINDHOVEN}/new/.json?limit=20',
-            headers={
-                "Cache-Control": "no-cache",
-                "Pragma": "no-cache",
-                "User-Agent": "discord-bot"
-            }, timeout=10).json()['data']['children']
+        try:
+            pd = requests.get(
+                f'https://www.reddit.com/r/{EINDHOVEN}/new/.json?limit=20',
+                headers={
+                    "Cache-Control": "no-cache",
+                    "Pragma": "no-cache",
+                    "User-Agent": "discord-bot"
+                }, timeout=10)
+        except Exception:
+            lg.exception(
+                f"Failed to get post data from /r/eindhoven, response: {pd}")
+            return
+        posts = pd.json()['data']['children']
 
         for post in posts:
             if post['data']['name'] not in db:
