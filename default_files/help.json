@@ -25,8 +25,8 @@
             "Translate": "📖"
         },
         "desc": [
-            "Keep in mind that maybe not everything related to Arnol is explained here.",
-            "If you're looking for something related to Arnol that you don't find here, feel free to reach out to the mods/admins."
+            "Keep in mind that maybe not everything related to Lampje is explained here.",
+            "If you're looking for something related to Lampje that you don't find here, feel free to reach out to the mods/admins."
         ]
     },
     "Help": {
@@ -119,11 +119,11 @@
     },
     "Reminders": {
         "/remindme": {
-            "Description": "Creates a reminder for a specific time. Arnol will mention you in the reminders channel when the time comes.",
+            "Description": "Creates a reminder for a specific time. Lampje will mention you in the reminders channel when the time comes.",
             "Example": "```/remindme [time] [message] [repeat yes/no]\nExample: /remindme [in 3 hours] [Drink water] [no]```",
             "Details": [
                 "The time can be relative to the current time (in X minutes/hours/days) or a specific time (Tuesday at 13:00). Timezone is Amsterdam.",
-                "Setting 'repeat' to true will make Arnol remind you every day at the specific time you set."
+                "Setting 'repeat' to true will make Lampje remind you every day at the specific time you set."
             ]
         },
         "/myreminders": {
@@ -141,10 +141,10 @@
         "/8ball": {
             "Description": "Shake the magic 8 ball.",
             "Example": "```/8ball\n\nResponse: Magic 8 ball says: I don't think so ❌```",
-            "Details": "Can also be triggered by sending a message starting with 'Hey Arnol, ' (space included) and ending with a question mark (?)"
+            "Details": "Can also be triggered by sending a message starting with 'Hey Lampje, ' (space included) and ending with a question mark (?)"
         },
         "/chooseforme": {
-            "Description": "Have Arnol choose from a comma-separated list of options.",
+            "Description": "Have Lampje choose from a comma-separated list of options.",
             "Example": "```/chooseforme yes, no, maybe, I don't know\n\nResponse: Maybe```"
         },
         "/coin": {
@@ -159,7 +159,7 @@
     "Translate": {
         "!tr": {
             "Description": "Translates the message that you reply to.",
-            "Example": "```Reply to a message with !tr [src] and Arnol will translate it for you.```",
+            "Example": "```Reply to a message with !tr [src] and Lampje will translate it for you.```",
             "Details": [
                 "[src] is an optional parameter you can pass to choose the source language.\nSometimes the language detection picks up the wrong language.",
                 "",
@@ -168,7 +168,7 @@
         },
         "!trimg": {
             "Description": "Translates the message (containing image(s)) that you reply to.",
-            "Example": "```Reply to a message with !trimg and Arnol will translate it for you.```"
+            "Example": "```Reply to a message with !trimg and Lampje will translate it for you.```"
         },
         "/translate": {
             "Description": "Translate a text from one language to another.",

@@ -24,7 +24,7 @@ class Help(commands.Cog, name="help"):
         lg.info(f"[{__name__}] Cog is ready")
 
     @app_commands.command(name="help",
-                          description="Get help with Arnol\'s commands")
+                          description="Get help with Lampje\'s commands")
     async def help(self, intr: discord.Interaction):
         helptext = await self.helpcoll.find_one()
 

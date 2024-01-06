@@ -10,7 +10,7 @@ from util.vars.eind_vars import CHANNEL_IGNORE_LIST
 
 DEFAULT_ROLL = 20
 ROLL_FOR_TEXT = "roll for "
-HEY_ARNOL_TEXT = "hey arnol, "
+HEY_LAMPJE_TEXT = "hey lampje, "
 EIGHT_BALL_OPTIONS = [
     "Yes ✅",
     "It is decidedly so ✅",
@@ -23,7 +23,7 @@ EIGHT_BALL_OPTIONS = [
 ]
 
 EIGHT_BALL_DESCRIPTION = "Shake the magic 8 ball and get the answer you seek."
-CH_DESC = "Let Arnol choose! Handy for when you don't know what to pick."
+CH_DESC = "Let Lampje choose! Handy for when you don't know what to pick."
 
 
 class Casino(commands.Cog):
@@ -49,11 +49,11 @@ class Casino(commands.Cog):
             lg.info("%s rolled a D20", msg.author.name)
             return
 
-        if msg_cont.startswith(HEY_ARNOL_TEXT) and msg_cont.endswith("?"):
+        if msg_cont.startswith(HEY_LAMPJE_TEXT) and msg_cont.endswith("?"):
             random.seed()
             answer = random.choice(EIGHT_BALL_OPTIONS)
             await msg.reply(answer)
-            lg.info("%s asked Arnol a question", msg.author.name)
+            lg.info("%s asked a question", msg.author.name)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -103,7 +103,7 @@ class Casino(commands.Cog):
         resp = (f"You asked me to choose from {resp_o}.\n\nI choose: **{ch}**")
 
         await intr.response.send_message(resp)
-        lg.info("%s asked Arnol to choose", intr.user.name)
+        lg.info("%s asked to choose", intr.user.name)
 
 
 async def setup(client: Eindjeboss):
