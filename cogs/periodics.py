@@ -133,7 +133,7 @@ class Periodics(commands.Cog):
             desc = itm['weather'][0]['description'].capitalize()
             temp = str(round(itm['main']['temp'])) + "°"
             feel = str(round(itm['main']['feels_like'])) + "°"
-            wind = str(round(itm['wind']['speed'])) + " km/h"
+            wind = str(round(itm['wind']['speed'] * 3.6)) + " km/h"
             time = itm['dt_txt'][-8:-3]
 
             weather_details.append([cond, desc, temp, feel, wind, time])
