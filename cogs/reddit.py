@@ -5,11 +5,12 @@ import os
 import random
 import re
 import textwrap
+from typing import List
 
 import asyncpraw
 import discord
-import requests
 from aiocron import crontab
+from asyncpraw.models import Submission, Subreddit
 from discord import app_commands
 from discord.ext import commands
 
@@ -74,62 +75,57 @@ class Reddit(commands.GroupCog, group_name="random"):
         guild = await self.bot.fetch_guild(guild_id)
         channel = await guild.fetch_channel(reddit_channel_id)
 
-        posts = []
+        posts: List[Submission] = []
 
-        try:
-            pd = requests.get(
-                f'https://www.reddit.com/r/{EINDHOVEN}/new/.json?limit=20',
-                headers={
-                    "Cache-Control": "no-cache",
-                    "Pragma": "no-cache",
-                    "User-Agent": "discord-bot"
-                }, timeout=10)
-            posts = pd.json()['data']['children']
-        except Exception:
-            lg.exception(
-                f"Failed to get post data from /r/eindhoven, response: {pd}")
-            return
+        e_subreddit: Subreddit = await reddit.subreddit(EINDHOVEN)
+
+        async for submission in e_subreddit.new(limit=20):
+            posts.append(submission)
 
         for post in posts:
-            if post['data']['name'] not in db:
-                lg.info("Found new reddit post: %s", post['data']['name'])
-                perm = f"https://www.reddit.com{post['data']['permalink']}"
+            p_id = post.id
+            if p_id not in db:
+                lg.info("Found new reddit post: %s", p_id)
 
-                if post['data']['thumbnail'] == 'self':
-                    emb = mk_embed(post['data']['title'], perm,
-                                   post['data']['selftext'])
+                await post.load()
+                p_perm = f"https://www.reddit.com{post.permalink}"
+                p_title = post.title
+                p_author = post.author
+                p_thumb = post.thumbnail
+                p_self = post.is_self
+                p_vid = post.is_video
+
+                if p_self:
+                    emb = mk_embed(p_title, p_perm, post.selftext)
+                    emb.set_footer(text=f"Posted by {p_author}")
+                elif p_vid:
+                    emb = mk_embed(p_title, p_perm)
+                    emb.set_image(url=p_thumb
+                                  if p_thumb.startswith('https://') else None)
                     emb.set_footer(
-                        text=f"Posted by {post['data']['author']}")
-                elif post['data']['is_video']:
-                    url = post['data']['thumbnail']
+                        text=f"Video posted by {p_author}")
+                else:
+                    p_url = post.url
 
-                    emb = mk_embed(post['data']['title'], perm)
-                    emb.set_image(url=url
-                                  if url.startswith('https://') else None)
-                    emb.set_footer(
-                        text=f"Video posted by {post['data']['author']}")
-                else:  # image post
-                    url = post['data']['url']
-
-                    if not url.startswith('https://'):
-                        if url.startswith('/r/'):
-                            url = 'https://www.reddit.com%s' % url
+                    if not p_url.startswith('https://'):
+                        if p_url.startswith('/r/'):
+                            p_url = 'https://www.reddit.com%s' % p_url
                         else:
-                            url = None
+                            p_url = None
 
-                    emb = mk_embed(post['data']['title'], perm)
-                    emb.set_image(url=url)
+                    emb = mk_embed(p_title, p_perm)
+                    emb.set_image(url=p_url)
                     emb.set_footer(
-                        text=f"Image posted by {post['data']['author']}")
+                        text=f"Image posted by {p_author}")
 
                 await channel.send(embed=emb)
 
-                db.append(post['data']['name'])
+                db.append(p_id)
 
                 with open(get_file(EINDJE_SUBREDDIT_FILE), 'w') as outfile:
                     json.dump(db[-100:], outfile)
 
-                await asyncio.sleep(1)
+                await asyncio.sleep(3)
 
     @commands.Cog.listener()
     async def on_message(self, message):
