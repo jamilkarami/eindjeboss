@@ -6,7 +6,7 @@ from discord.ext import commands
 from discord.ui import Modal, TextInput
 
 from bot import Eindjeboss
-from util.vars.eind_vars import NO_EMOJI, NUMBER_EMOJIS, YES_EMOJI
+from util.vars.eind_vars import NO_EMOJI, NUMBER_EMOJIS, YES_EMOJI, MAYBE_EMOJI
 
 
 class Polls(commands.Cog):
@@ -72,6 +72,7 @@ class Polls(commands.Cog):
         await intr.response.send_message(title)
         resp = await intr.original_response()
         await resp.add_reaction(YES_EMOJI)
+        await resp.add_reaction(MAYBE_EMOJI)
         await resp.add_reaction(NO_EMOJI)
         lg.info("Sent yes/no poll to %s", intr.user.name)
 
