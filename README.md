@@ -3,7 +3,7 @@ In-house utility bot for the Eindhoven Community server on Discord
 
 ## Introduction
 
-This is a utility bot that is continuously in development for the [Eindhoven Community Discord Server](https://discord.com/invite/JGGsXyE7d4)
+This is a utility bot that is continuously in development for the [Eindhoven Community Discord Server](https://discord.gg/eindhoven)
 
 I didn't write this with the intention of it being used elsewhere (so some of the code is very targeted towards one specific server) but that's always a possibility.
 
