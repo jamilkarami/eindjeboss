@@ -10,8 +10,8 @@ from discord.ext import commands
 
 from bot import Eindjeboss
 
-CURRENT_F1 = "http://ergast.com/api/f1/current.json"
-CURRENT_ROUND = "https://ergast.com/api/f1/current/next.json"
+CURRENT_F1 = "http://ergast.com/api/f1/{year}.json"
+CURRENT_ROUND = "https://ergast.com/api/f1/{year}/next.json"
 
 
 class F1(commands.Cog):
@@ -80,12 +80,12 @@ class MoveButton(discord.ui.Button):
 
 
 def get_races():
-    data = requests.get(CURRENT_F1).json()
+    data = requests.get(CURRENT_F1.format(year = datetime.today().year)).json()
     return data['MRData']['RaceTable']['Races']
 
 
 def get_current_round() -> int:
-    data = requests.get(CURRENT_ROUND).json()
+    data = requests.get(CURRENT_ROUND.format(year = datetime.today().year)).json()
     return int(data['MRData']['RaceTable']['Races'][0]["round"])
 
 
