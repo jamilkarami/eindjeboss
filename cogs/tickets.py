@@ -1,3 +1,4 @@
+import base64
 import logging as lg
 import os
 import time
@@ -6,12 +7,15 @@ from datetime import datetime as dt
 from enum import Enum
 
 import discord
+from aiocron import crontab
 from discord import app_commands
 from discord.ext import commands
 from discord.ui import Modal, TextInput
 
 from bot import Eindjeboss
 from util.util import tabulate
+from util.vars.eind_vars import CHANNEL_IGNORE_LIST
+from util.vars.periodics import SYNC_TICKET_DT
 
 TICKET_NOT_FOUND = ("Failed to find a ticket with this ID"
                     " or the channel you're in isn't a ticket channel."
@@ -31,6 +35,7 @@ class Ticket(commands.GroupCog):
         )
         self.bot.tree.add_command(self.ctx_menu)
         self.tickets = self.bot.dbmanager.get_collection('tickets')
+        self.tracked_tickets = {}
 
     async def report_message(self, intr: discord.Interaction,
                              msg: discord.Message):
@@ -38,10 +43,66 @@ class Ticket(commands.GroupCog):
                                                    msg))
         lg.info("Sent ticket modal to %s for message %s",
                 intr.user.display_name, msg.jump_url)
+        
+    @commands.Cog.listener()
+    async def on_message(self, msg: discord.Message):
+        if msg.author == self.bot.user:
+            return
+        if msg.channel.id in CHANNEL_IGNORE_LIST:
+            return
+        
+        ticket = await self.get_ticket_from_channel_id(msg.channel.id)
+
+        if not ticket:
+            return
+
+        msg_data = await self.get_data_from_msg(msg)
+
+        self.tracked_tickets[msg.channel.id][1]["messages"].append(msg_data)
+        self.tracked_tickets[msg.channel.id][0] = True
+
+
+    @commands.Cog.listener()
+    async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
+        msg = payload.cached_message
+
+        if not msg:
+            msg_channel = await self.bot.fetch_channel(payload.channel_id)
+            msg = await msg_channel.fetch_message(payload.message_id)
+
+        if msg.author == self.bot.user:
+            return
+        if msg.channel.id in CHANNEL_IGNORE_LIST:
+            return
+        
+        ticket = await self.get_ticket_from_channel_id(msg.channel.id)
+
+        if not ticket:
+            return
+
+        print(ticket["messages"][0])
+        old_msg_idx, old_msg = next((idx, o_msg) for idx, o_msg in enumerate(ticket["messages"]) if o_msg["id"] == msg.id)
+
+        if not old_msg_idx:
+            return
+        
+        edit_history = old_msg.get("edit_history", [])
+
+        edit_history.append({"content": old_msg["content"], "time": old_msg["time"]})
+        old_msg["content"] = msg.content
+        old_msg["time"] = msg.edited_at
+        old_msg["edit_history"] = edit_history
+
+        ticket["messages"][old_msg_idx] = old_msg
+
+        self.tracked_tickets[msg.channel.id] = [True, ticket]
+
 
     @commands.Cog.listener()
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
+        await self.load_open_ticket_info()
+        crontab(SYNC_TICKET_DT, func=self.sync_tickets, start=True)
 
     @app_commands.command(name="modmail")
     async def modmail(self, intr: discord.Interaction):
@@ -119,7 +180,8 @@ class Ticket(commands.GroupCog):
             return
 
         mod_category_id = await self.bot.get_setting("moderator_category_id")
-        ticket = await self.tickets.find_one({"_id": ticket_id})
+
+        ticket = await self.get_ticket_from_id(ticket_id)
 
         if not ticket:
             await intr.response.send_message(TICKET_NOT_FOUND, ephemeral=True)
@@ -140,8 +202,6 @@ class Ticket(commands.GroupCog):
         moderation_category = await intr.guild.fetch_channel(mod_category_id)
         user = await intr.guild.fetch_member(author_id)
 
-        mod_role_id = await self.bot.get_setting("mod_role_id")
-        admin_role_id = await self.bot.get_setting("admin_role_id")
         mod_role = discord.utils.get(intr.guild.roles, id=mod_role_id)
         admin_role = discord.utils.get(intr.guild.roles, id=admin_role_id)
         overwrites = make_overwrites(intr.guild, user, [mod_role, admin_role])
@@ -188,6 +248,8 @@ class Ticket(commands.GroupCog):
 
         d_name = intr.user.display_name
         title = ticket["title"]
+
+        self.tracked_tickets[intr.channel_id] = [True, ticket]
         await self.alert_mods(
             f"**{d_name}** started handling ticket {ticket_id} ({title})")
 
@@ -201,7 +263,7 @@ class Ticket(commands.GroupCog):
         if not await self.validate(intr, [admin_role_id, mod_role_id]):
             return
 
-        ticket = await self.tickets.find_one({"_id": ticket_id})
+        ticket = await self.get_ticket_from_id(ticket_id)
 
         if not ticket:
             await intr.response.send_message(TICKET_NOT_FOUND, ephemeral=True)
@@ -229,15 +291,14 @@ class Ticket(commands.GroupCog):
 
     @app_commands.command(name="note")
     @app_commands.rename(ticket_id="ticket")
-    async def noteticket(self, intr: discord.Interaction,
-                         ticket_id: str, text: str = None):
+    async def noteticket(self, intr: discord.Interaction, ticket_id: str, text: str = None):
         admin_role_id = await self.bot.get_setting("admin_role_id")
         mod_role_id = await self.bot.get_setting("mod_role_id")
 
         if not await self.validate(intr, [admin_role_id, mod_role_id]):
             return
 
-        ticket = await self.tickets.find_one({"_id": ticket_id})
+        ticket = await self.get_ticket_from_id(ticket_id)
         notes = ticket.get("notes")
 
         if not text:
@@ -273,7 +334,7 @@ class Ticket(commands.GroupCog):
         await intr.response.send_message("Ticket updated.", ephemeral=True)
 
     @noteticket.autocomplete("ticket_id")
-    async def noteticket_autocomplete(self, intr: discord.Interaction,
+    async def noteticket_autocomplete(self, _: discord.Interaction,
                                       current: str):
         tickets = await self.tickets.find(
             {"title": {"$regex": current}}).to_list(length=88675309)
@@ -284,7 +345,7 @@ class Ticket(commands.GroupCog):
         ]
 
     @closeticket.autocomplete("ticket_id")
-    async def closeticket_autocomplete(self, intr: discord.Interaction,
+    async def closeticket_autocomplete(self, _: discord.Interaction,
                                        current: str):
         tickets = await self.tickets.find(
             {"status": {"$ne": 3},
@@ -294,6 +355,7 @@ class Ticket(commands.GroupCog):
             app_commands.Choice(name=ticket["title"], value=ticket["_id"])
             for ticket in tickets
         ]
+
 
     async def validate(self, intr: discord.Interaction, role_ids=None):
         if intr.user.id == self.bot.owner_id:
@@ -312,12 +374,114 @@ class Ticket(commands.GroupCog):
             % (intr.user.name, intr.data.get("name")))
         return False
 
+
     async def alert_mods(self, message):
         ticket_channel_id = await self.bot.get_setting(
             "modmail_channel", None)
         channel = await self.bot.fetch_channel(ticket_channel_id)
 
         await channel.send(message)
+
+
+    async def get_ticket_from_id(self, ticket_id):
+        ticket = self.tracked_tickets.get(ticket_id, None)
+
+        if not ticket:
+            ticket = await self.tickets.find_one({"_id": ticket_id})
+
+        return ticket
+
+
+    async def get_ticket_from_channel_id(self, channel_id):
+        ticket = self.tracked_tickets.get(channel_id, None)
+
+        if not ticket:
+            ticket = await self.tickets.find_one({"channel": channel_id})
+
+            if not ticket:
+                return
+
+            if ticket["channel"] not in self.tracked_tickets:
+                self.tracked_tickets[channel_id] = [True, ticket]
+
+        return ticket
+
+
+    async def get_data_from_msg(self, msg: discord.Message):
+        data = {
+            "user": msg.author.id,
+            "time": msg.created_at,
+            "id": msg.id,
+            "content": msg.content
+        }
+
+        self.add_mention_data(data, msg)
+        await self.add_reference_data(data, msg)
+        await self.add_attachment_data(data, msg)
+
+        return data
+
+
+    async def add_attachment_data(self, data, msg: discord.Message):
+        attachments = []
+
+        if msg.attachments:
+            for attachment in msg.attachments:
+                if (attachment.content_type and "image" in attachment.content_type) or attachment.size <= 512_000:
+                    content = await attachment.read()
+                    attachment_data = {
+                        "id": attachment.id,
+                        "filename": attachment.filename,
+                        "url": attachment.url,
+                        "content_type": attachment.content_type,
+                        "content": base64.encodebytes(content)
+                    }
+                    attachments.append(attachment_data)
+
+        if attachments:
+            data["attachments"] = attachments
+
+
+    async def add_reference_data(self, data, msg: discord.Message):
+        if msg.reference:
+            if msg.reference.channel_id == msg.channel.id:
+                data["reference"] = msg.reference.message_id
+            else:
+                channel_id = msg.reference.channel_id
+                msg_id = msg.reference.message_id
+
+                ref_channel = await self.bot.fetch_channel(channel_id)
+                ref_msg = await ref_channel.fetch_message(msg_id)
+
+                data["reference"] = await self.get_data_from_msg(ref_msg)
+
+
+    def add_mention_data(self, data, msg: discord.Message):
+        mentions = {}
+
+        if msg.mentions:
+            mentions["user_mentions"] = [mention.id for mention in msg.mentions]
+        if msg.role_mentions:
+            mentions["role_mentions"] = [mention.id for mention in msg.role_mentions]
+        if msg.channel_mentions:
+            mentions["channel_mentions"] = [mention.id for mention in msg.channel_mentions]
+
+        if mentions:
+            data["mentions"] = mentions
+
+
+    async def load_open_ticket_info(self):
+        open_tickets = await self.tickets.find(
+            {"status": TicketStatus.OPEN.value}).to_list(length=88675309)
+        
+        self.tracked_tickets = {ticket["channel"]: [False, ticket] for ticket in open_tickets}
+
+
+    async def sync_tickets(self):
+        for k, v in self.tracked_tickets.items():
+            if v[0]:
+                await self.tickets.update_one({"channel": k}, {"$set": v[1]})
+                v[0] = False
 
 
 class TicketModal(Modal):
@@ -363,7 +527,8 @@ class TicketModal(Modal):
                 'title': self.ticket_title.value,
                 'description': self.description.value,
                 'sub_time': int(time.time()),
-                'status': TicketStatus.OPEN.value}
+                'status': TicketStatus.OPEN.value,
+                "messages": []}
 
         if self.message:
             data['message_id'] = self.message.id
