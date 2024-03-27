@@ -25,14 +25,13 @@ class Eindjeboss(commands.Bot):
         intents = discord.Intents.all()
         activity = discord.Activity(
             type=discord.ActivityType.listening, detail="", name=STATUS)
-        super().__init__(command_prefix="!", case_insensitive=True,
-                         intents=intents, activity=activity,
-                         owner_id=int(os.getenv('OWNER_ID')))
+        super().__init__(command_prefix="!", case_insensitive=True, intents=intents, activity=activity,
+                         owner_id=int(os.getenv("OWNER_ID")))
         self.file_dir = FILE_DIR
 
     async def setup_hook(self):
-        if hasattr(time, 'tzset'):
-            os.environ['TZ'] = 'Europe/Amsterdam'
+        if hasattr(time, "tzset"):
+            os.environ["TZ"] = "Europe/Amsterdam"
             time.tzset()
 
         if os.path.exists(TEMP) and os.path.isdir(TEMP):
@@ -40,8 +39,8 @@ class Eindjeboss(commands.Bot):
         shutil.copytree("default_files", FILE_DIR, dirs_exist_ok=True)
 
         self.dbmanager = DbManager()
-        self.settings = self.dbmanager.get_collection('settings')
-        self.cmds = self.dbmanager.get_collection('commands')
+        self.settings = self.dbmanager.get_collection("settings")
+        self.cmds = self.dbmanager.get_collection("commands")
         await self.load_extensions()
         await self.load_settings()
 
@@ -63,7 +62,7 @@ class Eindjeboss(commands.Bot):
 
     async def load_extensions(self):
         for filename in os.listdir("./cogs"):
-            if not filename.endswith('py'):
+            if not filename.endswith("py"):
                 continue
             extension_name = f"cogs.{filename[:-3]}"
             logging.info(f"Loading extension: {extension_name}")
@@ -83,13 +82,12 @@ class Eindjeboss(commands.Bot):
 
         self.__setattr__(setting["_id"], setting["value"])
         await self.settings.insert_one(setting)
-        logging.info("Added setting %s with value %s", setting["_id"],
-                     setting["value"])
+        logging.info("Added setting %s with value %s", setting["_id"], setting["value"])
 
     async def update_setting(self, setting):
         self.__setattr__(setting["_id"], setting["value"])
-        return await self.settings.find_one_and_update(
-            {"_id": setting["_id"]}, {"$set": {"value": setting["value"]}})
+        return await self.settings.find_one_and_update({"_id": setting["_id"]},
+                                                       {"$set": {"value": setting["value"]}})
 
     async def get_settings(self):
         settings = await self.settings.find({}).to_list(length=88675309)
@@ -99,6 +97,12 @@ class Eindjeboss(commands.Bot):
         owner = await self.fetch_user(self.owner_id)
         await owner.send(message)
 
+    async def alert_mods(self, message):
+        ticket_channel_id = await self.get_setting("modmail_channel", None)
+        channel = await self.fetch_channel(ticket_channel_id)
+
+        await channel.send(message)
+
 
 async def main():
     logging_dir = f"{FILE_DIR}/logs"
@@ -106,12 +110,10 @@ async def main():
 
     os.makedirs(logging_dir, exist_ok=True)
     if not Path(logging_file_name).is_file():
-        open(logging_file_name, 'a').close()
+        open(logging_file_name, "a").close()
 
-    log_format = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s',
-                                   datefmt='%Y-%m-%d %H:%M:%S')
-    log_handler = RotatingFileHandler(logging_file_name, mode='a',
-                                      maxBytes=5*1024*1024, backupCount=10,
+    log_format = logging.Formatter("%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    log_handler = RotatingFileHandler(logging_file_name, mode="a", maxBytes=5 * 1024 * 1024, backupCount=10,
                                       encoding=None, delay=0)
 
     discord.utils.setup_logging(handler=log_handler, formatter=log_format)
@@ -124,6 +126,7 @@ async def main():
 
     async with client:
         await client.start(os.getenv("DISCORD_TOKEN"))
+
 
 if __name__ == "__main__":
     try:
