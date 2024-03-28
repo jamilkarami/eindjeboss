@@ -86,14 +86,14 @@ class Admin(commands.Cog):
                                         kick_logs[0].reason,
                                         True)
             await self.bot.alert_mods(f"{kick_logs[0].user.mention} has kicked {removed_user.mention}"
-                                      f". (Reason: {kick_logs[0].reason}")
+                                      f". (Reason: {kick_logs[0].reason})")
 
         if ban_logs[0].target.id == removed_user.id:
             await self.log_member_event(LogEntryEnum.BAN.name, ban_logs[0].user.id, removed_user.id,
                                         ban_logs[0].reason,
                                         True)
             await self.bot.alert_mods(f"{ban_logs[0].user.mention} has banned {removed_user.mention}"
-                                      f". (Reason: {ban_logs[0].reason}")
+                                      f". (Reason: {ban_logs[0].reason})")
 
     @commands.command(name="sync")
     async def sync(self, ctx: commands.Context):
