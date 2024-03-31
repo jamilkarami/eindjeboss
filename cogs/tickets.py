@@ -21,6 +21,12 @@ TICKET_NOT_FOUND = ("Failed to find a ticket with this ID or the channel you're 
                     " Please double check.")
 ALREADY_CLOSED = "This ticket is already closed."
 TICKET_CLOSED = "Ticket closed."
+NO_OPEN_TICKETS = "There are currently no open tickets."
+USER_HAS_NO_TICKETS = "This user has no tickets yet."
+NOT_INSIDE_TICKET_CHANNEL = "You are not inside a ticket channel"
+TICKET_HAS_NO_NOTES = "This ticket doesn't have any notes yet."
+COMMAND_NOT_ALLOWED = "You are not allowed to use this command."
+
 D_FMT = "%Y-%m-%d %H:%M"
 
 
@@ -35,6 +41,12 @@ class Ticket(commands.GroupCog):
         self.bot.tree.add_command(self.ctx_menu)
         self.tickets = self.bot.dbmanager.get_collection("tickets")
         self.tracked_tickets = {}
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        lg.info(f"[{__name__}] Cog is ready")
+        await self.load_open_ticket_info()
+        crontab(SYNC_TICKET_DT, func=self.sync_tickets, start=True)
 
     async def report_message(self, intr: discord.Interaction, msg: discord.Message):
         await intr.response.send_modal(TicketModal(self.tickets, self.bot, msg))
@@ -93,12 +105,6 @@ class Ticket(commands.GroupCog):
 
         self.tracked_tickets[msg.channel.id] = [True, ticket]
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        lg.info(f"[{__name__}] Cog is ready")
-        await self.load_open_ticket_info()
-        crontab(SYNC_TICKET_DT, func=self.sync_tickets, start=True)
-
     @app_commands.command(name="modmail")
     async def modmail(self, intr: discord.Interaction):
         await intr.response.send_modal(TicketModal(self.tickets, self.bot))
@@ -115,7 +121,7 @@ class Ticket(commands.GroupCog):
         tickets = await self.tickets.find({"status": TicketStatus.OPEN.name}).to_list(length=88675309)
 
         if not tickets:
-            await intr.response.send_message("There are currently no open tickets.", ephemeral=True)
+            await intr.response.send_message(NO_OPEN_TICKETS, ephemeral=True)
             return
 
         for rep in tickets:
@@ -144,7 +150,7 @@ class Ticket(commands.GroupCog):
             {"author_id": user.id}).to_list(length=88675309)
 
         if not tickets:
-            await intr.response.send_message("This user has no tickets yet.", ephemeral=True)
+            await intr.response.send_message(USER_HAS_NO_TICKETS, ephemeral=True)
             return
 
         for rep in tickets:
@@ -244,14 +250,21 @@ class Ticket(commands.GroupCog):
     @app_commands.command(name="close")
     @app_commands.rename(ticket_id="ticket")
     async def closeticket(self, intr: discord.Interaction,
-                          ticket_id: str):
+                          ticket_id: str = None):
+
         admin_role_id = await self.bot.get_setting("admin_role_id")
         mod_role_id = await self.bot.get_setting("mod_role_id")
 
         if not await self.validate(intr, [admin_role_id, mod_role_id]):
             return
 
-        ticket = await self.get_ticket_from_id(ticket_id)
+        if not ticket_id:
+            if intr.channel_id not in self.tracked_tickets:
+                await intr.response.send_message(NOT_INSIDE_TICKET_CHANNEL, ephemeral=True)
+                return
+            ticket = await self.get_ticket_from_channel_id(intr.channel_id)
+        else:
+            ticket = await self.get_ticket_from_id(ticket_id)
 
         if not ticket:
             await intr.response.send_message(TICKET_NOT_FOUND, ephemeral=True)
@@ -290,7 +303,7 @@ class Ticket(commands.GroupCog):
 
         if not text:
             if not notes:
-                await intr.response.send_message("This ticket doesn't have any notes yet.", ephemeral=True)
+                await intr.response.send_message(TICKET_HAS_NO_NOTES, ephemeral=True)
                 return
 
             headers = ["Added By", "Note", "Time"]
@@ -332,7 +345,7 @@ class Ticket(commands.GroupCog):
     async def closeticket_autocomplete(self, _: discord.Interaction,
                                        current: str):
         tickets = await self.tickets.find(
-            {"status": {"$ne": 3},
+            {"status": {"$ne": "CLOSED"},
              "title": {"$regex": current}}).to_list(length=88675309)
 
         return [
@@ -350,11 +363,9 @@ class Ticket(commands.GroupCog):
                 if role in intr.user.roles:
                     return True
 
-        await intr.response.send_message(
-            "You are not allowed to use this command.", ephemeral=True)
-        await self.bot.alert_owner(
-            "%s tried to use /%s. Check integration permissions"
-            % (intr.user.name, intr.data.get("name")))
+        await intr.response.send_message(COMMAND_NOT_ALLOWED, ephemeral=True)
+        await self.bot.alert_owner("%s tried to use /%s. Check integration permissions" % (intr.user.name,
+                                                                                           intr.data.get("name")))
         return False
 
     async def get_ticket_from_id(self, ticket_id):
@@ -439,9 +450,8 @@ class Ticket(commands.GroupCog):
             data["mentions"] = mentions
 
     async def load_open_ticket_info(self):
-        open_tickets = await self.tickets.find(
-            {"status": TicketStatus.OPEN.name}).to_list(length=88675309)
-
+        open_tickets = await self.tickets.find({"status": TicketStatus.OPEN.name,
+                                                "channel": {"$exists": True}}).to_list(length=88675309)
         self.tracked_tickets = {ticket["channel"]: [False, ticket] for ticket in open_tickets}
 
     async def sync_tickets(self):
@@ -472,16 +482,13 @@ class TicketModal(Modal):
         ticket_id = str(uuid.uuid1())[:5]
 
         tick_type = "report" if self.message else "ticket"
-        msg = (f"New {tick_type} submitted by {intr.user.display_name}."
-               f" Respond to it with /handleticket {ticket_id}")
+        msg = f"New {tick_type} submitted by {intr.user.display_name}. Respond to it with /handleticket {ticket_id}"
 
         embed_author = f"Ticket by {intr.user.display_name}"
         embed_title = self.ticket_title.value
         embed_description = self.description.value
 
-        embed = discord.Embed(title=embed_title,
-                              description=embed_description,
-                              color=discord.Color.red())
+        embed = discord.Embed(title=embed_title, description=embed_description, color=discord.Color.red())
 
         embed.set_author(name=embed_author)
 
@@ -510,8 +517,7 @@ class TicketModal(Modal):
         return
 
     async def get_msg_data(self, ticket: str, message: discord.Message):
-        data = {"url": message.jump_url,
-                "message_author": message.author.mention}
+        data = {"url": message.jump_url, "message_author": message.author.mention}
 
         if message.content:
             data["content"] = message.content
