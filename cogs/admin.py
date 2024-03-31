@@ -95,6 +95,16 @@ class Admin(commands.Cog):
             await self.bot.alert_mods(f"{ban_logs[0].user.mention} has banned {removed_user.mention}"
                                       f". (Reason: {ban_logs[0].reason})")
 
+    @app_commands.command(name="ban")
+    async def ban(self, intr: discord.Interaction, member: discord.Member, reason: str = None):
+        role_id = await self.bot.get_setting("admin_role_id")
+
+        if not await self.validate(intr, role_id):
+            return
+
+        await self.guild.ban(member, reason=reason)
+        await self.log_member_event(LogEntryEnum.BAN.name, intr.user, member, reason, True)
+
     @commands.command(name="sync")
     async def sync(self, ctx: commands.Context):
         if ctx.author.id != self.bot.owner_id:
