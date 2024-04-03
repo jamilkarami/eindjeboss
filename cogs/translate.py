@@ -74,7 +74,7 @@ class Translate(commands.Cog):
 
         lang = LANGUAGES[tr.src]
 
-        translate_msg = "Translation for \"%s\" from (%s):\n\n%s"
+        translate_msg = "Translation for \"%s\" from %s:\n\n%s"
         log_msg = "Sent translation to %s for message \"%s\" by %s"
 
         await intr.response.send_message(
