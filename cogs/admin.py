@@ -38,15 +38,16 @@ class Admin(commands.Cog):
     async def on_member_join(self, mem: discord.Member):
         member_info = await self.members.find_one({"_id": mem.id})
 
-        if not member_info:
-            return
+        if member_info:
+            logs = member_info.get("logs")
 
-        logs = member_info.get("logs")
+            if logs:
+                if any(LogEntryEnum[log["action"]] in [LogEntryEnum.BAN, LogEntryEnum.KICK] for log in logs):
+                    await self.bot.alert_mods(
+                        f"{mem.mention} joined the server. They have previously been kicked or banned.")
 
-        if logs:
-            if any(LogEntryEnum[log["action"]] in [LogEntryEnum.BAN, LogEntryEnum.KICK] for log in logs):
-                await self.bot.alert_mods(
-                    f"{mem.mention} joined the server. They have previously been kicked or banned.")
+        if mem.name[-4:].isnumeric():
+            await self.bot.alert_mods(f"Possible spam account {mem.mention} joined the server.")
 
     @commands.Cog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member):
