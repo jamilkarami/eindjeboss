@@ -15,6 +15,7 @@ from util.vars.eind_vars import (ASS_EMOJI, CHANNEL_IGNORE_LIST,
 SPONTAAN_STR = "SPONTAAN. REIZEN. DRANKJES MET DE MEIDEN. SHOPPEN. \
 SPECIAALBIER. SUSHI. SARCASME. DANSJES. BOULDEREN. TATOEAGES. UITGAAN. \
 TERRASJES."
+ICE_CREAM_STR = "ICE CREAM\nYES WERE GETTING ICE CREAM\nTODAY\nSTRIJP\nBY PURCHASING IT\nITS LEGAL YES\nYES"
 OPINION = "The Eindhoven Community Discord's collectively humble opinion on %s"
 TZ = "Europe/Amsterdam"
 
@@ -27,18 +28,6 @@ class Messages(commands.GroupCog, name="msg"):
     @commands.Cog.listener()
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
-
-    @app_commands.command(name="fc", description="Free Cuntus")
-    async def free_cuntus(self, interaction: discord.Interaction):
-        await interaction.response.send_message("#FreeCuntus")
-
-    @app_commands.command(name="fa", description="Free Anisha")
-    async def free_anisha(self, interaction: discord.Interaction):
-        await interaction.response.send_message("#FreeAnisha")
-
-    @app_commands.command(name="fg", description="Free Graggy")
-    async def free_graggy(self, interaction: discord.Interaction):
-        await interaction.response.send_message("#FreeGraggy")
 
     @app_commands.command(name="msi",
                           description=OPINION % "MSI")
@@ -86,6 +75,10 @@ class Messages(commands.GroupCog, name="msg"):
     @app_commands.command(name="blaze")
     async def blaze(self, interaction: discord.Interaction):
         await interaction.response.send_message(HARAM_EMOJI)
+
+    @app_commands.command(name="icecream")
+    async def icecream(self, interaction: discord.Interaction):
+        await interaction.response.send_message(ICE_CREAM_STR)
 
     @commands.Cog.listener()
     async def on_message(self, msg: discord.Message):
