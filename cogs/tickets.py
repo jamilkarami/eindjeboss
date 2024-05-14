@@ -477,8 +477,7 @@ class TicketModal(Modal):
                             max_length=1024)
 
     async def on_submit(self, intr: discord.Interaction):
-        ticket_channel_id = await self.bot.get_setting(
-            "modmail_channel", None)
+        ticket_channel_id = await self.bot.get_setting("modmail_channel", None)
         ticket_id = str(uuid.uuid1())[:5]
 
         tick_type = "report" if self.message else "ticket"
@@ -503,7 +502,7 @@ class TicketModal(Modal):
             embed.add_field(name="Reference", value=msg_url)
 
         self.collection.insert_one(data)
-        await intr.response.send_message("Ticket submitted.", ephemeral=True)
+        await intr.response.send_message("Thank you for the report. We will reach out to you soon!", ephemeral=True)
 
         channel = await intr.guild.fetch_channel(ticket_channel_id)
         await channel.send(content=msg, embed=embed)
@@ -541,10 +540,8 @@ class TicketStatus(Enum):
 
 
 def make_overwrites(guild: discord.Guild, user: discord.Member, roles):
-    overwrites = {
-        guild.default_role: discord.PermissionOverwrite(read_messages=False),
-        user: discord.PermissionOverwrite(read_messages=True),
-    }
+    overwrites = {guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                  user: discord.PermissionOverwrite(read_messages=True)}
     for role in roles:
         overwrites[role] = discord.PermissionOverwrite(read_messages=True)
     return overwrites
