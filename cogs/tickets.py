@@ -34,11 +34,6 @@ class Ticket(commands.GroupCog):
 
     def __init__(self, bot: Eindjeboss):
         self.bot = bot
-        self.ctx_menu = app_commands.ContextMenu(
-            name="Report Message",
-            callback=self.report_message,
-        )
-        self.bot.tree.add_command(self.ctx_menu)
         self.tickets = self.bot.dbmanager.get_collection("tickets")
         self.tracked_tickets = {}
 
@@ -47,10 +42,6 @@ class Ticket(commands.GroupCog):
         lg.info(f"[{__name__}] Cog is ready")
         await self.load_open_ticket_info()
         crontab(SYNC_TICKET_DT, func=self.sync_tickets, start=True)
-
-    async def report_message(self, intr: discord.Interaction, msg: discord.Message):
-        await intr.response.send_modal(TicketModal(self.tickets, self.bot, msg))
-        lg.info("Sent ticket modal to %s for message %s", intr.user.display_name, msg.jump_url)
 
     @commands.Cog.listener()
     async def on_message(self, msg: discord.Message):
