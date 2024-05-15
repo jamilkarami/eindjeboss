@@ -53,7 +53,7 @@ class GPT(commands.GroupCog, name="gpt"):
         em = discord.Embed(title=query, description="Asking ChatGPT...", color=discord.Color.yellow())
         try:
             await intr.response.send_message(embed=em)
-            response, tokens, total_usage = await self.query_gpt(intr.user, query, gpt_usage_limit, keep_context)
+            response, tokens, total_usage, model = await self.query_gpt(intr.user, query, gpt_usage_limit, keep_context)
 
             if response is GptError.CONTEXT_TOO_LARGE:
                 em.color = discord.Color.red()
@@ -70,7 +70,7 @@ class GPT(commands.GroupCog, name="gpt"):
 
             em.color = discord.Color.green()
             em.description = response
-            em.set_footer(text=f"{total_usage}/{gpt_usage_limit} (+{tokens})")
+            em.set_footer(text=f"{total_usage}/{gpt_usage_limit} (+{tokens}) ({model})")
             await intr.edit_original_response(embed=em)
         except RateLimitError as e:
             em.color = discord.Color.red()
@@ -133,21 +133,21 @@ class GPT(commands.GroupCog, name="gpt"):
         else:
             context = [{"role": "user", "content": query}]
 
-        response, ttl_tok = await self.get_response(model_engine, context, max_tokens)
+        response, ttl_tok, model = await self.get_response(model_engine, context, max_tokens)
 
         response_msg = {"role": "assistant", "content": response}
         context.append(response_msg)
 
         total_usage = await self.add_usage(user.id, ttl_tok, context)
         lg.info(f"GPT used by {user.name}. ({ttl_tok} tokens)")
-        return response.replace("As an AI language model, ", ""), ttl_tok, total_usage
+        return response.replace("As an AI language model, ", ""), ttl_tok, total_usage, model
 
     async def get_response(self, model_engine, context, max_tokens):
         completion = await aclient.chat.completions.create(model=model_engine, messages=context, max_tokens=max_tokens,
-                                                         n=1, stop=None, temperature=0.5)
+                                                           n=1, stop=None, temperature=0.5)
 
         ttl_tok = max(int(completion.usage.total_tokens * multipliers.get(model_engine)), 1)
-        return completion.choices[0].message.content, ttl_tok
+        return completion.choices[0].message.content, ttl_tok, completion.model
 
     async def save_gpt_settings(self, user_settings):
         await self.gptset.update_one({"_id": user_settings.get("_id")}, {"$set": user_settings}, True)
