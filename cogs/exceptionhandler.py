@@ -20,16 +20,24 @@ class ExceptionHandler(commands.Cog):
     @commands.Cog.listener()
     async def on_app_command_error(self, intr: discord.Interaction,
                                    err: discord.app_commands.AppCommandError):
-        user = await self.bot.fetch_user(self.bot.owner_id)
-        stacktrace = ''.join(traceback.format_exception(None, err, None))
-        msg = "Exception in command **/%s** (%s)\n```logs\n%s```"
+        stacktrace = traceback.format_exception(None, err, None)
+        msg = "Exception in command **/%s** (%s)\n"
 
         if not hasattr(intr.message, "jump_url"):
             jump_url = "ephemeral"
         else:
             jump_url = intr.message.jump_url
 
-        await user.send(msg % (intr.command.name, jump_url, stacktrace))
+        await self.bot.alert_owner(msg % (intr.command.name, jump_url))
+
+        log_msg = ""
+
+        for line in stacktrace:
+            if len(log_msg) + len(line) > 2000:
+                await self.bot.alert_owner(f'```{log_msg}```')
+                log_msg = ""
+            log_msg = log_msg + line
+        await self.bot.alert_owner(f'```{log_msg}```')
 
         if intr.response.is_done():
             await intr.edit_original_response(content=ERROR_MSG)
