@@ -12,7 +12,7 @@ Google_Images_Search==1.4.6
 googletrans==3.1.0a0
 matplotlib==3.6.2
 motor==3.1.2
-openai
+openai==1.30.1
 opencv-python
 Pillow>=10.0.1
 pymongo==4.6.3
