@@ -3,7 +3,8 @@ import os
 from enum import Enum
 
 import discord
-import openai
+from openai import AsyncOpenAI
+
 from aiocron import crontab
 from discord import app_commands
 from discord.ext import commands
@@ -27,6 +28,7 @@ multipliers = {
     "4o": 10
 }
 
+aclient = AsyncOpenAI(api_key=GPT_TOKEN)
 model_engines_choices = [app_commands.Choice(name=k, value=v) for k, v in model_engines.items()]
 
 
@@ -36,7 +38,6 @@ class GPT(commands.GroupCog, name="gpt"):
         self.bot = bot
         self.gptusage = self.bot.dbmanager.get_collection("gptusage")
         self.gptset = self.bot.dbmanager.get_collection("gptsettings")
-        openai.api_key = GPT_TOKEN
         crontab(usage_reset_cron, func=self.reset_usage)
         crontab(context_reset_cron, func=self.reset_context)
 
@@ -142,7 +143,7 @@ class GPT(commands.GroupCog, name="gpt"):
         return response.replace("As an AI language model, ", ""), ttl_tok, total_usage
 
     async def get_response(self, model_engine, context, max_tokens):
-        completion = await openai.ChatCompletion.acreate(model=model_engine, messages=context, max_tokens=max_tokens,
+        completion = await aclient.chat.completions.create(model=model_engine, messages=context, max_tokens=max_tokens,
                                                          n=1, stop=None, temperature=0.5)
 
         ttl_tok = max(int(completion.usage.total_tokens * multipliers.get(model_engine)), 1)
