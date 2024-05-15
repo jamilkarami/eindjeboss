@@ -9,7 +9,7 @@ discord.py==2.3.0
 dnspython==2.6.1
 cinemagoer
 Google_Images_Search==1.4.6
-googletrans==4.0.0-rc1
+googletrans-py==4.0.0
 matplotlib==3.6.2
 motor==3.1.2
 openai==1.30.1
