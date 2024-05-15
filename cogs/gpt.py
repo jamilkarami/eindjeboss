@@ -7,7 +7,7 @@ import openai
 from aiocron import crontab
 from discord import app_commands
 from discord.ext import commands
-from openai.error import RateLimitError
+from openai._exceptions import RateLimitError
 
 from bot import Eindjeboss
 
@@ -18,15 +18,16 @@ usage_reset_cron = "0 0 1 * *"
 context_reset_cron = "0 */4 * * *"
 
 model_engines = {
-    "3.5-turbo": "gpt-3.5-turbo"
+    "3.5-turbo": "gpt-3.5-turbo",
+    "4o": "gpt-4o"
 }
 
 multipliers = {
-    "gpt-3.5-turbo": 1
+    "gpt-3.5-turbo": 1,
+    "4o": 10
 }
 
-model_engines_choices = [app_commands.Choice(name=k, value=v)
-                         for k, v in model_engines.items()]
+model_engines_choices = [app_commands.Choice(name=k, value=v) for k, v in model_engines.items()]
 
 
 class GPT(commands.GroupCog, name="gpt"):
@@ -43,31 +44,25 @@ class GPT(commands.GroupCog, name="gpt"):
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
 
-    @app_commands.command(name="chat",
-                          description="Prompt the OpenAI GPT chat")
+    @app_commands.command(name="chat", description="Prompt the OpenAI GPT chat")
     @app_commands.rename(keep_context="keep-context")
-    async def chat(self, intr: discord.Interaction, query: str,
-                   keep_context: bool = False):
+    async def chat(self, intr: discord.Interaction, query: str, keep_context: bool = False):
         gpt_usage_limit = await self.bot.get_setting("gpt_token_limit", 25000)
 
-        em = discord.Embed(title=query, description="Asking ChatGPT...",
-                           color=discord.Color.yellow())
+        em = discord.Embed(title=query, description="Asking ChatGPT...", color=discord.Color.yellow())
         try:
             await intr.response.send_message(embed=em)
-            response, tokens, total_usage = await self.query_gpt(
-                intr.user, query, gpt_usage_limit, keep_context)
+            response, tokens, total_usage = await self.query_gpt(intr.user, query, gpt_usage_limit, keep_context)
 
             if response is GptError.CONTEXT_TOO_LARGE:
                 em.color = discord.Color.red()
-                em.description = ("Current context is too large. "
-                                  "Please clear it with `/gpt clear`")
+                em.description = "Current context is too large. Please clear it with `/gpt clear`"
                 await intr.edit_original_response(embed=em)
                 return
 
             if response is GptError.USAGE_EXCEEDS_LIMIT:
                 em.color = discord.Color.red()
-                em.description = ("You have exceeded your monthly GPT usage."
-                                  " Please wait til the start of next month."
+                em.description = ("You have exceeded your monthly GPT usage. Please wait til the start of next month."
                                   " Or take ragdoll out for some Takumi.")
                 await intr.edit_original_response(embed=em)
                 return
@@ -82,18 +77,6 @@ class GPT(commands.GroupCog, name="gpt"):
             await intr.edit_original_response(embed=em)
             lg.debug(e)
 
-    @app_commands.command(name="dan", description="Enable DAN")
-    async def dan(self, intr: discord.Interaction, disable: bool = False):
-        gpt_usage_limit = await self.bot.get_setting("gpt_token_limit", 10000)
-        danprompt = await self.bot.get_setting("danprompt")
-        await self.clear_context(intr.user.id)
-
-        if disable:
-            await intr.response.send_message("DAN disabled", ephemeral=True)
-            return
-        await self.query_gpt(intr.user, danprompt, gpt_usage_limit)
-        await intr.response.send_message("DAN Enabled", ephemeral=True)
-
     @app_commands.command(name="clear",
                           description="Clear GPT history/context")
     async def clear(self, intr: discord.Interaction):
@@ -103,25 +86,18 @@ class GPT(commands.GroupCog, name="gpt"):
     @app_commands.command(name="settings",
                           description="Set your preferences for GPT Prompts")
     @app_commands.choices(model=model_engines_choices)
-    async def settings(self, int: discord.Interaction,
-                       model: app_commands.Choice[str],
-                       max_tokens: int = 256):
+    async def settings(self, int: discord.Interaction, model: app_commands.Choice[str], max_tokens: int = 256):
         if max_tokens > 2048 or max_tokens < 128:
-            await int.response.send_message(
-                "Max tokens can be between 128 and 2048. Please try again")
+            await int.response.send_message("Max tokens can be between 128 and 2048. Please try again")
             return
-        user_settings = {"_id": int.user.id, "model": model.value,
-                         "max_tokens": max_tokens}
+        user_settings = {"_id": int.user.id, "model": model.value, "max_tokens": max_tokens}
         await self.save_gpt_settings(user_settings)
         await int.response.send_message("GPT Settings saved.", ephemeral=True)
 
-    async def clear_context(self, id: int):
-        await self.gptusage.update_one({"_id": id}, {"$unset": {
-            "context": ""
-        }})
+    async def clear_context(self, user_id: int):
+        await self.gptusage.update_one({"_id": user_id}, {"$unset": {"context": ""}})
 
-    @app_commands.command(name="usage",
-                          description="Check your total GPT token usage")
+    @app_commands.command(name="usage", description="Check your total GPT token usage")
     async def usage(self, intr: discord.Interaction):
         limit = await self.bot.get_setting("gpt_token_limit", 25000)
         user_usage = await self.gptusage.find_one({"_id": intr.user.id})
@@ -129,14 +105,11 @@ class GPT(commands.GroupCog, name="gpt"):
         msg = f"You've used {user_usage['usage']} tokens out of {limit}"
         await intr.response.send_message(msg, ephemeral=True)
 
-    async def query_gpt(self, user, query, gpt_usage_limit,
-                        keep_context=False):
-        default_context = [{"role": "system",
-                            "content": "You're with user %s." % user.id}]
+    async def query_gpt(self, user, query, gpt_usage_limit, keep_context=False):
+        default_context = [{"role": "system", "content": "You're with user %s." % user.id}]
 
         max_tokens = await self.bot.get_setting("gpt_max_token", 1024)
-        default_model = await self.bot.get_setting("gpt_default_model",
-                                                   "3.5-turbo")
+        default_model = await self.bot.get_setting("gpt_default_model", "3.5-turbo")
 
         settings = await self.get_gpt_settings(user.id)
         usage = await self.get_gpt_usage(user.id)
@@ -146,9 +119,7 @@ class GPT(commands.GroupCog, name="gpt"):
 
         if not settings:
             model_engine = model_engines.get(default_model)
-            await self.save_gpt_settings({"_id": user.id,
-                                          "model": model_engine,
-                                          "max_tokens": max_tokens})
+            await self.save_gpt_settings({"_id": user.id, "model": model_engine, "max_tokens": max_tokens})
         else:
             model_engine = settings["model"]
             max_tokens = settings["max_tokens"]
@@ -161,39 +132,24 @@ class GPT(commands.GroupCog, name="gpt"):
         else:
             context = [{"role": "user", "content": query}]
 
-        response, ttl_tok = await self.get_response(
-            model_engine, context, max_tokens)
+        response, ttl_tok = await self.get_response(model_engine, context, max_tokens)
 
-        response_msg = {
-            "role": "assistant",
-            "content": response
-        }
+        response_msg = {"role": "assistant", "content": response}
         context.append(response_msg)
 
         total_usage = await self.add_usage(user.id, ttl_tok, context)
-        lg.info(
-            f"GPT used by {user.name}. ({ttl_tok} tokens)")
-        return (response.replace("As an AI language model, ", ""),
-                ttl_tok, total_usage)
+        lg.info(f"GPT used by {user.name}. ({ttl_tok} tokens)")
+        return response.replace("As an AI language model, ", ""), ttl_tok, total_usage
 
     async def get_response(self, model_engine, context, max_tokens):
-        completion = await openai.ChatCompletion.acreate(
-            model=model_engine,
-            messages=context,
-            max_tokens=max_tokens,
-            n=1,
-            stop=None,
-            temperature=0.5,
-        )
+        completion = await openai.ChatCompletion.acreate(model=model_engine, messages=context, max_tokens=max_tokens,
+                                                         n=1, stop=None, temperature=0.5)
 
-        ttl_tok = max(int(completion.usage.total_tokens *
-                          multipliers.get(model_engine)), 1)
-
+        ttl_tok = max(int(completion.usage.total_tokens * multipliers.get(model_engine)), 1)
         return completion.choices[0].message.content, ttl_tok
 
     async def save_gpt_settings(self, user_settings):
-        await self.gptset.update_one({"_id": user_settings.get("_id")},
-                                     {"$set": user_settings}, True)
+        await self.gptset.update_one({"_id": user_settings.get("_id")}, {"$set": user_settings}, True)
 
     async def get_gpt_settings(self, user_id):
         return await self.gptset.find_one({"_id": user_id})
