@@ -25,7 +25,7 @@ model_engines = {
 
 multipliers = {
     "gpt-3.5-turbo": 1,
-    "4o": 10
+    "gpt-4o": 10
 }
 
 aclient = AsyncOpenAI(api_key=GPT_TOKEN)
