@@ -17,7 +17,7 @@ opencv-python
 Pillow>=10.0.1
 pymongo==4.6.3
 python-dotenv==0.21.0
-requests==2.31.0
+requests==2.32.0
 spotipy==2.23.0
 table2ascii==1.1.0
 wikipediasummary==1.1.4
