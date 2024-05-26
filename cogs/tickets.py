@@ -96,11 +96,6 @@ class Ticket(commands.GroupCog):
 
         self.tracked_tickets[msg.channel.id] = [True, ticket]
 
-    @app_commands.command(name="modmail")
-    async def modmail(self, intr: discord.Interaction):
-        await intr.response.send_modal(TicketModal(self.tickets, self.bot))
-        lg.info("Sent ticket modal to %s", intr.user.display_name)
-
     @app_commands.command(name="pending")
     async def opentickets(self, intr: discord.Interaction):
         admin_role_id = await self.bot.get_setting("admin_role_id")
