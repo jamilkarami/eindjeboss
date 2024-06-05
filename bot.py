@@ -14,7 +14,6 @@ from util.db import DbManager
 
 load_dotenv()
 TEMP = "temp"
-STATUS = os.getenv("BOT_STATUS")
 FILE_DIR = os.getenv("FILE_DIR")
 SETTING_VALS = {"_id", "description", "value"}
 
@@ -74,7 +73,7 @@ class Eindjeboss(commands.Bot):
         logging.info("Finished loadings settings")
 
     async def load_activity(self):
-        activity_type = await self.get_setting("activitytype")
+        activity_type = discord.ActivityType[await self.get_setting("activitytype")]
         status = await self.get_setting("activitystatus")
 
         activity = discord.Activity(type=activity_type, detail="", name=status)
