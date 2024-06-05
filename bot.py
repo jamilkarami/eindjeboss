@@ -23,9 +23,7 @@ class Eindjeboss(commands.Bot):
 
     def __init__(self) -> None:
         intents = discord.Intents.all()
-        activity = discord.Activity(
-            type=discord.ActivityType.listening, detail="", name=STATUS)
-        super().__init__(command_prefix="!", case_insensitive=True, intents=intents, activity=activity,
+        super().__init__(command_prefix="!", case_insensitive=True, intents=intents,
                          owner_id=int(os.getenv("OWNER_ID")))
         self.file_dir = FILE_DIR
 
@@ -75,10 +73,16 @@ class Eindjeboss(commands.Bot):
             self.__setattr__(setting["_id"], setting["value"])
         logging.info("Finished loadings settings")
 
+    async def load_activity(self):
+        activity_type = await self.get_setting("activitytype")
+        status = await self.get_setting("activitystatus")
+
+        activity = discord.Activity(type=activity_type, detail="", name=status)
+        await self.change_presence(activity=activity)
+
     async def add_setting(self, setting):
         if setting.keys() != SETTING_VALS:
-            raise ValueError(
-                f"Setting {setting} does not match expected fields")
+            raise ValueError(f"Setting {setting} does not match expected fields")
 
         self.__setattr__(setting["_id"], setting["value"])
         await self.settings.insert_one(setting)
@@ -113,8 +117,8 @@ async def main():
         open(logging_file_name, "a").close()
 
     log_format = logging.Formatter("%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
-    log_handler = RotatingFileHandler(logging_file_name, mode="a", maxBytes=5 * 1024 * 1024, backupCount=10,
-                                      encoding=None, delay=0)
+    log_handler = RotatingFileHandler(filename=logging_file_name, mode="a", maxBytes=5 * 1024 * 1024, backupCount=10,
+                                      encoding=None, delay=False)
 
     discord.utils.setup_logging(handler=log_handler, formatter=log_format)
 
@@ -122,6 +126,7 @@ async def main():
 
     @client.event
     async def on_ready():
+        await client.load_activity()
         print(f"{client.user.name} is ready to serve.")
 
     async with client:

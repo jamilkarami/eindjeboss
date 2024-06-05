@@ -114,6 +114,20 @@ class Admin(commands.Cog):
         await self.bot.sync_and_update()
         await ctx.message.add_reaction("✅")
 
+    @app_commands.command(name="changestatus")
+    async def changestatus(self, intr: discord.Interaction, activity_type: discord.ActivityType, status: str):
+        role_id = await self.bot.get_setting("admin_role_id")
+
+        if not await self.validate(intr, role_id):
+            return
+
+        await self.bot.update_setting({"_id": "activitytype", "value": activity_type})
+        await self.bot.update_setting({"_id": "activitystatus", "value": status})
+        activity = discord.Activity(type=activity_type, detail="", name=status)
+
+        await self.bot.change_presence(activity=activity)
+        await intr.response.send_message("Done", ephemeral=True)
+
     @app_commands.command(name="reloadsettings")
     async def reload_settings(self, intr: discord.Interaction):
         if not await self.validate(intr):
