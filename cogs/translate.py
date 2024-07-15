@@ -13,7 +13,7 @@ from util.vars.eind_vars import CHANNEL_IGNORE_LIST, DEEPL_LANGUAGE_CODES, DEEPL
 translator = deepl.Translator(os.getenv("DEEPL_API_KEY"))
 
 TRANSLATE_LANGUAGES = [
-    app_commands.Choice(name="English", value="EN-GB"),
+    app_commands.Choice(name="English", value="EN"),
     app_commands.Choice(name="Dutch", value="NL"),
     app_commands.Choice(name="German", value="DE"),
     app_commands.Choice(name="Arabic", value="AR"),
@@ -80,7 +80,7 @@ class Translate(commands.Cog):
     async def translate(self, intr: discord.Interaction, text: str,
                         src: app_commands.Choice[str] = None, dst: app_commands.Choice[str] = None):
         src_lang = src.value if src else None
-        dst_lang = dst.value if dst else "EN-GB"
+        dst_lang = dst.value if dst else "EN"
         tr = TranslateUtil.translate_text(text, src_lang, dst_lang)
 
         res_src = DEEPL_LANGUAGE_CODES.get(tr[1]).capitalize()
@@ -93,8 +93,9 @@ class Translate(commands.Cog):
 class TranslateUtil:
     @staticmethod
     def translate_text(message, src, dst=None):
-        if not dst:
-            dst = 'EN-GB'
+        # source takes "EN", destination takes "EN-GB"
+        if not dst or dst == "EN":
+            dst = "EN-GB"
         translated = translator.translate_text(message, target_lang=dst) if not src \
             else translator.translate_text(message, source_lang=src, target_lang=dst)
 
