@@ -104,7 +104,7 @@ class Admin(commands.Cog):
             return
 
         await self.guild.ban(member, reason=reason)
-        await self.log_member_event(LogEntryEnum.BAN.name, intr.user, member, reason, True)
+        await self.log_member_event(LogEntryEnum.BAN.name, intr.user.id, member, reason, True)
         await self.bot.alert_mods(f"{intr.user.mention} has banned {member.mention}. (Reason: {reason})")
 
     @commands.command(name="sync")
