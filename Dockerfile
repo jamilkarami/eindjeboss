@@ -7,8 +7,8 @@ RUN apt-get -y upgrade
 RUN apt install -y libgl1-mesa-glx
 
 # INITIALIZE EINDJEBOSS
-WORKDIR /home/eindjeboss
-COPY requirements.txt /home/eindjeboss/
+WORKDIR /home/eindjeboss_test
+COPY requirements.txt /home/eindjeboss_test/
 RUN pip install -r requirements.txt
-COPY . /home/eindjeboss
+COPY . /home/eindjeboss_test
 CMD python bot.py
