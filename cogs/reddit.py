@@ -88,7 +88,7 @@ class Reddit(commands.GroupCog, group_name="random"):
                 lg.info("Found new reddit post: %s", p_id)
 
                 await post.load()
-                p_perm = f"https://www.reddit.com{post.permalink}"
+                p_perm = f"https://old.reddit.com{post.permalink}"
                 p_title = post.title
                 p_author = post.author
                 p_thumb = post.thumbnail
