@@ -114,7 +114,7 @@ class Reddit(commands.GroupCog, group_name="random"):
                             p_url = None
 
                     emb = mk_embed(p_title, p_perm)
-                    emb.set_image(p_url)
+                    emb.set_image(url=p_url)
                     emb.set_footer(
                         text=f"Image posted by {p_author}")
 
