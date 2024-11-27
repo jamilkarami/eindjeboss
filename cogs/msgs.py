@@ -40,6 +40,10 @@ class Messages(commands.GroupCog, name="msg"):
     async def icecream(self, interaction: discord.Interaction):
         await interaction.response.send_message(ICE_CREAM_STR)
 
+    @app_commands.command(name="true")
+    async def dhl(self, interaction: discord.Interaction):
+        await interaction.response.send_message("#It\'s true")
+
     @commands.Cog.listener()
     async def on_message(self, msg: discord.Message):
         if msg.author == self.bot.user:
