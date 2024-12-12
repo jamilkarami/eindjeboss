@@ -16,6 +16,7 @@ from bot import Eindjeboss
 
 SECONDS_IN_DAY = 86400
 
+
 class Reminder(commands.Cog):
     loop = asyncio.get_running_loop()
 
@@ -112,13 +113,12 @@ class Reminder(commands.Cog):
         await intr.response.send_message("This reminder doesn't exist or you weren't subscribed to it.", ephemeral=True)
 
     @deletereminder.autocomplete("rem_id")
-    async def delete_reminder_autocomplete(self, intr: discord.Interaction,
-                                           current: str):
+    async def delete_reminder_autocomplete(self, intr: discord.Interaction, current: str):
         user_reminders = await self.get_user_reminders(intr.user.id)
 
         return [
-            app_commands.Choice(name=rem["msg"], value=rem["_id"])
-            for rem in user_reminders if current.lower() in rem["msg"].lower()
+            app_commands.Choice(name=rem["msg"], value=rem["_id"]) for rem in user_reminders
+            if current.lower() in rem["msg"].lower()
         ]
 
     # helper functions
@@ -130,17 +130,15 @@ class Reminder(commands.Cog):
                 await self.delete_reminder(reminder["_id"])
                 continue
             self.loop.create_task(self.start_reminder(reminder))
-            if reminder.get("message_id") and reminder["time"] < time.time():
-                self.bot.add_view(ReminderView(reminder["_id"], self),
-                                  message_id=reminder["message_id"])
+            if reminder.get("message_id"):
+                self.bot.add_view(ReminderView(reminder["_id"], self), message_id=reminder["message_id"])
 
     async def add_user_to_reminder(self, rem_id, user_id):
         update = await self.reminders.update_one({"_id": rem_id}, {"$addToSet": {"users": user_id}})
         return update.modified_count
 
     async def remove_user_from_reminder(self, rem_id, user_id):
-        update = await self.reminders.update_one(
-            {"_id": rem_id}, {"$pull": {"users": user_id}})
+        update = await self.reminders.update_one({"_id": rem_id}, {"$pull": {"users": user_id}})
         return update.modified_count
 
     async def save_reminder(self, reminder):
@@ -151,8 +149,7 @@ class Reminder(commands.Cog):
         return await self.reminders.find_one({"_id": rem_id})
 
     async def get_user_reminders(self, user_id):
-        return await self.reminders.find({"users": user_id}).to_list(
-            length=88675309)
+        return await self.reminders.find({"users": user_id}).to_list(length=88675309)
 
     async def start_reminder(self, reminder):
         rem_id = reminder.get("_id")
