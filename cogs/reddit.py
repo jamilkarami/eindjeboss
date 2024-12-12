@@ -17,13 +17,13 @@ from discord.ext import commands
 from bot import Eindjeboss
 from util.util import get_file
 from util.vars.eind_vars import (CAR_SUBS, CAT_SUBS, CHANNEL_IGNORE_LIST,
-                                 DOG_SUBS, HOT_WHEELS_SUB, REDDIT_USER_AGENT)
+                                 DOG_SUBS, REDDIT_USER_AGENT)
 from util.vars.periodics import REDDIT_EINDHOVEN_DT, TOP_REDDIT_DT
 
 # random commands
 SUBREDDIT_REGEX = "(?<!reddit.com)/r/[a-zA-Z0-9]{3,}"
-I_REDDIT_REGEX = "https://i.redd.it/[a-zA-Z0-9]*.(png|jpg)"
-I_IMGUR_REGEX = "https://i.imgur.com/[a-zA-Z0-9]*.(png|jpg)"
+I_REDDIT_REGEX = r"https://(v|www).redd(it)*.(com|it)/(gallery/)*[a-zA-Z0-9]*(.jpeg|.png)*"
+I_IMGUR_REGEX = r"https://(i|www).imgur.com/(a/)*[\S]*.(png|jpg)*"
 CATS = "cats"
 DOGS = "rarepuppers"
 CARS = "carporn"
@@ -38,7 +38,6 @@ AUTHOR_NAME = "New post on /r/eindhoven"
 AUTHOR_URL = "https://www.reddit.com/r/eindhoven"
 EINDJE_ICON_URL = "https://i.imgur.com/ACCxKOr.png"
 
-
 try:
     with open(get_file(EINDJE_SUBREDDIT_FILE)) as db_file:
         db = json.load(db_file)
@@ -46,10 +45,10 @@ except FileNotFoundError:
     db = []
 
 reddit = asyncpraw.Reddit(
-        client_id=os.getenv("REDDIT_ID"),
-        client_secret=os.getenv("REDDIT_SECRET"),
-        user_agent=REDDIT_USER_AGENT
-    )
+    client_id=os.getenv("REDDIT_ID"),
+    client_secret=os.getenv("REDDIT_SECRET"),
+    user_agent=REDDIT_USER_AGENT
+)
 
 
 class Reddit(commands.GroupCog, group_name="random"):
@@ -101,7 +100,7 @@ class Reddit(commands.GroupCog, group_name="random"):
                 elif p_vid:
                     emb = mk_embed(p_title, p_perm)
                     emb.set_image(url=p_thumb
-                                  if p_thumb.startswith('https://') else None)
+                    if p_thumb.startswith('https://') else None)
                     emb.set_footer(
                         text=f"Video posted by {p_author}")
                 else:
@@ -145,41 +144,36 @@ class Reddit(commands.GroupCog, group_name="random"):
     async def send_random_cat(self, intr: discord.Interaction):
         await intr.response.defer()
         await intr.followup.send(
-            await self.get_red_post(random.choice(CAT_SUBS), 50))
+            await self.get_red_post(CAT_SUBS, 50))
 
     @app_commands.command(name="dog",
                           description=RANDOM_STR % "dog")
     async def send_random_dog(self, intr: discord.Interaction):
         await intr.response.defer()
         await intr.followup.send(
-            await self.get_red_post(random.choice(DOG_SUBS), 50))
+            await self.get_red_post(DOG_SUBS, 50))
 
     @app_commands.command(name="car",
                           description=RANDOM_STR % "car")
     async def send_random_car(self, intr: discord.Interaction):
         await intr.response.defer()
         await intr.followup.send(
-            await self.get_red_post(random.choice(CAR_SUBS), 50))
+            await self.get_red_post(CAR_SUBS, 50))
 
-    @app_commands.command(name="hotwheels",
-                          description=RANDOM_STR % "hot wheels")
-    async def send_random_hot_wheel(self, intr: discord.Interaction):
-        await intr.response.defer()
-        await intr.followup.send(
-            await self.get_red_post(HOT_WHEELS_SUB, 100))
+    async def get_red_post(self, subreddits, limit):
+        posts = []
+        while not posts:
+            chosen_sub = random.choice(subreddits)
+            sub = await reddit.subreddit(chosen_sub)
+            posts = [post async for post in sub.hot(limit=limit) if not re.match(I_REDDIT_REGEX, post.url)
+                     and not re.match(I_IMGUR_REGEX, post.url)]
 
-    async def get_red_post(self, subreddit, limit):
-        sub = await reddit.subreddit(subreddit)
-        posts = [post async for post in sub.hot(limit=limit)]
-        chosen_post = posts[random.randint(0, len(posts) - 1)]
-        while not re.match(I_REDDIT_REGEX, chosen_post.url) \
-                and not re.match(I_IMGUR_REGEX, chosen_post.url):
-            chosen_post = random.choice(posts)
+        chosen_post = random.choice(posts)
         return chosen_post.url
 
     async def schedule_pic(self, channel_id, subs, include_title):
         channel = await self.bot.fetch_channel(channel_id)
-        sub_name = subs if str == type(subs) else random.choice(subs)
+        sub_name = subs if isinstance(subs, str) else random.choice(subs)
         subreddit = await reddit.subreddit(sub_name)
 
         async for submission in subreddit.top("day", limit=1):
