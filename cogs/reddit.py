@@ -61,8 +61,7 @@ class Reddit(commands.GroupCog, group_name="random"):
         lg.info("[%s] Cog is ready", __name__)
         daily_reddit = await self.bot.get_setting("daily_reddit")
         for k, v in daily_reddit.items():
-            crontab(TOP_REDDIT_DT, func=self.schedule_pic,
-                    args=(int(k), v, True), start=True)
+            crontab(TOP_REDDIT_DT, func=self.schedule_pic, args=(int(k), v, True), start=True)
 
         crontab(REDDIT_EINDHOVEN_DT, self.monitor_feed, start=True)
 
@@ -101,8 +100,7 @@ class Reddit(commands.GroupCog, group_name="random"):
                     emb = mk_embed(p_title, p_perm)
                     emb.set_image(url=p_thumb
                     if p_thumb.startswith('https://') else None)
-                    emb.set_footer(
-                        text=f"Video posted by {p_author}")
+                    emb.set_footer(text=f"Video posted by {p_author}")
                 else:
                     p_url = post.url
 
@@ -114,8 +112,7 @@ class Reddit(commands.GroupCog, group_name="random"):
 
                     emb = mk_embed(p_title, p_perm)
                     emb.set_image(url=p_url)
-                    emb.set_footer(
-                        text=f"Image posted by {p_author}")
+                    emb.set_footer(text=f"Image posted by {p_author}")
 
                 await channel.send(embed=emb)
 
@@ -139,33 +136,31 @@ class Reddit(commands.GroupCog, group_name="random"):
         if matches:
             await self.handle_reddit_matches(matches, message)
 
-    @app_commands.command(name="cat",
-                          description=RANDOM_STR % "cat")
+    @app_commands.command(name="cat", description=RANDOM_STR % "cat")
     async def send_random_cat(self, intr: discord.Interaction):
         await intr.response.defer()
-        await intr.followup.send(
-            await self.get_red_post(CAT_SUBS, 50))
+        post_info = await self.get_red_post(CAT_SUBS, 50)
+        await intr.followup.send(post_info)
 
-    @app_commands.command(name="dog",
-                          description=RANDOM_STR % "dog")
+    @app_commands.command(name="dog", description=RANDOM_STR % "dog")
     async def send_random_dog(self, intr: discord.Interaction):
         await intr.response.defer()
-        await intr.followup.send(
-            await self.get_red_post(DOG_SUBS, 50))
+        post_info = await self.get_red_post(DOG_SUBS, 50)
+        await intr.followup.send(post_info)
 
-    @app_commands.command(name="car",
-                          description=RANDOM_STR % "car")
+    @app_commands.command(name="car", description=RANDOM_STR % "car")
     async def send_random_car(self, intr: discord.Interaction):
         await intr.response.defer()
-        await intr.followup.send(
-            await self.get_red_post(CAR_SUBS, 50))
+        post_info = await self.get_red_post(CAR_SUBS, 50)
+        await intr.followup.send(post_info)
 
     async def get_red_post(self, subreddits, limit):
         posts = []
         while not posts:
             chosen_sub = random.choice(subreddits)
             sub = await reddit.subreddit(chosen_sub)
-            posts = [post async for post in sub.hot(limit=limit) if not re.match(I_REDDIT_REGEX, post.url)
+            hot_posts = sub.hot(limit=limit)
+            posts = [post async for post in hot_posts if not re.match(I_REDDIT_REGEX, post.url)
                      and not re.match(I_IMGUR_REGEX, post.url)]
 
         chosen_post = random.choice(posts)
