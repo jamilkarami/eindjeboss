@@ -13,7 +13,7 @@ matplotlib==3.7.5
 motor==3.6.0
 openai==1.57.0
 opencv-python
-Pillow>=10.4.0
+Pillow==11.1.0
 pymongo==4.9.2
 python-dotenv==1.0.1
 requests==2.32.3
