@@ -1,14 +1,19 @@
-FROM python:3.10
+ARG VERSION=3.10
+FROM python:$VERSION
+
 ENV TZ="Europe/Amsterdam"
 
-# UPDATE INDICES AND INSTALL REQUIRED PACKAGES
-RUN apt-get -y update
-RUN apt-get -y upgrade
-RUN apt install -y libgl1-mesa-glx
+ARG BOTFOLDER
 
-# INITIALIZE EINDJEBOSS
-WORKDIR /home/eindjeboss
-COPY requirements.txt /home/eindjeboss/
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends libgl1-mesa-glx && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR $BOTFOLDER
+
+COPY requirements.txt $BOTFOLDER/
 RUN pip install -r requirements.txt
-COPY . /home/eindjeboss
-CMD python bot.py
+
+COPY . .
+
+CMD ["python", "bot.py"]
