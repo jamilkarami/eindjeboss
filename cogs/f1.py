@@ -106,7 +106,7 @@ class F1View(discord.ui.View):
 
     async def update_msg(self, interaction: discord.Interaction):
         await interaction.response.edit_message(
-            embed=F1Embed(self.get_race_at_idx(), is_current=(self.idx == self.current_round - 1))
+            embed=F1Embed(self.get_race_at_idx(), is_current=(self.idx == self.current_round))
         )
 
 
