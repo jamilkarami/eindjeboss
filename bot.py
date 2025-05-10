@@ -116,10 +116,30 @@ async def main():
         open(logging_file_name, "a").close()
 
     log_format = logging.Formatter("%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
-    log_handler = RotatingFileHandler(filename=logging_file_name, mode="a", maxBytes=5 * 1024 * 1024, backupCount=10,
-                                      encoding=None, delay=False)
+    
+    # File handler for persistent logging
+    file_handler = RotatingFileHandler(
+        filename=logging_file_name,
+        mode="a",
+        maxBytes=5 * 1024 * 1024,
+        backupCount=10,
+        encoding=None,
+        delay=False
+    )
+    file_handler.setFormatter(log_format)
+    
+    # Stream handler for console output
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(log_format)
+    
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(stream_handler)
 
-    discord.utils.setup_logging(handler=log_handler, formatter=log_format)
+    # Configure discord.py logging
+    discord.utils.setup_logging(handler=file_handler, formatter=log_format)
 
     client = Eindjeboss()
 
