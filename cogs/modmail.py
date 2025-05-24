@@ -30,7 +30,11 @@ class Modmail(commands.Cog):
 
     async def report_message(self, intr: discord.Interaction, msg: discord.Message):
         await intr.response.send_modal(TicketModal(self.tickets, self.bot, msg))
-        lg.info("Sent ticket modal to %s for message %s", intr.user.display_name, msg.jump_url)
+        lg.info(
+            "Sent ticket modal to %s for message %s",
+            intr.user.display_name,
+            msg.jump_url,
+        )
 
 
 async def setup(client: Eindjeboss):

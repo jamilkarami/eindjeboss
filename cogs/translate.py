@@ -8,7 +8,11 @@ from discord import app_commands
 from discord.ext import commands
 
 from bot import Eindjeboss
-from util.vars.eind_vars import CHANNEL_IGNORE_LIST, DEEPL_LANGUAGE_CODES, DEEPL_LANGUAGE_NAMES
+from util.vars.eind_vars import (
+    CHANNEL_IGNORE_LIST,
+    DEEPL_LANGUAGE_CODES,
+    DEEPL_LANGUAGE_NAMES,
+)
 
 translator = deepl.Translator(os.getenv("DEEPL_API_KEY"))
 
@@ -29,7 +33,9 @@ class Translate(commands.Cog):
 
     def __init__(self, bot: Eindjeboss):
         self.bot = bot
-        self.ctx_menu = app_commands.ContextMenu(name='Translate Message', callback=self.translate_context)
+        self.ctx_menu = app_commands.ContextMenu(
+            name="Translate Message", callback=self.translate_context
+        )
         self.bot.tree.add_command(self.ctx_menu)
 
     @commands.Cog.listener()
@@ -55,12 +61,14 @@ class Translate(commands.Cog):
                 target_lang = DEEPL_LANGUAGE_NAMES.get(lang.lower())
                 if not target_lang:
                     raise ValueError(f"Destination language **{lang}** not found.")
-                translated = TranslateUtil.translate_text(req, src=None, dst=target_lang)
+                translated = TranslateUtil.translate_text(
+                    req, src=None, dst=target_lang
+                )
             except ValueError as e:
                 name = msg.author.name
-                lg.error(f"Failed to translate \"{req}\" to {lang} for {name}")
+                lg.error(f'Failed to translate "{req}" to {lang} for {name}')
                 lg.debug(e)
-                await msg.reply('Destination language invalid. Check typos.')
+                await msg.reply("Destination language invalid. Check typos.")
             else:
                 await msg.reply(f"{translated[0]}")
                 lg.info("Translated text for %s", msg.author.name)
@@ -72,13 +80,22 @@ class Translate(commands.Cog):
         dst = f"**{tr[0]}**"
         lng = f"**{DEEPL_LANGUAGE_CODES.get(tr[1]).capitalize()}**"
 
-        await intr.response.send_message(content=f"Translation for {src} from {lng}: {dst}", ephemeral=True)
-        lg.info(f"Sent translation to {intr.user.name} for message {msg.content} by {msg.author.name}")
+        await intr.response.send_message(
+            content=f"Translation for {src} from {lng}: {dst}", ephemeral=True
+        )
+        lg.info(
+            f"Sent translation to {intr.user.name} for message {msg.content} by {msg.author.name}"
+        )
 
     @app_commands.command(name="translate", description="Translate a specific text.")
     @app_commands.choices(src=TRANSLATE_LANGUAGES, dst=TRANSLATE_LANGUAGES)
-    async def translate(self, intr: discord.Interaction, text: str,
-                        src: app_commands.Choice[str] = None, dst: app_commands.Choice[str] = None):
+    async def translate(
+        self,
+        intr: discord.Interaction,
+        text: str,
+        src: app_commands.Choice[str] = None,
+        dst: app_commands.Choice[str] = None,
+    ):
         src_lang = src.value if src else None
         dst_lang = dst.value if dst else "EN"
         tr = TranslateUtil.translate_text(text, src_lang, dst_lang)
@@ -86,7 +103,9 @@ class Translate(commands.Cog):
         res_src = DEEPL_LANGUAGE_CODES.get(tr[1]).capitalize()
         res_dst = DEEPL_LANGUAGE_CODES.get(dst_lang).capitalize()
 
-        await intr.response.send_message(f"Translation of _\"{text}\"_ from _{res_src}_ to _{res_dst}_: {tr[0]}")
+        await intr.response.send_message(
+            f'Translation of _"{text}"_ from _{res_src}_ to _{res_dst}_: {tr[0]}'
+        )
         lg.info(f"Translated text for {intr.user.name}")
 
 
@@ -96,8 +115,11 @@ class TranslateUtil:
         # source takes "EN", destination takes "EN-GB"
         if not dst or dst == "EN":
             dst = "EN-GB"
-        translated = translator.translate_text(message, target_lang=dst) if not src \
+        translated = (
+            translator.translate_text(message, target_lang=dst)
+            if not src
             else translator.translate_text(message, source_lang=src, target_lang=dst)
+        )
 
         return translated.text, translated.detected_source_lang
 

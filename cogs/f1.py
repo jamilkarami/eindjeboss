@@ -17,7 +17,7 @@ event_keys = {
     "Sprint": "Sprint",
     "SprintQualifying": "Sprint Qualifying",
     "Qualifying": "Qualifying",
-    "Race": "Race"
+    "Race": "Race",
 }
 
 
@@ -41,8 +41,12 @@ def get_current_round(api_url: str) -> int:
 
 
 def get_times(race_data: Dict) -> Dict:
-    times_local = {value: race_data.get(key, {"date": race_data["date"], "time": race_data["time"]}) for key, value in
-                   event_keys.items()}
+    times_local = {
+        value: race_data.get(
+            key, {"date": race_data["date"], "time": race_data["time"]}
+        )
+        for key, value in event_keys.items()
+    }
     return convert_times_to_tz(times_local)
 
 
@@ -57,7 +61,9 @@ def convert_times_to_tz(times_local: Dict) -> Dict:
 
         if date_str:
             if time_str:
-                dt_utc = tz_utc.localize(datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%SZ"))
+                dt_utc = tz_utc.localize(
+                    datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%SZ")
+                )
                 event_time = dt_utc.astimezone(tz_ams).strftime("%d/%m at %H:%M")
             else:
                 event_time = f"{datetime.strptime(date_str, '%Y-%m-%d').strftime('%d/%m')} at TBA"
@@ -83,7 +89,9 @@ class F1(commands.Cog):
         current_round = get_current_round(self.api_url) - 1
         races = get_races(self.api_url)
         embed = F1Embed(races[current_round], is_current=True)
-        await interaction.response.send_message(embed=embed, view=F1View(races, current_round))
+        await interaction.response.send_message(
+            embed=embed, view=F1View(races, current_round)
+        )
 
     def get_current_round(self):
         return get_current_round(self.api_url)
@@ -106,14 +114,18 @@ class F1View(discord.ui.View):
 
     async def update_msg(self, interaction: discord.Interaction):
         await interaction.response.edit_message(
-            embed=F1Embed(self.get_race_at_idx(), is_current=(self.idx == self.current_round))
+            embed=F1Embed(
+                self.get_race_at_idx(), is_current=(self.idx == self.current_round)
+            )
         )
 
 
 class F1Embed(discord.Embed):
     def __init__(self, race: Dict, is_current: bool = False):
         color = discord.Color.green() if is_current else discord.Color.red()
-        super().__init__(color=color, title=f"{race['raceName']} ({datetime.now().year})")
+        super().__init__(
+            color=color, title=f"{race['raceName']} ({datetime.now().year})"
+        )
         details = get_times(race)
         for event_time, event_name in details.items():
             self.add_field(name=event_name, value=event_time, inline=False)

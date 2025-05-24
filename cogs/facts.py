@@ -8,9 +8,9 @@ from discord.ext import commands
 
 from bot import Eindjeboss
 
-API_NINJAS_KEY = os.getenv('API_NINJAS_KEY')
-FACTS_API_URL = 'https://api.api-ninjas.com/v1/facts?limit=1'
-HEADERS = {'X-Api-Key': API_NINJAS_KEY}
+API_NINJAS_KEY = os.getenv("API_NINJAS_KEY")
+FACTS_API_URL = "https://api.api-ninjas.com/v1/facts?limit=1"
+HEADERS = {"X-Api-Key": API_NINJAS_KEY}
 
 
 class Facts(commands.Cog):
@@ -26,12 +26,13 @@ class Facts(commands.Cog):
     async def fact(self, interaction: discord.Interaction):
         try:
             resp = requests.get(FACTS_API_URL, headers=HEADERS).json()
-            fact = resp[0]['fact']
+            fact = resp[0]["fact"]
             await interaction.response.send_message(fact)
-            lg.info(f'Sent random fact to {interaction.user.name}')
+            lg.info(f"Sent random fact to {interaction.user.name}")
         except Exception as e:
             await interaction.response.send_message(
-                "Failed to get random fact. Please try again.", ephemeral=True)
+                "Failed to get random fact. Please try again.", ephemeral=True
+            )
             lg.error(e)
 
 

@@ -10,8 +10,10 @@ from bot import Eindjeboss
 
 API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY")
 
-url = ("https://www.googleapis.com/customsearch/v1?key=%s"
-       "&cx=%s&q=%s&num=1&searchType=image&safe=active")
+url = (
+    "https://www.googleapis.com/customsearch/v1?key=%s"
+    "&cx=%s&q=%s&num=1&searchType=image&safe=active"
+)
 
 
 class Images(commands.Cog, name="Images"):
@@ -30,13 +32,12 @@ class Images(commands.Cog, name="Images"):
 
         data = requests.get(req_url).json()
         if "items" not in data:
-            await intr.response.send_message(
-                "No result found.", ephemeral=True)
+            await intr.response.send_message("No result found.", ephemeral=True)
             return
 
         results = data.get("items")
 
-        msg = '\n'.join([res.get("link") for res in results])
+        msg = "\n".join([res.get("link") for res in results])
         await intr.response.send_message(msg)
 
 

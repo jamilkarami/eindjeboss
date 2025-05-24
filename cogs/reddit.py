@@ -16,13 +16,20 @@ from discord.ext import commands
 
 from bot import Eindjeboss
 from util.util import get_file
-from util.vars.eind_vars import (CAR_SUBS, CAT_SUBS, CHANNEL_IGNORE_LIST,
-                                 DOG_SUBS, REDDIT_USER_AGENT)
+from util.vars.eind_vars import (
+    CAR_SUBS,
+    CAT_SUBS,
+    CHANNEL_IGNORE_LIST,
+    DOG_SUBS,
+    REDDIT_USER_AGENT,
+)
 from util.vars.periodics import REDDIT_EINDHOVEN_DT, TOP_REDDIT_DT
 
 # random commands
 SUBREDDIT_REGEX = "(?<!reddit.com)/r/[a-zA-Z0-9]{3,}"
-I_REDDIT_REGEX = r"https://(v|www).redd(it)*.(com|it)/(gallery/)*[a-zA-Z0-9]*(.jpeg|.png)*"
+I_REDDIT_REGEX = (
+    r"https://(v|www).redd(it)*.(com|it)/(gallery/)*[a-zA-Z0-9]*(.jpeg|.png)*"
+)
 I_IMGUR_REGEX = r"https://(i|www).imgur.com/(a/)*[\S]*.(png|jpg)*"
 CATS = "cats"
 DOGS = "rarepuppers"
@@ -47,7 +54,7 @@ except FileNotFoundError:
 reddit = asyncpraw.Reddit(
     client_id=os.getenv("REDDIT_ID"),
     client_secret=os.getenv("REDDIT_SECRET"),
-    user_agent=REDDIT_USER_AGENT
+    user_agent=REDDIT_USER_AGENT,
 )
 
 
@@ -61,7 +68,12 @@ class Reddit(commands.GroupCog, group_name="random"):
         lg.info("[%s] Cog is ready", __name__)
         daily_reddit = await self.bot.get_setting("daily_reddit")
         for k, v in daily_reddit.items():
-            crontab(TOP_REDDIT_DT, func=self.schedule_pic, args=(int(k), v, True), start=True)
+            crontab(
+                TOP_REDDIT_DT,
+                func=self.schedule_pic,
+                args=(int(k), v, True),
+                start=True,
+            )
 
         crontab(REDDIT_EINDHOVEN_DT, self.monitor_feed, start=True)
 
@@ -98,15 +110,16 @@ class Reddit(commands.GroupCog, group_name="random"):
                     emb.set_footer(text=f"Posted by {p_author}")
                 elif p_vid:
                     emb = mk_embed(p_title, p_perm)
-                    emb.set_image(url=p_thumb
-                    if p_thumb.startswith('https://') else None)
+                    emb.set_image(
+                        url=p_thumb if p_thumb.startswith("https://") else None
+                    )
                     emb.set_footer(text=f"Video posted by {p_author}")
                 else:
                     p_url = post.url
 
-                    if not p_url.startswith('https://'):
-                        if p_url.startswith('/r/'):
-                            p_url = 'https://www.reddit.com%s' % p_url
+                    if not p_url.startswith("https://"):
+                        if p_url.startswith("/r/"):
+                            p_url = "https://www.reddit.com%s" % p_url
                         else:
                             p_url = None
 
@@ -118,7 +131,7 @@ class Reddit(commands.GroupCog, group_name="random"):
 
                 db.append(p_id)
 
-                with open(get_file(EINDJE_SUBREDDIT_FILE), 'w') as outfile:
+                with open(get_file(EINDJE_SUBREDDIT_FILE), "w") as outfile:
                     json.dump(db[-100:], outfile)
 
                 await asyncio.sleep(3)
@@ -160,8 +173,12 @@ class Reddit(commands.GroupCog, group_name="random"):
             chosen_sub = random.choice(subreddits)
             sub = await reddit.subreddit(chosen_sub)
             hot_posts = sub.hot(limit=limit)
-            posts = [post async for post in hot_posts if not re.match(I_REDDIT_REGEX, post.url)
-                     and not re.match(I_IMGUR_REGEX, post.url)]
+            posts = [
+                post
+                async for post in hot_posts
+                if not re.match(I_REDDIT_REGEX, post.url)
+                and not re.match(I_IMGUR_REGEX, post.url)
+            ]
 
         chosen_post = random.choice(posts)
         return chosen_post.url
@@ -187,7 +204,7 @@ class Reddit(commands.GroupCog, group_name="random"):
 
     async def handle_reddit_matches(self, matches, message):
         m_cnt = len(matches)
-        ext = 's'[:m_cnt ^ 1]
+        ext = "s"[: m_cnt ^ 1]
         payload = f"Found {m_cnt} subreddit link{ext} in your message:\n"
         safe_matches = await self.get_safe_matches(matches)
 
@@ -212,8 +229,7 @@ class Reddit(commands.GroupCog, group_name="random"):
 def mk_embed(title, emb_url, description=None):
     title = textwrap.shorten(title, 256)
     embed = discord.Embed(title=title, url=emb_url)
-    embed.set_author(name=AUTHOR_NAME, url=AUTHOR_URL,
-                     icon_url=EINDJE_ICON_URL)
+    embed.set_author(name=AUTHOR_NAME, url=AUTHOR_URL, icon_url=EINDJE_ICON_URL)
     embed.color = discord.Color.red()
     if description:
         description = textwrap.shorten(description, 1024)
