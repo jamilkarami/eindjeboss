@@ -5,6 +5,7 @@ import shutil
 import time
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+from pythonjsonlogger.jsonlogger import JsonFormatter
 
 import discord
 from discord.ext import commands
@@ -130,7 +131,7 @@ async def main():
     
     # Stream handler for console output
     stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(log_format)
+    stream_handler.setFormatter(JsonFormatter("{message}{asctime}{levelname}{funcName}{stack_info}", style="{", datefmt="%Y-%m-%d %H:%M:%S", rename_fields={"asctime": "timestamp", "levelname": "level", "funcName": "function", "stack_info": "traceback"}))
     
     # Configure root logger
     root_logger = logging.getLogger()

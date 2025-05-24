@@ -58,13 +58,13 @@ class Music(commands.Cog):
                 ephemeral=True)
             return
 
-        spotify_act = None
+        spotify_act = next((activity for activity in user.activities if isinstance(activity, discord.Spotify)), None)
 
-        for activity in user.activities:
-            if isinstance(activity, discord.Spotify):
-                spotify_act = activity
+        if not spotify_act:
+            user = await intr.guild.fetch_member(user.id)
+            spotify_act = next((activity for activity in user.activities if isinstance(activity, discord.Spotify)), None)
 
-        if spotify_act is None:
+        if not spotify_act:
             await intr.response.send_message(
                 "You not currently listening to anything on Spotify or you "
                 "haven't connected Discord to your Spotify account.",

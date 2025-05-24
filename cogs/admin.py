@@ -2,8 +2,9 @@ import logging as lg
 import os
 import time
 import uuid
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 from enum import Enum
+import asyncio
 
 import discord
 import pytz
@@ -142,7 +143,7 @@ class Admin(commands.Cog):
         tz = await self.bot.get_setting("timezone")
         resp = dt.now(tz=pytz.timezone(tz))
         await intr.response.send_message(resp, ephemeral=True)
-        lg.info("%s used /now")
+        lg.info("%s used /now", intr.user.name)
 
     @app_commands.command(name="nuke")
     async def nuke(self, intr: discord.Interaction, number: int):
@@ -191,6 +192,45 @@ class Admin(commands.Cog):
         await intr.user.send(f'```{log_msg}```')
         await intr.response.send_message("Done.", ephemeral=True)
         lg.info("Sent logs to %s", intr.user.name)
+
+    @app_commands.command(name="purge", description="Purge messages from a channel for a specific user")
+    @app_commands.describe(user="The user to purge messages for")
+    async def purge(self, intr: discord.Interaction, user: discord.Member):
+        role_id = await self.bot.get_setting("admin_role_id")
+        if not await self.validate(intr, role_id):
+            return
+
+        await intr.response.defer(ephemeral=True)
+
+        two_weeks_ago = dt.now(pytz.utc) - timedelta(days=14)
+
+        messages_to_bulk_delete = []
+        delete_count = 0
+
+        async for message in intr.channel.history(limit=None):
+            if message.author.id == user.id:
+                if message.created_at > two_weeks_ago:
+                    messages_to_bulk_delete.append(message)
+
+                    if len(messages_to_bulk_delete) >= 100:
+                        await intr.channel.delete_messages(messages_to_bulk_delete)
+                        delete_count += len(messages_to_bulk_delete)
+                        messages_to_bulk_delete = []
+                        await asyncio.sleep(1)
+                else:
+                    try:
+                        await message.delete()
+                        delete_count += 1
+                        await asyncio.sleep(1)
+                    except Exception:
+                        lg.warning(f"Failed to delete message {message.id} from {user.mention} in {intr.channel.name}", exc_info=True)
+
+        if messages_to_bulk_delete:
+            await intr.channel.delete_messages(messages_to_bulk_delete)
+            delete_count += len(messages_to_bulk_delete)
+
+        await intr.followup.send(f"Purged {delete_count} messages from {user.mention} (Total: {delete_count})", ephemeral=True)
+        lg.info("%s purged %s's messages in channel %s (Total: %d)", intr.user.name, user.name, intr.channel.name, delete_count)
 
     @app_commands.command(name="set")
     @app_commands.rename(name="setting-name", new_vl="new-value")
