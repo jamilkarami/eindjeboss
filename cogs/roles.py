@@ -18,23 +18,22 @@ class Roles(commands.Cog):
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
 
-    @app_commands.command(name="focus",
-                          description=FOCUS_DESC)
+    @app_commands.command(name="focus", description=FOCUS_DESC)
     async def focus(self, interaction: discord.Interaction):
         role = discord.utils.get(interaction.guild.roles, name="Focus")
 
         if role in interaction.user.roles:
             await interaction.user.remove_roles(role)
             await interaction.response.send_message(
-                "Focus mode off. Use /focus again to turn it on.",
-                ephemeral=True)
+                "Focus mode off. Use /focus again to turn it on.", ephemeral=True
+            )
             lg.info(f"Removed focus role for {interaction.user.name}")
             return
 
         await interaction.user.add_roles(role)
         await interaction.response.send_message(
-            "Focus mode on. Use /focus again to turn it off.",
-            ephemeral=True)
+            "Focus mode on. Use /focus again to turn it off.", ephemeral=True
+        )
         lg.info(f"Added focus role for {interaction.user.name}")
 
 

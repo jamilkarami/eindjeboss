@@ -29,11 +29,7 @@ def tabulate(headers, data, fields):
     for item in data:
         body.append([item[field] for field in fields])
 
-    output = t2a(
-        header=headers,
-        body=body,
-        style=PresetStyle.thin_thick_rounded
-    )
+    output = t2a(header=headers, body=body, style=PresetStyle.thin_thick_rounded)
 
     return output
 
@@ -60,7 +56,7 @@ def download_img_from_url(url, path=None):
 
     response = requests.get(url, stream=True)
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, 'wb+') as out_file:
+    with open(path, "wb+") as out_file:
         shutil.copyfileobj(response.raw, out_file)
     del response
 

@@ -2,8 +2,9 @@ import logging as lg
 import os
 import time
 import uuid
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 from enum import Enum
+import asyncio
 
 import discord
 import pytz
@@ -13,9 +14,11 @@ from discord.ext import commands
 from bot import Eindjeboss
 from util.util import download_img_from_url, tabulate
 
-TICKET_NOT_FOUND = ("Failed to find a ticket with this ID"
-                    " or the channel you're in isn't a ticket channel."
-                    " Please double check.")
+TICKET_NOT_FOUND = (
+    "Failed to find a ticket with this ID"
+    " or the channel you're in isn't a ticket channel."
+    " Please double check."
+)
 ALREADY_CLOSED = "This ticket is already closed."
 TICKET_CLOSED = "Ticket closed."
 D_FMT = "%Y-%m-%d %H:%M"
@@ -32,7 +35,9 @@ class Admin(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
-        self.guild = await self.bot.fetch_guild(await self.bot.get_setting("guild_id", None))
+        self.guild = await self.bot.fetch_guild(
+            await self.bot.get_setting("guild_id", None)
+        )
 
     @commands.Cog.listener()
     async def on_member_join(self, mem: discord.Member):
@@ -42,70 +47,118 @@ class Admin(commands.Cog):
             logs = member_info.get("logs")
 
             if logs:
-                if any(LogEntryEnum[log["action"]] in [LogEntryEnum.BAN, LogEntryEnum.KICK] for log in logs):
+                if any(
+                    LogEntryEnum[log["action"]] in [LogEntryEnum.BAN, LogEntryEnum.KICK]
+                    for log in logs
+                ):
                     await self.bot.alert_mods(
-                        f"{mem.mention} joined the server. They have previously been kicked or banned.")
+                        f"{mem.mention} joined the server. They have previously been kicked or banned."
+                    )
 
         if mem.name[-4:].isnumeric():
-            await self.bot.alert_mods(f"Possible spam account {mem.mention} joined the server.")
+            await self.bot.alert_mods(
+                f"Possible spam account {mem.mention} joined the server."
+            )
 
     @commands.Cog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member):
         time.sleep(1)
         if not before.timed_out_until and after.timed_out_until:
-            timeout_logs = [log async for log in self.guild.audit_logs(limit=10,
-                                                                       action=discord.AuditLogAction.member_update)]
+            timeout_logs = [
+                log
+                async for log in self.guild.audit_logs(
+                    limit=10, action=discord.AuditLogAction.member_update
+                )
+            ]
             user = None
             reason = None
             for log in timeout_logs:
                 if log.target.id == before.id:
                     user = log.user
                     reason = log.reason
-            await self.log_member_event(LogEntryEnum.TIMEOUT.name, user.id, after.id, reason, True)
-            await self.bot.alert_mods(f"{user.mention} has timed out {after.mention} until "
-                                      f"{after.timed_out_until.strftime('%Y-%m-%d, %H:%M')}"
-                                      f". (Reason: {timeout_logs[0].reason})")
+            await self.log_member_event(
+                LogEntryEnum.TIMEOUT.name, user.id, after.id, reason, True
+            )
+            await self.bot.alert_mods(
+                f"{user.mention} has timed out {after.mention} until "
+                f"{after.timed_out_until.strftime('%Y-%m-%d, %H:%M')}"
+                f". (Reason: {timeout_logs[0].reason})"
+            )
 
         if not after.timed_out_until and before.timed_out_until:
-            timeout_logs = [log async for log in self.guild.audit_logs(limit=10,
-                                                                       action=discord.AuditLogAction.member_update)]
+            timeout_logs = [
+                log
+                async for log in self.guild.audit_logs(
+                    limit=10, action=discord.AuditLogAction.member_update
+                )
+            ]
             user = None
             for log in timeout_logs:
                 if log.target.id == before.id:
                     user = log.user
-            await self.bot.alert_mods(f"{user.mention} has removed the timeout for {after.mention}.")
+            await self.bot.alert_mods(
+                f"{user.mention} has removed the timeout for {after.mention}."
+            )
 
     @commands.Cog.listener()
     async def on_raw_member_remove(self, event: discord.RawMemberRemoveEvent):
         time.sleep(1)
         removed_user = event.user
-        kick_logs = [log async for log in self.guild.audit_logs(limit=1, action=discord.AuditLogAction.kick)]
-        ban_logs = [log async for log in self.guild.audit_logs(limit=1, action=discord.AuditLogAction.ban)]
+        kick_logs = [
+            log
+            async for log in self.guild.audit_logs(
+                limit=1, action=discord.AuditLogAction.kick
+            )
+        ]
+        ban_logs = [
+            log
+            async for log in self.guild.audit_logs(
+                limit=1, action=discord.AuditLogAction.ban
+            )
+        ]
 
         if kick_logs[0].target.id == removed_user.id:
-            await self.log_member_event(LogEntryEnum.KICK.name, kick_logs[0].user.id, removed_user.id,
-                                        kick_logs[0].reason,
-                                        True)
-            await self.bot.alert_mods(f"{kick_logs[0].user.mention} has kicked {removed_user.mention}"
-                                      f". (Reason: {kick_logs[0].reason})")
+            await self.log_member_event(
+                LogEntryEnum.KICK.name,
+                kick_logs[0].user.id,
+                removed_user.id,
+                kick_logs[0].reason,
+                True,
+            )
+            await self.bot.alert_mods(
+                f"{kick_logs[0].user.mention} has kicked {removed_user.mention}"
+                f". (Reason: {kick_logs[0].reason})"
+            )
 
         if ban_logs[0].target.id == removed_user.id:
-            await self.log_member_event(LogEntryEnum.BAN.name, ban_logs[0].user.id, removed_user.id,
-                                        ban_logs[0].reason,
-                                        True)
-            await self.bot.alert_mods(f"{ban_logs[0].user.mention} has banned {removed_user.mention}"
-                                      f". (Reason: {ban_logs[0].reason})")
+            await self.log_member_event(
+                LogEntryEnum.BAN.name,
+                ban_logs[0].user.id,
+                removed_user.id,
+                ban_logs[0].reason,
+                True,
+            )
+            await self.bot.alert_mods(
+                f"{ban_logs[0].user.mention} has banned {removed_user.mention}"
+                f". (Reason: {ban_logs[0].reason})"
+            )
 
     @app_commands.command(name="ban")
-    async def ban(self, intr: discord.Interaction, member: discord.Member, reason: str = None):
+    async def ban(
+        self, intr: discord.Interaction, member: discord.Member, reason: str = None
+    ):
         role_id = await self.bot.get_setting("admin_role_id")
 
         if not await self.validate(intr, role_id):
             return
 
         await self.guild.ban(member, reason=reason)
-        await self.log_member_event(LogEntryEnum.BAN.name, intr.user.id, member, reason, True)
-        await self.bot.alert_mods(f"{intr.user.mention} has banned {member.mention}. (Reason: {reason})")
+        await self.log_member_event(
+            LogEntryEnum.BAN.name, intr.user.id, member, reason, True
+        )
+        await self.bot.alert_mods(
+            f"{intr.user.mention} has banned {member.mention}. (Reason: {reason})"
+        )
 
     @commands.command(name="sync")
     async def sync(self, ctx: commands.Context):
@@ -115,7 +168,12 @@ class Admin(commands.Cog):
         await ctx.message.add_reaction("✅")
 
     @app_commands.command(name="changestatus")
-    async def changestatus(self, intr: discord.Interaction, activity_type: discord.ActivityType, status: str):
+    async def changestatus(
+        self,
+        intr: discord.Interaction,
+        activity_type: discord.ActivityType,
+        status: str,
+    ):
         role_id = await self.bot.get_setting("admin_role_id")
 
         if not await self.validate(intr, role_id):
@@ -142,7 +200,7 @@ class Admin(commands.Cog):
         tz = await self.bot.get_setting("timezone")
         resp = dt.now(tz=pytz.timezone(tz))
         await intr.response.send_message(resp, ephemeral=True)
-        lg.info("%s used /now")
+        lg.info("%s used /now", intr.user.name)
 
     @app_commands.command(name="nuke")
     async def nuke(self, intr: discord.Interaction, number: int):
@@ -158,13 +216,19 @@ class Admin(commands.Cog):
         await intr.response.defer(ephemeral=True)
         await intr.channel.purge(limit=number)
         await intr.followup.send("Done", ephemeral=True)
-        lg.info("%s purged %s messages in channel %s", intr.user.name, number, intr.channel.name)
+        lg.info(
+            "%s purged %s messages in channel %s",
+            intr.user.name,
+            number,
+            intr.channel.name,
+        )
 
-    @app_commands.command(name='logs')
-    @app_commands.describe(full="Choose true if you want the full log file.",
-                           ln="The number of log lines to send.")
-    async def logs(self, intr: discord.Interaction, ln: int = 20,
-                   full: bool = False):
+    @app_commands.command(name="logs")
+    @app_commands.describe(
+        full="Choose true if you want the full log file.",
+        ln="The number of log lines to send.",
+    )
+    async def logs(self, intr: discord.Interaction, ln: int = 20, full: bool = False):
         role_id = await self.bot.get_setting("admin_role_id")
 
         if not await self.validate(intr, role_id):
@@ -180,22 +244,76 @@ class Admin(commands.Cog):
 
         log_file = open(logging_file_name)
         lines = log_file.readlines()
-        log_lines = lines[-min(len(lines), ln):]
+        log_lines = lines[-min(len(lines), ln) :]
 
         log_msg = ""
         for line in log_lines:
             if len(log_msg) + len(line) > 2000:
-                await intr.user.send(f'```{log_msg}```')
+                await intr.user.send(f"```{log_msg}```")
                 log_msg = ""
             log_msg = log_msg + line
-        await intr.user.send(f'```{log_msg}```')
+        await intr.user.send(f"```{log_msg}```")
         await intr.response.send_message("Done.", ephemeral=True)
         lg.info("Sent logs to %s", intr.user.name)
 
+    @app_commands.command(
+        name="purge", description="Purge messages from a channel for a specific user"
+    )
+    @app_commands.describe(user="The user to purge messages for")
+    async def purge(self, intr: discord.Interaction, user: discord.Member):
+        role_id = await self.bot.get_setting("admin_role_id")
+        if not await self.validate(intr, role_id):
+            return
+
+        await intr.response.defer(ephemeral=True)
+
+        two_weeks_ago = dt.now(pytz.utc) - timedelta(days=14)
+
+        messages_to_bulk_delete = []
+        delete_count = 0
+
+        async for message in intr.channel.history(limit=None):
+            if message.author.id == user.id:
+                if message.created_at > two_weeks_ago:
+                    messages_to_bulk_delete.append(message)
+
+                    if len(messages_to_bulk_delete) >= 100:
+                        await intr.channel.delete_messages(messages_to_bulk_delete)
+                        delete_count += len(messages_to_bulk_delete)
+                        messages_to_bulk_delete = []
+                        await asyncio.sleep(1)
+                else:
+                    try:
+                        await message.delete()
+                        delete_count += 1
+                        await asyncio.sleep(1)
+                    except Exception:
+                        lg.warning(
+                            f"Failed to delete message {message.id} from {user.mention} in {intr.channel.name}",
+                            exc_info=True,
+                        )
+
+        if messages_to_bulk_delete:
+            await intr.channel.delete_messages(messages_to_bulk_delete)
+            delete_count += len(messages_to_bulk_delete)
+
+        await intr.followup.send(
+            f"Purged {delete_count} messages from {user.mention} (Total: {delete_count})",
+            ephemeral=True,
+        )
+        lg.info(
+            "%s purged %s's messages in channel %s (Total: %d)",
+            intr.user.name,
+            user.name,
+            intr.channel.name,
+            delete_count,
+        )
+
     @app_commands.command(name="set")
     @app_commands.rename(name="setting-name", new_vl="new-value")
-    async def set(self, intr: discord.Interaction, name: str = None,
-                  new_vl: str = None):
+    async def set(
+        self, intr: discord.Interaction, name: str = None, new_vl: str = None
+    ):
         role_id = await self.bot.get_setting("admin_role_id")
 
         if not await self.validate(intr, role_id):
@@ -214,7 +332,11 @@ class Admin(commands.Cog):
 
         if not new_vl:
             setting = await self.bot.settings.find_one({"_id": name})
-            msg = "%s | %s | %s" % (setting['_id'], setting['value'], setting['description'])
+            msg = "%s | %s | %s" % (
+                setting["_id"],
+                setting["value"],
+                setting["description"],
+            )
             await intr.response.send_message(msg, ephemeral=True)
             return
 
@@ -223,13 +345,17 @@ class Admin(commands.Cog):
 
         old_doc = await self.bot.update_setting({"_id": name, "value": new_vl})
         if not old_doc:
-            await intr.response.send_message("Could not find setting with name %s" % name, ephemeral=True)
+            await intr.response.send_message(
+                "Could not find setting with name %s" % name, ephemeral=True
+            )
             return
 
         old_val = old_doc["value"]
         msg = f"Updated setting {name} with value {new_vl} (was {old_val})"
         await intr.response.send_message(msg, ephemeral=True)
-        lg.info("%s changed setting %s from %s to %s", intr.user.name, name, old_val, new_vl)
+        lg.info(
+            "%s changed setting %s from %s to %s", intr.user.name, name, old_val, new_vl
+        )
 
     @set.autocomplete("name")
     async def set_autocomplete(self, _: discord.Interaction, curr: str):
@@ -237,18 +363,23 @@ class Admin(commands.Cog):
 
         return [
             app_commands.Choice(name=setting["_id"], value=setting["_id"])
-            for setting in settings if curr.lower() in setting["_id"].lower()
+            for setting in settings
+            if curr.lower() in setting["_id"].lower()
         ]
 
     @app_commands.command(name="createsetting")
     @app_commands.rename(setting="setting-name", value="initial-value")
-    async def createsetting(self, intr: discord.Interaction, setting: str, description: str, value: str):
+    async def createsetting(
+        self, intr: discord.Interaction, setting: str, description: str, value: str
+    ):
         if not await self.validate(intr):
             return
 
         if value.isdigit():
             value = int(value)
-        await self.bot.add_setting({"_id": setting, "description": description, "value": value})
+        await self.bot.add_setting(
+            {"_id": setting, "description": description, "value": value}
+        )
         msg = f"Created setting **{setting}** with initial value **{value}**"
         await intr.response.send_message(msg, ephemeral=True)
         lg.info("%s created setting %s with value %s", intr.user.name, setting, value)
@@ -262,15 +393,20 @@ class Admin(commands.Cog):
             if role in intr.user.roles:
                 return True
 
-        await intr.response.send_message("You are not allowed to use this command.", ephemeral=True)
-        await self.bot.alert_owner("%s tried to use /%s. Check integration permissions" % (intr.user.name,
-                                                                                           intr.data.get("name")))
+        await intr.response.send_message(
+            "You are not allowed to use this command.", ephemeral=True
+        )
+        await self.bot.alert_owner(
+            "%s tried to use /%s. Check integration permissions"
+            % (intr.user.name, intr.data.get("name"))
+        )
         return False
 
     @app_commands.command(name="copyemoji")
     @app_commands.rename(emoji_str="emoji")
-    async def copyemoji(self, intr: discord.Interaction,
-                        emoji_str: str, name: str = None):
+    async def copyemoji(
+        self, intr: discord.Interaction, emoji_str: str, name: str = None
+    ):
         await intr.response.defer(ephemeral=True)
         emoji = discord.PartialEmoji.from_str(emoji_str)
 
@@ -292,26 +428,40 @@ class Admin(commands.Cog):
         img_name = emoji.url.split("/")[-1]
         img_path = f"temp/{uuid.uuid4()}_{img_name}"
         img_file = download_img_from_url(
-            emoji.url + "?size=96&quality=lossless", img_path)
+            emoji.url + "?size=96&quality=lossless", img_path
+        )
 
-        with open(img_file, 'rb') as ef:
-            await intr.guild.create_custom_emoji(name=name, image=ef.read(), reason="Copied Emoji")
+        with open(img_file, "rb") as ef:
+            await intr.guild.create_custom_emoji(
+                name=name, image=ef.read(), reason="Copied Emoji"
+            )
         await intr.followup.send("Done", ephemeral=True)
         lg.info("%s copied an emoji", intr.user.name)
         os.remove(img_file)
 
-    async def log_server_event(self, action, user: int, member: int, reason: str = None):
-        log_entry = {"action": action, "time": int(time.time()), "user": user, "target": member}
+    async def log_server_event(
+        self, action, user: int, member: int, reason: str = None
+    ):
+        log_entry = {
+            "action": action,
+            "time": int(time.time()),
+            "user": user,
+            "target": member,
+        }
         if reason:
             log_entry["reason"] = reason
 
         await self.logs.insert_one(log_entry)
 
-    async def log_member_event(self, action, user, member, reason: str = None, log_to_server: bool = False):
+    async def log_member_event(
+        self, action, user, member, reason: str = None, log_to_server: bool = False
+    ):
         log_entry = {"action": action, "time": int(time.time()), "user": user}
         if reason:
             log_entry["reason"] = reason
-        await self.members.update_one({"_id": member}, {"$push": {"logs": log_entry}}, upsert=True)
+        await self.members.update_one(
+            {"_id": member}, {"$push": {"logs": log_entry}}, upsert=True
+        )
 
         if log_to_server:
             await self.log_server_event(action, user, member, reason)

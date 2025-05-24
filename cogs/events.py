@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 from bot import Eindjeboss
 from util.util import download_img_from_url
 
-FILE_DIR = os.getenv('FILE_DIR')
+FILE_DIR = os.getenv("FILE_DIR")
 
 # set up static image files
 BADGE_FILE = FILE_DIR + "/images/ehv_badge.png"
@@ -26,11 +26,11 @@ SIZE_TAGS = 48
 
 FONT_TITLE_PATH = FILE_DIR + "/fonts/RobotoFlexVariable.ttf"
 FONT_TITLE = ImageFont.truetype(FONT_TITLE_PATH, SIZE_TITLE)
-FONT_TITLE.set_variation_by_name('ExtraBlack Italic')
+FONT_TITLE.set_variation_by_name("ExtraBlack Italic")
 
 FONT_TAGS_PATH = FILE_DIR + "/fonts/RobotoFlexVariable.ttf"
 FONT_TAGS = ImageFont.truetype(FONT_TAGS_PATH, SIZE_TAGS)
-FONT_TAGS.set_variation_by_name('Regular')
+FONT_TAGS.set_variation_by_name("Regular")
 
 DESIRED_W = 1230
 DESIRED_H = 1400
@@ -56,31 +56,33 @@ class Events(commands.Cog):
 
     @app_commands.command(name="announceevent")
     @app_commands.rename(thread_id="thread")
-    async def announceevent(self, intr: discord.Interaction,
-                            thread_id: str, img_override: str = None):
+    async def announceevent(
+        self, intr: discord.Interaction, thread_id: str, img_override: str = None
+    ):
         await intr.response.defer(ephemeral=True)
         thread = await self.bot.fetch_channel(int(thread_id))
         if not isinstance(thread, discord.Thread):
             await intr.followup.send(
-                f"Cannot find a thread with ID {thread_id}", ephemeral=True)
+                f"Cannot find a thread with ID {thread_id}", ephemeral=True
+            )
             return
         if thread.parent_id != await self.bot.get_setting("events_forum_id"):
             await intr.followup.send(
-                "This thread is not in the events forum", ephemeral=True)
+                "This thread is not in the events forum", ephemeral=True
+            )
             return
         try:
             await self.announce_event(thread, img_override)
-            await intr.followup.send('Done.', ephemeral=True)
+            await intr.followup.send("Done.", ephemeral=True)
         except Exception as e:
             lg.exception(e)
-            await intr.followup.send("Failed to announce. Check the image.",
-                                     ephemeral=True)
+            await intr.followup.send(
+                "Failed to announce. Check the image.", ephemeral=True
+            )
 
-    async def announce_event(self, thread: discord.Thread,
-                             img: str = None):
+    async def announce_event(self, thread: discord.Thread, img: str = None):
         events_forum_id = await self.bot.get_setting("events_forum_id")
-        announcement_ch_id = await self.bot.get_setting(
-            "event_announcement_channel_id")
+        announcement_ch_id = await self.bot.get_setting("event_announcement_channel_id")
 
         if thread.parent_id != events_forum_id:
             return
@@ -89,8 +91,8 @@ class Events(commands.Cog):
 
         alert_channel = await thread.guild.fetch_channel(announcement_ch_id)
         ev_rl = discord.utils.get(
-            thread.guild.roles,
-            id=await self.bot.get_setting("events_role_id"))
+            thread.guild.roles, id=await self.bot.get_setting("events_role_id")
+        )
         await asyncio.sleep(3)
 
         img = await get_img(thread) if not img else download_img_from_url(img)
@@ -105,42 +107,43 @@ class Events(commands.Cog):
 
 def make_ev_img(img_path: str, title: str, tags: List[str]):
 
-    output_img_filename = 'temp/output_%s' % uuid.uuid4()
+    output_img_filename = "temp/output_%s" % uuid.uuid4()
 
-    base_img = Image.new('RGBA', size=(DESIRED_W, DESIRED_H),
-                         color=(0, 0, 0, 0))
+    base_img = Image.new("RGBA", size=(DESIRED_W, DESIRED_H), color=(0, 0, 0, 0))
     badge_img = Image.open(BADGE_FILE)
 
     colorthief = ColorThief(img_path)
     colors = colorthief.get_palette()
 
-    main_color = next((color for color in colors if not is_dark(color)),
-                      (255, 255, 255))
+    main_color = next(
+        (color for color in colors if not is_dark(color)), (255, 255, 255)
+    )
     main_color = adjust_saturation(main_color, -100)
     transparent = (0, 0, 0, 0)
     bubbles_color = (23, 23, 23)
 
-    img = Image.open(img_path).convert('RGB')
+    img = Image.open(img_path).convert("RGB")
     size = img.size
 
     des_w = DESIRED_W - 80
     des_h = DESIRED_H - 180
 
-    mask_rect = Image.new('L', size=(des_w, des_h), color=0)
+    mask_rect = Image.new("L", size=(des_w, des_h), color=0)
     draw = ImageDraw.Draw(mask_rect)
     draw.rounded_rectangle((0, 0, des_w, des_h), radius=40, fill=255)
 
-    border_rect = Image.new('RGBA', size=(des_w, des_h), color=0)
+    border_rect = Image.new("RGBA", size=(des_w, des_h), color=0)
     draw = ImageDraw.Draw(border_rect)
-    draw.rounded_rectangle((0, 0, des_w, des_h), radius=40, fill=transparent,
-                           outline=main_color, width=10)
+    draw.rounded_rectangle(
+        (0, 0, des_w, des_h), radius=40, fill=transparent, outline=main_color, width=10
+    )
 
     if size[0] < des_w:
-        ratio = des_w/size[0]
-        size = (round(size[0]*ratio), round(size[1]*ratio))
+        ratio = des_w / size[0]
+        size = (round(size[0] * ratio), round(size[1] * ratio))
     if size[1] < des_h:
-        ratio = des_h/size[1]
-        size = (round(size[0]*ratio), round(size[1]*ratio))
+        ratio = des_h / size[1]
+        size = (round(size[0] * ratio), round(size[1] * ratio))
 
     img = img.resize(size)
     img = crop_img(img)
@@ -151,10 +154,14 @@ def make_ev_img(img_path: str, title: str, tags: List[str]):
     base_img.paste(img, (60, 95), mask=mask_rect)
     base_img.paste(border_rect, (60, 95), mask=border_rect)
 
-    draw_tag_bubbles(base_img, sorted([tag.name.lower() for tag in tags]),
-                     bubbles_color, main_color, FONT_TAGS)
-    frames = draw_title_text(base_img, title.upper(), 0, 60, DESIRED_W - 20,
-                             main_color)
+    draw_tag_bubbles(
+        base_img,
+        sorted([tag.name.lower() for tag in tags]),
+        bubbles_color,
+        main_color,
+        FONT_TAGS,
+    )
+    frames = draw_title_text(base_img, title.upper(), 0, 60, DESIRED_W - 20, main_color)
 
     # remove disposal parameter when Discord supports APNG
     if frames:
@@ -162,10 +169,15 @@ def make_ev_img(img_path: str, title: str, tags: List[str]):
         # duration = [1000] + [33] * (len(frames)-2) + [1000]
         duration = 1500
         output_img_filename = output_img_filename + ".gif"
-        frames[0].save(output_img_filename, save_all=True,
-                       append_images=frames[1:],
-                       duration=duration, loop=0, disposal=2,
-                       format='gif')
+        frames[0].save(
+            output_img_filename,
+            save_all=True,
+            append_images=frames[1:],
+            duration=duration,
+            loop=0,
+            disposal=2,
+            format="gif",
+        )
     else:
         base_img = Image.composite(badge_img, base_img, badge_img)
         output_img_filename = output_img_filename + ".png"
@@ -181,9 +193,15 @@ def make_ev_img(img_path: str, title: str, tags: List[str]):
 def download_img_from_bing(query):
     temp_folder = "temp/%s" % (uuid.uuid4())
     output_folder = "%s/%s" % (temp_folder, query)
-    downloader.download(query, limit=1,  output_dir=temp_folder,
-                        adult_filter_off=False, force_replace=False,
-                        timeout=60, verbose=False)
+    downloader.download(
+        query,
+        limit=1,
+        output_dir=temp_folder,
+        adult_filter_off=False,
+        force_replace=False,
+        timeout=60,
+        verbose=False,
+    )
 
     return os.path.join(output_folder, os.listdir(output_folder)[0])
 
@@ -192,7 +210,7 @@ def is_dark(color):
     red = color[0]
     green = color[1]
     blue = color[2]
-    darkness = 1.0-(0.299*red + 0.587*green + 0.114*blue)/255.0
+    darkness = 1.0 - (0.299 * red + 0.587 * green + 0.114 * blue) / 255.0
 
     return darkness > 0.5
 
@@ -217,14 +235,14 @@ def complementary(inp):
 
 def adjust_saturation(inp, val):
     hsv = rgb_to_hsv(inp[0], inp[1], inp[2])
-    hsv = (hsv[0], min(hsv[1]*((100+val)/100), 1), hsv[2])
+    hsv = (hsv[0], min(hsv[1] * ((100 + val) / 100), 1), hsv[2])
     rgb = hsv_to_rgb(hsv[0], hsv[1], hsv[2])
     return tuple(int(x) for x in rgb)
 
 
 def adjust_darkness(inp, val):
     hsv = rgb_to_hsv(inp[0], inp[1], inp[2])
-    hsv = (hsv[0], hsv[1], hsv[2]*(1-(val/100.0)))
+    hsv = (hsv[0], hsv[1], hsv[2] * (1 - (val / 100.0)))
     rgb = hsv_to_rgb(hsv[0], hsv[1], hsv[2])
     return tuple(int(x) for x in rgb)
 
@@ -251,10 +269,12 @@ def draw_tag_bubbles(img, tags, fill, text_color, font):
         y1 = high_point
         y2 = low_point
 
-        draw.rounded_rectangle((x1, high_point, x2, low_point), fill=fill,
-                               width=2, radius=45)
-        draw_bubble_text(img, tag, ((x1+x2)/2, (y1+y2)/2),
-                         text_color, FONT_TAGS, 2, fill)
+        draw.rounded_rectangle(
+            (x1, high_point, x2, low_point), fill=fill, width=2, radius=45
+        )
+        draw_bubble_text(
+            img, tag, ((x1 + x2) / 2, (y1 + y2) / 2), text_color, FONT_TAGS, 2, fill
+        )
         start = start + text_width + 90  # higher value -> tags further apart
 
 
@@ -273,12 +293,18 @@ def darken_img(img):
     img.paste(temp)
 
 
-def draw_bubble_text(img, text, position, fill, font, stroke_width,
-                     stroke_fill):
+def draw_bubble_text(img, text, position, fill, font, stroke_width, stroke_fill):
     draw = ImageDraw.Draw(img)
 
-    draw.text(position, text, fill=fill, font=font, stroke_width=stroke_width,
-              stroke_fill=stroke_fill, anchor='mm')
+    draw.text(
+        position,
+        text,
+        fill=fill,
+        font=font,
+        stroke_width=stroke_width,
+        stroke_fill=stroke_fill,
+        anchor="mm",
+    )
 
 
 def draw_title_text(img: Image.Image, text, y, min_x, max_x, fill):
@@ -294,7 +320,7 @@ def draw_title_text(img: Image.Image, text, y, min_x, max_x, fill):
     # uncomment this when Discord supports APNG
     # if length > max_length:
 
-    words = text.split(' ')
+    words = text.split(" ")
     texts = split_text(words, MAX_TITLE)
 
     if len(text) > MAX_TITLE and len(texts) > 1:
@@ -302,7 +328,7 @@ def draw_title_text(img: Image.Image, text, y, min_x, max_x, fill):
         # return get_frames(img, text, y, min_x, max_x, fill, height)
 
         frames = []
-        temp_img = Image.new('RGBA', (max_length, height), color=(0, 0, 0, 0))
+        temp_img = Image.new("RGBA", (max_length, height), color=(0, 0, 0, 0))
         textdraw = ImageDraw.Draw(temp_img)
 
         for tx in texts:
@@ -319,7 +345,7 @@ def draw_title_text(img: Image.Image, text, y, min_x, max_x, fill):
 
         return frames
     else:
-        draw.text((max_x-length, y), text, fill=fill, font=font)
+        draw.text((max_x - length, y), text, fill=fill, font=font)
         return None
 
 
@@ -336,7 +362,7 @@ def split_text(words, chars: int):
         curr_words.append(word)
         curr_cnt += len(word)
     res += [curr_words]
-    res = [' '.join(txt) for txt in res]
+    res = [" ".join(txt) for txt in res]
 
     if len(res) == 1:
         return [res[0]]
@@ -356,7 +382,7 @@ def crop_img(img):
 
     if width == height:
         return img
-    offset = abs(width-height)//2
+    offset = abs(width - height) // 2
 
     if width > height:
         left = offset
@@ -383,7 +409,7 @@ def get_frames(img: Image.Image, text, y, min_x, max_x, fill, height):
     height = bbox[3] - bbox[1] + 30
 
     frames = []
-    temp_img = Image.new('RGBA', (max_length, height), color=(0, 0, 0, 0))
+    temp_img = Image.new("RGBA", (max_length, height), color=(0, 0, 0, 0))
 
     textdraw = ImageDraw.Draw(temp_img)
     start_pt = 160

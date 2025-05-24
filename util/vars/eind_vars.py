@@ -144,7 +144,7 @@ DEEPL_LANGUAGE_CODES = {
     "SV": "swedish",
     "TR": "turkish",
     "UK": "ukrainian",
-    "ZH": "chinese"
+    "ZH": "chinese",
 }
 DEEPL_LANGUAGE_NAMES = {
     "arabic": "AR",
@@ -176,5 +176,5 @@ DEEPL_LANGUAGE_NAMES = {
     "swedish": "SV",
     "turkish": "TR",
     "ukrainian": "UK",
-    "chinese": "ZH"
+    "chinese": "ZH",
 }

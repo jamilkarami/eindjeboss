@@ -5,6 +5,7 @@ import shutil
 import time
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+from pythonjsonlogger.jsonlogger import JsonFormatter
 
 import discord
 from discord.ext import commands
@@ -22,8 +23,12 @@ class Eindjeboss(commands.Bot):
 
     def __init__(self) -> None:
         intents = discord.Intents.all()
-        super().__init__(command_prefix="!", case_insensitive=True, intents=intents,
-                         owner_id=int(os.getenv("OWNER_ID")))
+        super().__init__(
+            command_prefix="!",
+            case_insensitive=True,
+            intents=intents,
+            owner_id=int(os.getenv("OWNER_ID")),
+        )
         self.file_dir = FILE_DIR
 
     async def setup_hook(self):
@@ -89,8 +94,9 @@ class Eindjeboss(commands.Bot):
 
     async def update_setting(self, setting):
         self.__setattr__(setting["_id"], setting["value"])
-        return await self.settings.find_one_and_update({"_id": setting["_id"]},
-                                                       {"$set": {"value": setting["value"]}})
+        return await self.settings.find_one_and_update(
+            {"_id": setting["_id"]}, {"$set": {"value": setting["value"]}}
+        )
 
     async def get_settings(self):
         settings = await self.settings.find({}).to_list(length=88675309)
@@ -115,8 +121,10 @@ async def main():
     if not Path(logging_file_name).is_file():
         open(logging_file_name, "a").close()
 
-    log_format = logging.Formatter("%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
-    
+    log_format = logging.Formatter(
+        "%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+    )
+
     # File handler for persistent logging
     file_handler = RotatingFileHandler(
         filename=logging_file_name,
@@ -124,14 +132,26 @@ async def main():
         maxBytes=5 * 1024 * 1024,
         backupCount=10,
         encoding=None,
-        delay=False
+        delay=False,
     )
     file_handler.setFormatter(log_format)
-    
+
     # Stream handler for console output
     stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(log_format)
-    
+    stream_handler.setFormatter(
+        JsonFormatter(
+            "{message}{asctime}{levelname}{funcName}{stack_info}",
+            style="{",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            rename_fields={
+                "asctime": "timestamp",
+                "levelname": "level",
+                "funcName": "function",
+                "stack_info": "traceback",
+            },
+        )
+    )
+
     # Configure root logger
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)

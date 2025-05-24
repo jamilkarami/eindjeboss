@@ -41,11 +41,12 @@ class Casino(commands.Cog):
         msg_cont: str = msg.content.lower()
 
         if msg_cont.startswith(ROLL_FOR_TEXT):
-            reason_for_roll = msg_cont[len(ROLL_FOR_TEXT):]
+            reason_for_roll = msg_cont[len(ROLL_FOR_TEXT) :]
             random.seed()
             num = random.randint(1, DEFAULT_ROLL)
             await msg.reply(
-                f"You roll a D20 for _\"{reason_for_roll}\"_. You get: {num}.")
+                f'You roll a D20 for _"{reason_for_roll}"_. You get: {num}.'
+            )
             lg.info("%s rolled a D20", msg.author.name)
             return
 
@@ -65,18 +66,19 @@ class Casino(commands.Cog):
             maximum = DEFAULT_ROLL
         if maximum < 2:
             await intr.response.send_message(
-                "The maximum can only be 2 and above.", ephemeral=True)
+                "The maximum can only be 2 and above.", ephemeral=True
+            )
             return
 
         random.seed()
         num = random.randint(1, maximum)
 
         await intr.response.send_message(
-            f"You roll a D{str(maximum)}. You get: {str(num)}.")
+            f"You roll a D{str(maximum)}. You get: {str(num)}."
+        )
         lg.info("%s rolled a D20", intr.user.name)
 
-    @app_commands.command(name="8ball",
-                          description=EIGHT_BALL_DESCRIPTION)
+    @app_commands.command(name="8ball", description=EIGHT_BALL_DESCRIPTION)
     async def ball(self, intr: discord.Interaction):
         random.seed()
         message = f"Magic 8 ball says: {random.choice(EIGHT_BALL_OPTIONS)}"
@@ -91,16 +93,18 @@ class Casino(commands.Cog):
         await intr.response.send_message(message)
         lg.info("%s flipped a coin", intr.user.name)
 
-    @app_commands.command(name="chooseforme",
-                          description=CH_DESC)
+    @app_commands.command(name="chooseforme", description=CH_DESC)
     @app_commands.describe(options="Comma-separated list of options")
     async def choose(self, intr: discord.Interaction, options: str):
         split_options = [x.strip().capitalize() for x in options.split(",")]
         resp_o = ", ".join([f"**{x}**" for x in split_options])
         random.seed()
-        ch = (random.choice(split_options) if "takumi"
-              not in (opt.lower() for opt in split_options) else "Takumi")
-        resp = (f"You asked me to choose from {resp_o}.\n\nI choose: **{ch}**")
+        ch = (
+            random.choice(split_options)
+            if "takumi" not in (opt.lower() for opt in split_options)
+            else "Takumi"
+        )
+        resp = f"You asked me to choose from {resp_o}.\n\nI choose: **{ch}**"
 
         await intr.response.send_message(resp)
         lg.info("%s asked to choose", intr.user.name)

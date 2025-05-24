@@ -15,7 +15,7 @@ from util.util import get_file, load_json_file
 from util.vars.eind_vars import PERIODIC_MESSAGES_FILE
 from util.vars.periodics import ALERT_DT, PSV_DT, WEATHER_DT
 
-FILE_DIR = os.getenv('FILE_DIR')
+FILE_DIR = os.getenv("FILE_DIR")
 
 # Weather
 OW = os.getenv("OPENWEATHER_API_KEY")
@@ -34,13 +34,15 @@ SNOWY_FILE = "snowy.png"
 STORM_FILE = "storm.png"
 CLEAR_FILE = "clear.png"
 
-WEATHER_IMGS = {'Fog': CLOUD_FILE,
-                'Clouds': CLOUD_FILE,
-                'Rain': RAINY_FILE,
-                'Drizzle': RAINY_FILE,
-                'Snow': SNOWY_FILE,
-                'Thunderstorm': STORM_FILE,
-                'Clear': CLEAR_FILE}
+WEATHER_IMGS = {
+    "Fog": CLOUD_FILE,
+    "Clouds": CLOUD_FILE,
+    "Rain": RAINY_FILE,
+    "Drizzle": RAINY_FILE,
+    "Snow": SNOWY_FILE,
+    "Thunderstorm": STORM_FILE,
+    "Clear": CLEAR_FILE,
+}
 WEATHER_OUTPUT_FILE = "weather.png"
 
 FONT = FILE_DIR + "/fonts/coolvetica_rg.otf"
@@ -59,13 +61,17 @@ PSV_TEAM_ID = os.getenv("PSV_TEAM_ID")
 FIXTURES_URL = os.getenv("FOOTBALL_API_FIXTURES_URL")
 FOOTBALL_API_KEY = os.getenv("FOOTBALL_API_KEY")
 X_RAPID_API_HOST = os.getenv("X_RAPID_API_HOST")
-MATCH_STR = ("**%s** and **%s** will be playing at %s as part of the **%s**"
-             " at **%s**. Expect heavy traffic around the stadium.")
+MATCH_STR = (
+    "**%s** and **%s** will be playing at %s as part of the **%s**"
+    " at **%s**. Expect heavy traffic around the stadium."
+)
 
 WARNING_SIREN_MSG = "The public warning sirens will be tested today at 12:00."
-WARNING_SIREN_LINK = ("https://www.government.nl/topics/counterterrorism-and-"
-                      "national-security/question-and-answer/public-warning-s"
-                      "irens")
+WARNING_SIREN_LINK = (
+    "https://www.government.nl/topics/counterterrorism-and-"
+    "national-security/question-and-answer/public-warning-s"
+    "irens"
+)
 WARNING_SIREN_BUTTON_LABEL = "Click here for more information"
 
 
@@ -91,23 +97,30 @@ class Periodics(commands.Cog):
         for periodic in periodics.keys():
             vals = periodics[periodic]
 
-            msg_time = vals['time']
-            msg_channel = vals['channel']
-            msg = vals['message']
+            msg_time = vals["time"]
+            msg_channel = vals["channel"]
+            msg = vals["message"]
 
-            crontab(msg_time, func=self.send_periodic_message,
-                    args=(msg, msg_channel, guild), start=True)
-        lg.info(
-            f"[{__name__}] Scheduled {cnt} periodic message{'s'[:cnt ^ 1]}")
+            crontab(
+                msg_time,
+                func=self.send_periodic_message,
+                args=(msg, msg_channel, guild),
+                start=True,
+            )
+        lg.info(f"[{__name__}] Scheduled {cnt} periodic message{'s'[:cnt ^ 1]}")
 
     async def send_siren_alert(self):
         channel_id = await self.bot.get_setting("lounge_channel_id")
         channel = await self.bot.fetch_channel(channel_id)
         if datetime.today().weekday() == 0:
             view = discord.ui.View()
-            view.add_item(discord.ui.Button(label=WARNING_SIREN_BUTTON_LABEL,
-                                            style=discord.ButtonStyle.url,
-                                            url=WARNING_SIREN_LINK))
+            view.add_item(
+                discord.ui.Button(
+                    label=WARNING_SIREN_BUTTON_LABEL,
+                    style=discord.ButtonStyle.url,
+                    url=WARNING_SIREN_LINK,
+                )
+            )
             await channel.send(WARNING_SIREN_MSG, view=view)
             lg.info("Sent siren warning")
 
@@ -117,24 +130,24 @@ class Periodics(commands.Cog):
 
     async def send_weather_forecast(self):
         channel_id = await self.bot.get_setting("lounge_channel_id")
-        today = datetime.today().strftime('%d-%m-%Y')
+        today = datetime.today().strftime("%d-%m-%Y")
         title = f"Weather in {CITY_NAME} Today ({today})"
         channel = await self.bot.fetch_channel(channel_id)
         weather_url = f"{BASE_URL}q={CITY_QUERY}&appid={OW}&cnt=6&units={UNIT}"
         response = requests.get(weather_url)
         weather_info = response.json()
 
-        img = Image.new('RGBA', IMG_SIZE, (0, 0, 0, 0))
+        img = Image.new("RGBA", IMG_SIZE, (0, 0, 0, 0))
 
         weather_details = []
 
-        for itm in weather_info['list']:
-            cond = itm['weather'][0]['main']
-            desc = itm['weather'][0]['description'].capitalize()
-            temp = str(round(itm['main']['temp'])) + "°"
-            feel = str(round(itm['main']['feels_like'])) + "°"
-            wind = str(round(itm['wind']['speed'] * 3.6)) + " km/h"
-            time = itm['dt_txt'][-8:-3]
+        for itm in weather_info["list"]:
+            cond = itm["weather"][0]["main"]
+            desc = itm["weather"][0]["description"].capitalize()
+            temp = str(round(itm["main"]["temp"])) + "°"
+            feel = str(round(itm["main"]["feels_like"])) + "°"
+            wind = str(round(itm["wind"]["speed"] * 3.6)) + " km/h"
+            time = itm["dt_txt"][-8:-3]
 
             weather_details.append([cond, desc, temp, feel, wind, time])
 
@@ -147,11 +160,11 @@ class Periodics(commands.Cog):
                 last_cond = data[0]
                 img_file_name = WEATHER_FILES_DIR + WEATHER_IMGS.get(data[0])
 
-                with Image.open(img_file_name, 'r').convert('RGBA') as im:
+                with Image.open(img_file_name, "r").convert("RGBA") as im:
                     img.paste(im, (offset, 0))
 
                 if offset:
-                    box = (offset-15, 0, offset+15, 400)
+                    box = (offset - 15, 0, offset + 15, 400)
                     to_blur = img.crop(box)
                     for i in range(8):
                         to_blur = to_blur.filter(ImageFilter.BLUR)
@@ -161,8 +174,8 @@ class Periodics(commands.Cog):
             img.paste(info_img, (offset, 0), info_img)
             offset = offset + SEPARATOR
 
-        trs = Image.new('RGBA', IMG_SIZE, (0, 0, 0, 0))
-        mask = Image.open(WEATHER_FILES_DIR + MASK_FILE, 'r').convert('L')
+        trs = Image.new("RGBA", IMG_SIZE, (0, 0, 0, 0))
+        mask = Image.open(WEATHER_FILES_DIR + MASK_FILE, "r").convert("L")
         img.putalpha(mask)
         trs.paste(img, (0, 0), img)
         trs.save(WEATHER_OUTPUT_FILE)
@@ -176,7 +189,7 @@ class Periodics(commands.Cog):
         draw.text(pos, text=text, anchor="mm", fill=fill, font=font)
 
     def make_hour_info(self, info, blurred) -> Image:
-        txt_img = Image.new('RGBA', (160, 400), (0, 0, 0, 0))
+        txt_img = Image.new("RGBA", (160, 400), (0, 0, 0, 0))
 
         x = 80
         y = 50
@@ -213,35 +226,43 @@ class Periodics(commands.Cog):
         today = date.today()
 
         tz = await self.bot.get_setting("timezone")
-        season_year = today.year-1 if today.month < 7 else today.year
+        season_year = today.year - 1 if today.month < 7 else today.year
 
-        query_string = {"season": season_year,
-                        "timezone": tz,
-                        "date": today.strftime('%Y-%m-%d'),
-                        "venue": int(STADION_ID)}
+        query_string = {
+            "season": season_year,
+            "timezone": tz,
+            "date": today.strftime("%Y-%m-%d"),
+            "venue": int(STADION_ID),
+        }
         channel_id = await self.bot.get_setting("lounge_channel_id")
         channel = await self.bot.fetch_channel(channel_id)
 
         headers = {
             "X-RapidAPI-Key": FOOTBALL_API_KEY,
-            "X-RapidAPI-Host": X_RAPID_API_HOST
+            "X-RapidAPI-Host": X_RAPID_API_HOST,
         }
 
         response = requests.request(
-            "GET", FIXTURES_URL, headers=headers, params=query_string)
+            "GET", FIXTURES_URL, headers=headers, params=query_string
+        )
         content = json.loads(response.content)
 
-        if not content['response']:
+        if not content["response"]:
             return
 
-        home = content['response'][0]['teams']['home']['name']
-        away = content['response'][0]['teams']['away']['name']
-        competition = content['response'][0]['league']['name']
-        dt = content['response'][0]['fixture']['date']
+        home = content["response"][0]["teams"]["home"]["name"]
+        away = content["response"][0]["teams"]["away"]["name"]
+        competition = content["response"][0]["league"]["name"]
+        dt = content["response"][0]["fixture"]["date"]
         match_time = dateparser.parse(dt).strftime("%H:%M")
 
-        warning_msg = MATCH_STR % (home, away, "Philips Stadion", competition,
-                                   match_time)
+        warning_msg = MATCH_STR % (
+            home,
+            away,
+            "Philips Stadion",
+            competition,
+            match_time,
+        )
         lg.info("There is match playing at Philips Stadion today.")
         await channel.send(warning_msg)
 

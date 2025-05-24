@@ -23,8 +23,7 @@ class Help(commands.Cog, name="help"):
     async def on_ready(self):
         lg.info(f"[{__name__}] Cog is ready")
 
-    @app_commands.command(name="help",
-                          description="Get help with Lampje\'s commands")
+    @app_commands.command(name="help", description="Get help with Lampje's commands")
     async def help(self, intr: discord.Interaction):
         helptext = await self.helpcoll.find_one()
 
@@ -34,9 +33,9 @@ class Help(commands.Cog, name="help"):
         disclaimer = "\n".join(helptext["general"]["desc"])
         main_embed.add_field(name="", value=f"_{disclaimer}_", inline=False)
 
-        await intr.response.send_message(embed=main_embed,
-                                         view=MainView(helptext, main_embed),
-                                         ephemeral=True)
+        await intr.response.send_message(
+            embed=main_embed, view=MainView(helptext, main_embed), ephemeral=True
+        )
         lg.info(f"{intr.user.name} used /help")
 
     async def get_modules(self, data):
@@ -50,9 +49,10 @@ class Help(commands.Cog, name="help"):
             if "isGroup" in v:
                 group_name = v["isGroup"]
                 valid_keys = [key for key in v.keys() if key != "isGroup"]
-                keys = [cmds.get(group_name)
-                        .replace(group_name, group_name + " " + key[1:])
-                        for key in valid_keys]
+                keys = [
+                    cmds.get(group_name).replace(group_name, group_name + " " + key[1:])
+                    for key in valid_keys
+                ]
             else:
                 keys = [cmds.get(key, key) for key in v.keys()]
             modules[k] = ", ".join(keys)
@@ -87,16 +87,17 @@ class CategoryButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         title = f"{self.emoji}{self.label}"
         await interaction.response.edit_message(
-            content=None, embed=discord.Embed(title=title,
-                                              description=MORE_DETAILS),
-            view=CategoryView(self.label, self.data, self.parent,
-                              self.parent_embed))
+            content=None,
+            embed=discord.Embed(title=title, description=MORE_DETAILS),
+            view=CategoryView(self.label, self.data, self.parent, self.parent_embed),
+        )
 
 
 class CategoryView(discord.ui.View):
 
-    def __init__(self, label: str, helptext, parent: discord.ui.View,
-                 parent_embed: discord.Embed):
+    def __init__(
+        self, label: str, helptext, parent: discord.ui.View, parent_embed: discord.Embed
+    ):
         super().__init__()
         self.label = label
         self.helptext = helptext
@@ -109,14 +110,16 @@ class CategoryView(discord.ui.View):
             btn = CommandButton(k, v)
             self.add_item(btn)
 
-        back_btn = discord.ui.Button(label="Go back", style=BK_STYLE,
-                                     row=len(self._children) // 5)
+        back_btn = discord.ui.Button(
+            label="Go back", style=BK_STYLE, row=len(self._children) // 5
+        )
         back_btn.callback = self.go_back
         self.add_item(back_btn)
 
     async def go_back(self, int: discord.Interaction):
-        await int.response.edit_message(content=None, embed=self.parent_embed,
-                                        view=self.parent)
+        await int.response.edit_message(
+            content=None, embed=self.parent_embed, view=self.parent
+        )
 
 
 class CommandButton(discord.ui.Button):
@@ -128,10 +131,9 @@ class CommandButton(discord.ui.Button):
         self.style = CMD_STYLE
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(content=None,
-                                                embed=mk_embed(self.label,
-                                                               self.data,
-                                                               False))
+        await interaction.response.edit_message(
+            content=None, embed=mk_embed(self.label, self.data, False)
+        )
 
 
 async def setup(client: Eindjeboss):

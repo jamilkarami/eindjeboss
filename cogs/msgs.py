@@ -7,10 +7,15 @@ from discord import app_commands
 from discord.ext import commands
 
 from bot import Eindjeboss
-from util.vars.eind_vars import (ASS_EMOJI, CHANNEL_IGNORE_LIST,
-                                 EXCLAMATION_EMOJI,
-                                 QUESTION_EMOJI, TABLE_FIX, TABLE_FLIP,
-                                 WICKED_EMOJI)
+from util.vars.eind_vars import (
+    ASS_EMOJI,
+    CHANNEL_IGNORE_LIST,
+    EXCLAMATION_EMOJI,
+    QUESTION_EMOJI,
+    TABLE_FIX,
+    TABLE_FLIP,
+    WICKED_EMOJI,
+)
 
 SPONTAAN_STR = "**SPONTAAN. REIZEN. DRANKJES MET DE MEIDEN. SHOPPEN. \
 SPECIAALBIER. SUSHI. SARCASME. DANSJES. BOULDEREN. TATOEAGES. UITGAAN. \

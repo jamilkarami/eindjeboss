@@ -11,15 +11,23 @@ from util.util import get_file, load_json_file, save_json_file
 from util.vars.periodics import STATS_SYNC
 
 STATS_FILE_NAME = "command_stats.json"
-STATS_BLACKLIST = ["announceevent", "closeticket", "createsetting",
-                   "handleticket", "logs", "opentickets", "set", "usertickets"]
+STATS_BLACKLIST = [
+    "announceevent",
+    "closeticket",
+    "createsetting",
+    "handleticket",
+    "logs",
+    "opentickets",
+    "set",
+    "usertickets",
+]
 
 
 class Stats(commands.Cog):
 
     def __init__(self, bot: Eindjeboss):
         self.bot = bot
-        self.comm_stats = self.bot.dbmanager.get_collection('command_stats')
+        self.comm_stats = self.bot.dbmanager.get_collection("command_stats")
         crontab(STATS_SYNC, self.sync_stats, start=True)
 
     @commands.Cog.listener()
@@ -27,8 +35,7 @@ class Stats(commands.Cog):
         lg.info(f"[{__name__}] Cog is ready")
 
     @commands.Cog.listener()
-    async def on_app_command_completion(self, intr: discord.Interaction,
-                                        command):
+    async def on_app_command_completion(self, intr: discord.Interaction, command):
         aliases = await self.bot.get_setting("command_aliases")
         if command.name in STATS_BLACKLIST:
             return

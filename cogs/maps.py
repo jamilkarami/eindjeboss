@@ -25,51 +25,59 @@ class Maps(commands.Cog, name="maps"):
 
     @app_commands.command(name="place")
     async def place(self, interaction: discord.Interaction, query: str):
-        api_key = os.getenv('GOOGLE_MAPS_API_KEY')
+        api_key = os.getenv("GOOGLE_MAPS_API_KEY")
         eindhoven_coords = await self.bot.get_setting("eindhoven_coords")
 
-        search_results = rq.get(SEARCH_URL,
-                                params={'key': api_key,
-                                        'location': eindhoven_coords,
-                                        'query': query}).json()
+        search_results = rq.get(
+            SEARCH_URL,
+            params={"key": api_key, "location": eindhoven_coords, "query": query},
+        ).json()
 
-        place_id = search_results['results'][0]['place_id']
-        pl_det = rq.get(PLACE_URL,
-                        params={'key': api_key,
-                                'place_id': place_id}).json()['result']
+        place_id = search_results["results"][0]["place_id"]
+        pl_det = rq.get(
+            PLACE_URL, params={"key": api_key, "place_id": place_id}
+        ).json()["result"]
 
-        title = pl_det.get('name')
-        url = pl_det.get('url')
+        title = pl_det.get("name")
+        url = pl_det.get("url")
 
         details = {
             "Address": pl_det.get("formatted_address"),
             "Phone Number": pl_det.get("international_phone_number"),
-            "Rating": '%s (%s ratings)' % (
-                pl_det.get("rating"), pl_det.get("user_ratings_total"))
+            "Rating": "%s (%s ratings)"
+            % (pl_det.get("rating"), pl_det.get("user_ratings_total")),
         }
 
         if "opening_hours" in pl_det:
-            open_now = pl_det.get('opening_hours').get('open_now')
-            opening_hours = '\n'.join(
-                [x.replace('\u2009', ' ')
-                 for x in pl_det.get('opening_hours').get('weekday_text')])
+            open_now = pl_det.get("opening_hours").get("open_now")
+            opening_hours = "\n".join(
+                [
+                    x.replace("\u2009", " ")
+                    for x in pl_det.get("opening_hours").get("weekday_text")
+                ]
+            )
             details["Opening Hours"] = opening_hours
-            title = title + (' (Open)' if open_now else ' (Closed)')
+            title = title + (" (Open)" if open_now else " (Closed)")
 
-        details["Website"] = pl_det.get('website')
+        details["Website"] = pl_det.get("website")
 
         embed = self.make_embed(title, url, details, discord.Color.blue())
 
-        photos = pl_det.get('photos')
+        photos = pl_det.get("photos")
         if photos:
-            photo_reference = photos[0].get('photo_reference')
-            place_photo = rq.get(PHOTOS_URL,
-                                 params={'key': api_key,
-                                         'photo_reference': photo_reference,
-                                         'maxwidth': 4000,
-                                         'maxheight': 4000}, stream=True)
-            photo_name = 'temp_%s.jpg' % uuid.uuid4()
-            with open(photo_name, 'wb') as img:
+            photo_reference = photos[0].get("photo_reference")
+            place_photo = rq.get(
+                PHOTOS_URL,
+                params={
+                    "key": api_key,
+                    "photo_reference": photo_reference,
+                    "maxwidth": 4000,
+                    "maxheight": 4000,
+                },
+                stream=True,
+            )
+            photo_name = "temp_%s.jpg" % uuid.uuid4()
+            with open(photo_name, "wb") as img:
                 img.write(place_photo.content)
 
             file = discord.File(photo_name, filename="image.png")
@@ -79,14 +87,15 @@ class Maps(commands.Cog, name="maps"):
             os.remove(photo_name)
         else:
             await interaction.response.send_message(embed=embed)
-        lg.info('Sent place to %s' % interaction.user.name)
+        lg.info("Sent place to %s" % interaction.user.name)
 
     def make_embed(self, title, url, details, color) -> discord.Embed:
         embed = discord.Embed(title=title, url=url, color=color)
         for k, v in details.items():
             if v:
-                embed.add_field(name=k, value=v,
-                                inline=k not in ['Opening Hours', 'Address'])
+                embed.add_field(
+                    name=k, value=v, inline=k not in ["Opening Hours", "Address"]
+                )
         return embed
 
 
