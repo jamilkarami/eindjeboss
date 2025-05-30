@@ -2,24 +2,22 @@ import os
 from typing import Optional
 
 from dotenv import load_dotenv
-from pymongo import AsyncMongoClient
-from pymongo.collection import Collection
-from pymongo.database import Database
-from pymongo.server_api import ServerApi
+from peewee import PostgresqlDatabase
 
 load_dotenv()
-url: Optional[str] = os.getenv('MONGO_DB_URL')
-pw: Optional[str] = os.getenv('MONGO_DB_PASSWORD')
-db_name: Optional[str] = os.getenv('MONGO_DB_NAME')
 
-if not all([url, pw, db_name]):
-    raise ValueError("Missing required MongoDB environment variables")
+db_name: Optional[str] = os.getenv('POSTGRES_DB')
+db_user: Optional[str] = os.getenv('POSTGRES_USER')
+db_password: Optional[str] = os.getenv('POSTGRES_PASSWORD')
+db_host: Optional[str] = os.getenv('POSTGRES_HOST')
+db_port: Optional[int] = int(os.getenv('POSTGRES_PORT') or 5432)
+
+if not all([db_name, db_user, db_password, db_host, db_port]):
+    raise ValueError("Missing required Postgres environment variables")
 
 class DbManager:
     def __init__(self):
-        uri = url % pw  # type: ignore
-        self.dbclient: AsyncMongoClient = AsyncMongoClient(uri, server_api=ServerApi('1'))
-        self.db: Database = self.dbclient[db_name]  # type: ignore
+        self.db: PostgresqlDatabase = PostgresqlDatabase(db_name, user=db_user, password=db_password, host=db_host, port=db_port, autoconnect=False)
 
-    def get_collection(self, collection_name: str) -> Collection:
-        return self.db[collection_name]
+    def get_db(self):
+        return self.db
