@@ -13,6 +13,7 @@ from discord.ext import commands
 
 from bot import Eindjeboss
 from util.util import download_img_from_url, tabulate
+from discord.ext import tasks
 
 TICKET_NOT_FOUND = (
     "Failed to find a ticket with this ID"
@@ -38,6 +39,14 @@ class Admin(commands.Cog):
         self.guild = await self.bot.fetch_guild(
             await self.bot.get_setting("guild_id", None)
         )
+
+    @tasks.loop(minutes=1)
+    async def update_member_count(self):
+        member_count_channel = await self.bot.get_setting("MEMBER_COUNT_CHANNEL")
+        new_name = f"Eindhovenaren: {self.guild.member_count}"
+
+        channel = await self.guild.fetch_channel(int(member_count_channel))
+        await channel.edit(name=new_name)
 
     @commands.Cog.listener()
     async def on_member_join(self, mem: discord.Member):
