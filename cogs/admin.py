@@ -42,11 +42,13 @@ class Admin(commands.Cog):
 
     @tasks.loop(minutes=1)
     async def update_member_count(self):
+        lg.info("Updating member count")
         member_count_channel = await self.bot.get_setting("MEMBER_COUNT_CHANNEL")
         new_name = f"Eindhovenaren: {self.guild.member_count}"
 
         channel = await self.guild.fetch_channel(int(member_count_channel))
         await channel.edit(name=new_name)
+        lg.info("Updated member count")
 
     @commands.Cog.listener()
     async def on_member_join(self, mem: discord.Member):
