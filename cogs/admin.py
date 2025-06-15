@@ -8,12 +8,15 @@ import asyncio
 
 import discord
 import pytz
+from aiocron import crontab
 from discord import app_commands
 from discord.ext import commands
 
 from bot import Eindjeboss
 from util.util import download_img_from_url, tabulate
 from discord.ext import tasks
+
+from util.vars.periodics import MEMBER_COUNT_DT
 
 TICKET_NOT_FOUND = (
     "Failed to find a ticket with this ID"
@@ -39,8 +42,12 @@ class Admin(commands.Cog):
         self.guild = await self.bot.fetch_guild(
             await self.bot.get_setting("guild_id", None)
         )
+        crontab(
+            MEMBER_COUNT_DT,
+            func=self.update_member_count,
+            start = True
+                )
 
-    @tasks.loop(minutes=1)
     async def update_member_count(self):
         lg.info("Updating member count")
         member_count_channel = await self.bot.get_setting("MEMBER_COUNT_CHANNEL")
