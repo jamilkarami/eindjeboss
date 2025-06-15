@@ -56,8 +56,10 @@ class Admin(commands.Cog):
         guild = await self.bot.fetch_guild(guild_id)
         channel = await guild.fetch_channel(int(member_count_channel))
 
+        approximate_member_count = guild.approximate_member_count
+        count_str = str(approximate_member_count) if approximate_member_count < 1000 else f"{str(round(approximate_member_count/1000, 2))}K")
 
-        new_name = f"Eindhovenaren: {guild.approximate_member_count}"
+        new_name = f"Eindhovenaren: {count_str}"
         await channel.edit(name=new_name)
         lg.info("Updated member count")
 
