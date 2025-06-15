@@ -50,10 +50,14 @@ class Admin(commands.Cog):
 
     async def update_member_count(self):
         lg.info("Updating member count")
-        member_count_channel = await self.bot.get_setting("MEMBER_COUNT_CHANNEL")
-        new_name = f"Eindhovenaren: {self.guild.member_count}"
+        member_count_channel = await self.bot.get_setting("member_count_channel")
+        guild_id = await self.bot.get_setting("guild_id")
 
-        channel = await self.guild.fetch_channel(int(member_count_channel))
+        guild = await self.bot.fetch_guild(guild_id)
+        channel = await guild.fetch_channel(int(member_count_channel))
+
+
+        new_name = f"Eindhovenaren: {guild.approximate_member_count}"
         await channel.edit(name=new_name)
         lg.info("Updated member count")
 
