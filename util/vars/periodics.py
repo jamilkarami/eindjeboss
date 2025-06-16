@@ -1,7 +1,7 @@
 WEATHER_DT = "0 7 * * *"
 PSV_DT = "0 8 * * *"
 TOP_REDDIT_DT = "0 9 * * *"
-MEMBER_COUNT_DT = "*/2 * * * *"
+MEMBER_COUNT_DT = "0 * * * *"
 RESET_DT = "0 0 * * *"
 ALERT_DT = "0 8 1-7 * *"
 REDDIT_EINDHOVEN_DT = "*/2 * * * *"
