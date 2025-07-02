@@ -62,11 +62,20 @@ FIXTURES_URL = os.getenv("FOOTBALL_API_FIXTURES_URL")
 FOOTBALL_API_KEY = os.getenv("FOOTBALL_API_KEY")
 X_RAPID_API_HOST = os.getenv("X_RAPID_API_HOST")
 MATCH_STR = (
-    "## <:psv:1146529553238478878> ⚽ **%s** and **%s** will be playing at %s as part of the **%s**"
-    " at **%s**. ⚠️ Expect heavy traffic around the stadium."
+    "## ⚽ **Today's Match at Philips Stadion <:psv:1146529553238478878>** ⚽\n\n"
+    "**%s** vs **%s**\n"
+    "🏆 **Competition:** %s\n"
+    "🕐 **Kick-off:** %s\n\n"
+    "⚠️ **Traffic Warning:** Expect heavy traffic around the stadium area."
 )
 
-WARNING_SIREN_MSG = "## 🚨 The public warning sirens will be tested today at 12:00. 🚨"
+WARNING_SIREN_MSG = (
+    "## 🚨 **Monthly Siren Test** 🚨\n\n"
+    "📢 The public warning sirens will be tested today at **12:00**.\n"
+    "🔊 This is a **routine monthly test** - no action required.\n"
+    "⏰ Duration: Approximately 1 minute\n\n"
+    "ℹ️ *This test ensures the emergency warning system is working properly.*"
+)
 WARNING_SIREN_LINK = (
     "https://www.government.nl/topics/counterterrorism-and-"
     "national-security/question-and-answer/public-warning-s"
@@ -259,7 +268,6 @@ class Periodics(commands.Cog):
         warning_msg = MATCH_STR % (
             home,
             away,
-            "Philips Stadion",
             competition,
             match_time,
         )
