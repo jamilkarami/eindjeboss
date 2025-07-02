@@ -21,7 +21,7 @@ class Roles(commands.Cog):
     @app_commands.command(name="focus", description=FOCUS_DESC)
     async def focus(self, interaction: discord.Interaction):
         focus_role = discord.utils.get(interaction.guild.roles, name="Focus")
-        eindhovenaar_role = discord.utils.get(interaction.guild.roles, name="Eindhovenaar")
+        eindhovenaar_role = discord.utils.get(interaction.guild.roles, name="Eindhovenaren")
 
         if focus_role in interaction.user.roles:
             await interaction.user.remove_roles(focus_role)
