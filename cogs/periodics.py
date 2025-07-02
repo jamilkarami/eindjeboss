@@ -62,11 +62,11 @@ FIXTURES_URL = os.getenv("FOOTBALL_API_FIXTURES_URL")
 FOOTBALL_API_KEY = os.getenv("FOOTBALL_API_KEY")
 X_RAPID_API_HOST = os.getenv("X_RAPID_API_HOST")
 MATCH_STR = (
-    "**%s** and **%s** will be playing at %s as part of the **%s**"
-    " at **%s**. Expect heavy traffic around the stadium."
+    "## <:psv:1146529553238478878> ⚽ **%s** and **%s** will be playing at %s as part of the **%s**"
+    " at **%s**. ⚠️ Expect heavy traffic around the stadium."
 )
 
-WARNING_SIREN_MSG = "The public warning sirens will be tested today at 12:00."
+WARNING_SIREN_MSG = "## 🚨 The public warning sirens will be tested today at 12:00. 🚨"
 WARNING_SIREN_LINK = (
     "https://www.government.nl/topics/counterterrorism-and-"
     "national-security/question-and-answer/public-warning-s"
