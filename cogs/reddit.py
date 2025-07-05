@@ -23,7 +23,7 @@ from util.vars.eind_vars import (
     DOG_SUBS,
     REDDIT_USER_AGENT,
 )
-from util.vars.periodics import REDDIT_EINDHOVEN_DT, TOP_REDDIT_DT
+from util.vars.periodics import REDDIT_EINDHOVEN_DT
 
 # random commands
 SUBREDDIT_REGEX = "(?<!reddit.com)/r/[a-zA-Z0-9]{3,}"
@@ -66,15 +66,6 @@ class Reddit(commands.GroupCog, group_name="random"):
     @commands.Cog.listener()
     async def on_ready(self):
         lg.info("[%s] Cog is ready", __name__)
-        daily_reddit = await self.bot.get_setting("daily_reddit")
-        for k, v in daily_reddit.items():
-            crontab(
-                TOP_REDDIT_DT,
-                func=self.schedule_pic,
-                args=(int(k), v, True),
-                start=True,
-            )
-
         crontab(REDDIT_EINDHOVEN_DT, self.monitor_feed, start=True)
 
     async def monitor_feed(self):
@@ -182,25 +173,6 @@ class Reddit(commands.GroupCog, group_name="random"):
 
         chosen_post = random.choice(posts)
         return chosen_post.url
-
-    async def schedule_pic(self, channel_id, subs, include_title):
-        channel = await self.bot.fetch_channel(channel_id)
-        sub_name = subs if isinstance(subs, str) else random.choice(subs)
-        subreddit = await reddit.subreddit(sub_name)
-
-        async for submission in subreddit.top("day", limit=1):
-            post = submission
-
-        title = f"**Top post on /r/{sub_name} today: **"
-
-        if include_title:
-            title = title + post.title
-            description = post.shortlink
-        else:
-            description = post.url
-        payload = f"{title}\n{description}"
-
-        await channel.send(payload)
 
     async def handle_reddit_matches(self, matches, message):
         m_cnt = len(matches)
