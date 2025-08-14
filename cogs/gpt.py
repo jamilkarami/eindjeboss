@@ -18,9 +18,9 @@ LIMIT = "You have reached the usage limit for ChatGPT. Please try again later."
 usage_reset_cron = "0 0 1 * *"
 context_reset_cron = "0 */4 * * *"
 
-model_engines = {"3.5-turbo": "gpt-3.5-turbo", "4o": "gpt-4o"}
+model_engines = {"4o": "gpt-4o", "5": "gpt-5"}
 
-multipliers = {"gpt-3.5-turbo": 1, "gpt-4o": 10}
+multipliers = {"gpt-5": 10, "gpt-4o": 10}
 
 aclient = AsyncOpenAI(api_key=GPT_TOKEN)
 model_engines_choices = [
