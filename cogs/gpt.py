@@ -3,6 +3,7 @@ import os
 
 import discord
 from openai import AsyncOpenAI
+from openai.types.responses import Response
 
 from discord import app_commands
 from discord.ext import commands
@@ -60,17 +61,14 @@ class GPT(commands.GroupCog, name="gpt"):
         )
 
     async def get_response(self, model_engine, max_tokens, query):
-        completion = await aclient.chat.completions.create(
+        completion : Response = await aclient.responses.create(
             model=model_engine,
-            messages=[{"role": "user", "content": query}],
-            max_tokens=max_tokens,
-            n=1,
-            stop=None,
+            input=query,
             temperature=0.5,
         )
 
         return (
-            completion.choices[0].message.content,
+            completion.output_text,
             completion.usage.total_tokens,
             completion.model,
         )
