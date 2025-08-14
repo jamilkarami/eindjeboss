@@ -4,7 +4,6 @@ import os
 import discord
 from openai import AsyncOpenAI
 
-from aiocron import crontab
 from discord import app_commands
 from discord.ext import commands
 from openai._exceptions import RateLimitError
@@ -12,10 +11,6 @@ from openai._exceptions import RateLimitError
 from bot import Eindjeboss
 
 GPT_TOKEN = os.getenv("OPENAI_TOKEN")
-LIMIT = "You have reached the usage limit for ChatGPT. Please try again later."
-
-usage_reset_cron = "0 0 1 * *"
-context_reset_cron = "0 */4 * * *"
 
 aclient = AsyncOpenAI(api_key=GPT_TOKEN)
 
@@ -25,8 +20,6 @@ class GPT(commands.GroupCog, name="gpt"):
     def __init__(self, bot: Eindjeboss):
         self.bot = bot
         self.gptusage = self.bot.dbmanager.get_collection("gptusage")
-        crontab(usage_reset_cron, func=self.reset_usage)
-        crontab(context_reset_cron, func=self.reset_context)
 
     @commands.Cog.listener()
     async def on_ready(self):
