@@ -47,7 +47,7 @@ class GPT(commands.GroupCog, name="gpt"):
 
     async def query_gpt(self, user, query):
         max_tokens = await self.bot.get_setting("gpt_max_token", 2048)
-        model_engine = self.bot.get_setting("gpt_default_model")
+        model_engine = await self.bot.get_setting("gpt_default_model")
 
         response, ttl_tok, model = await self.get_response(
             model_engine, max_tokens, query
@@ -64,7 +64,7 @@ class GPT(commands.GroupCog, name="gpt"):
         completion : Response = await aclient.responses.create(
             model=model_engine,
             input=query,
-            temperature=0.5,
+            max_output_tokens=max_tokens,
         )
 
         return (

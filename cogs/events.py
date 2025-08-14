@@ -24,13 +24,13 @@ BADGE_FILE = FILE_DIR + "/images/ehv_badge.png"
 SIZE_TITLE = 80
 SIZE_TAGS = 48
 
-FONT_TITLE_PATH = FILE_DIR + "/fonts/RobotoFlexVariable.ttf"
+FONT_TITLE_PATH = FILE_DIR + "/fonts/coolvetica_rg.otf"
 FONT_TITLE = ImageFont.truetype(FONT_TITLE_PATH, SIZE_TITLE)
-FONT_TITLE.set_variation_by_name("ExtraBlack Italic")
+# FONT_TITLE.set_variation_by_name("ExtraBlack Italic")
 
-FONT_TAGS_PATH = FILE_DIR + "/fonts/RobotoFlexVariable.ttf"
+FONT_TAGS_PATH = FILE_DIR + "/fonts/coolvetica_rg.otf"
 FONT_TAGS = ImageFont.truetype(FONT_TAGS_PATH, SIZE_TAGS)
-FONT_TAGS.set_variation_by_name("Regular")
+# FONT_TAGS.set_variation_by_name("Regular")
 
 DESIRED_W = 1230
 DESIRED_H = 1400
