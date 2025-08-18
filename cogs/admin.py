@@ -79,11 +79,6 @@ class Admin(commands.Cog):
                         f"{mem.mention} joined the server. They have previously been kicked or banned."
                     )
 
-        if mem.name[-4:].isnumeric():
-            await self.bot.alert_mods(
-                f"Possible spam account {mem.mention} joined the server."
-            )
-
     @commands.Cog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member):
         time.sleep(1)
