@@ -529,7 +529,7 @@ class TicketModal(Modal):
             msg_url = f"[Link]({self.message.jump_url})"
             embed.add_field(name="Reference", value=msg_url)
 
-        self.collection.insert_one(data)
+        await self.collection.insert_one(data)
         await intr.response.send_message(
             "Thank you for the report. We will reach out to you soon!", ephemeral=True
         )
