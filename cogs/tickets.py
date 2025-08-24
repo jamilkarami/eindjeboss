@@ -251,6 +251,21 @@ class Ticket(commands.GroupCog):
             f"**{d_name}** started handling ticket {ticket_id} ({title})"
         )
 
+
+    @handleticket.autocomplete("ticket_id")
+    async def handleticket_autocomplete(self, _: discord.Interaction, current: str):
+        tickets = await self.tickets.find(
+            {"status": TicketStatus.OPEN.name, "title": {"$regex": current}}
+        ).to_list(length=88675309)
+
+        user = await self.bot.fetch_user(tickets[0]["author_id"])
+        username = user.display_name if user else ""
+
+        return [
+            app_commands.Choice(name=f"{username + ' - ' if username else ''}{ticket['title']}", value=ticket["_id"])
+            for ticket in tickets
+        ]
+
     @app_commands.command(name="close")
     @app_commands.rename(ticket_id="ticket")
     async def closeticket(self, intr: discord.Interaction, ticket_id: str = None):
@@ -341,8 +356,11 @@ class Ticket(commands.GroupCog):
             length=88675309
         )
 
+        user = await self.bot.fetch_user(tickets[0]["author_id"])
+        username = user.display_name if user else ""
+
         return [
-            app_commands.Choice(name=ticket["title"], value=ticket["_id"])
+            app_commands.Choice(name=f"{username + ' - ' if username else ''}{ticket['title']}", value=ticket["_id"])
             for ticket in tickets
         ]
 
@@ -352,8 +370,11 @@ class Ticket(commands.GroupCog):
             {"status": {"$ne": "CLOSED"}, "title": {"$regex": current}}
         ).to_list(length=88675309)
 
+        user = await self.bot.fetch_user(tickets[0]["author_id"])
+        username = user.display_name if user else ""
+
         return [
-            app_commands.Choice(name=ticket["title"], value=ticket["_id"])
+            app_commands.Choice(name=f"{username + ' - ' if username else ''}{ticket['title']}", value=ticket["_id"])
             for ticket in tickets
         ]
 
@@ -500,7 +521,7 @@ class TicketModal(Modal):
         ticket_id = str(uuid.uuid1())[:5]
 
         tick_type = "report" if self.message else "ticket"
-        msg = f"New {tick_type} submitted by {intr.user.display_name}. Respond to it with /handleticket {ticket_id}"
+        msg = f"New {tick_type} submitted by {intr.user.display_name}. Respond to it with /ticket handle"
 
         embed_author = f"Ticket by {intr.user.display_name}"
         embed_title = self.ticket_title.value
